@@ -77,8 +77,7 @@ namespace Scenarios
                 case "NextAlarmDateTime":
                     var mainAlarmTimeStr = args.NewValue;
                     var mainAlarmTime = DateTime.Parse(mainAlarmTimeStr);
-                    //var heatingSystemAlarm = mainAlarmTime.AddMinutes(-30);
-                    var heatingSystemAlarm = mainAlarmTime.AddMinutes(-1);
+                    var heatingSystemAlarm = mainAlarmTime.AddMinutes(-30);
                     var heatingSystemAlarmStr = heatingSystemAlarm.ToLongTimeString();
 
                     await Manager.SetValue("Virtual_HeatingSystemAlarmClock", "Time", heatingSystemAlarmStr)

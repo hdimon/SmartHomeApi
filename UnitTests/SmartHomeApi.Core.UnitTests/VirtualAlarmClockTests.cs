@@ -73,6 +73,14 @@ namespace SmartHomeApi.Core.UnitTests
             nextAlarmStr = nextAlarm.ToString();
 
             Assert.AreEqual(nextAlarmStr, state.Telemetry["NextAlarmDateTime"]);
+
+            //Set another time. Alarm parameter must be reset.
+            await alarm.SetValue("Time", DateTime.Now.AddHours(1).ToLongTimeString());
+
+            state = alarm.GetState();
+
+            Assert.AreEqual(3, state.Telemetry.Count);
+            Assert.IsFalse(state.Telemetry.ContainsKey("Alarm"));
         }
 
         [Test]

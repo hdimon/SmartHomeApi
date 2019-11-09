@@ -65,7 +65,7 @@ namespace VirtualAlarmClockDevice
                         _time = null;
                     }
 
-                    SetTime(parameter, value);
+                    await SetTime(parameter, value);
                     break;
                 case EnabledParameter:
                     SetEnabledParameter(value);
@@ -78,7 +78,7 @@ namespace VirtualAlarmClockDevice
             await _deviceStateStorage.SaveState(_states, DeviceId);
         }
 
-        private void SetTime(string parameter, string value)
+        private async Task SetTime(string parameter, string value)
         {
             if (!DateTime.TryParse(value, out var t))
                 return;
@@ -88,6 +88,7 @@ namespace VirtualAlarmClockDevice
             var nextAlarmDateTime = t.ToString();
             _states.AddOrUpdate(parameter, value, (key, oldValue) => value);
             _states.AddOrUpdate(NextAlarmDateTimeParameter, nextAlarmDateTime, (key, oldValue) => nextAlarmDateTime);
+            await ResetAlarmParameter(null);
             _time = t;
         }
 
