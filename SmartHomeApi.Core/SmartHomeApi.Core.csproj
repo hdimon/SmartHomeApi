@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Devices\TerneoSxDevice\TerneoSxDevice.csproj" />
+    <ProjectReference Include="..\Devices\VirtualAlarmClockDevice\VirtualAlarmClockDevice.csproj" />
+    <ProjectReference Include="..\Devices\VirtualStateDevice\VirtualStateDevice.csproj" />
+    <ProjectReference Include="..\EventHandlers\Scenarios\Scenarios.csproj" />
+    <ProjectReference Include="..\SmartHomeApi.Core.Interfaces\SmartHomeApi.Core.Interfaces.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions">
+      <HintPath>C:\Program Files\dotnet\packs\Microsoft.AspNetCore.App.Ref\3.1.0-preview1.19508.20\ref\netcoreapp3.1\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Hosting.Abstractions">
+      <HintPath>C:\Program Files\dotnet\packs\Microsoft.AspNetCore.App.Ref\3.1.0-preview1.19508.20\ref\netcoreapp3.1\Microsoft.Extensions.Hosting.Abstractions.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
