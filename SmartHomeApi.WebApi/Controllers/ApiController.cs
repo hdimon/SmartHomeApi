@@ -52,11 +52,13 @@ namespace SmartHomeApi.WebApi.Controllers
 
         [HttpGet]
         [Route("[action]/{deviceId}/{parameter}/{value?}")]
-        public async Task SetValue(string deviceId, string parameter, string value)
+        public async Task<ISetValueResult> SetValue(string deviceId, string parameter, string value)
         {
             var manager = _fabric.GetDeviceManager();
 
-            await manager.SetValue(deviceId, parameter, value);
+            var result = await manager.SetValue(deviceId, parameter, value);
+
+            return result;
         }
     }
 }

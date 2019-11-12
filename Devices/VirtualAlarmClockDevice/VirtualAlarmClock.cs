@@ -30,7 +30,10 @@ namespace VirtualAlarmClockDevice
 
             if (_states.ContainsKey(TimeParameter))
             {
-                SetTime(TimeParameter, _states[TimeParameter]);
+                Task.Run(async () => await SetTime(TimeParameter, _states[TimeParameter])).ContinueWith(t =>
+                {
+                    var test = 5;
+                }, TaskContinuationOptions.OnlyOnFaulted);
             }
 
             RunWatchDogWorker();
@@ -54,7 +57,7 @@ namespace VirtualAlarmClockDevice
             return state;
         }
 
-        public override async Task SetValue(string parameter, string value)
+        public override async Task<ISetValueResult> SetValue(string parameter, string value)
         {
             switch (parameter)
             {
@@ -76,6 +79,8 @@ namespace VirtualAlarmClockDevice
             }
 
             await _deviceStateStorage.SaveState(_states, DeviceId);
+
+            return new SetValueResult();
         }
 
         private async Task SetTime(string parameter, string value)

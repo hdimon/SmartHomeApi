@@ -33,7 +33,7 @@ namespace SmartHomeApi.Core.Services
 
         }
 
-        public async Task SetValue(string deviceId, string parameter, string value)
+        public async Task<ISetValueResult> SetValue(string deviceId, string parameter, string value)
         {
             var deviceLocator = _fabric.GetDeviceLocator();
             var devices = deviceLocator.GetDevices();
@@ -41,17 +41,24 @@ namespace SmartHomeApi.Core.Services
             var device = devices.FirstOrDefault(d => d.DeviceId == deviceId);
 
             if (device == null)
-                return;
+                return new SetValueResult(false);
 
-            await device.SetValue(parameter, value);
+            NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueSet, device.DeviceType, device.DeviceId,
+                parameter, null, value));
+
+            var result = await device.SetValue(parameter, value);
+
+            return result;
         }
 
-        public async Task Increase(string deviceId, string parameter)
+        public async Task<ISetValueResult> Increase(string deviceId, string parameter)
         {
+            return new SetValueResult();
         }
 
-        public async Task Decrease(string deviceId, string parameter)
+        public async Task<ISetValueResult> Decrease(string deviceId, string parameter)
         {
+            return new SetValueResult();
         }
 
         public IDeviceStatesContainer GetState()
@@ -186,7 +193,7 @@ namespace SmartHomeApi.Core.Services
 
                 foreach (var telemetryPair in device.Telemetry)
                 {
-                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.Remove, device.DeviceType,
+                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueRemoved, device.DeviceType,
                         device.DeviceId, telemetryPair.Key, telemetryPair.Value?.ToString(), null));
                 }
             }
@@ -201,7 +208,7 @@ namespace SmartHomeApi.Core.Services
 
                 foreach (var telemetryPair in device.Telemetry)
                 {
-                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.Add, device.DeviceType,
+                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueAdded, device.DeviceType,
                         device.DeviceId, telemetryPair.Key, null, telemetryPair.Value?.ToString()));
                 }
             }
@@ -223,7 +230,7 @@ namespace SmartHomeApi.Core.Services
                 var updatedParameters = newTelemetry.Keys.Except(addedParameters).ToList();
 
                 if (oldDevice.ConnectionStatus != newDevice.ConnectionStatus)
-                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.Update, newDevice.DeviceType,
+                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueUpdated, newDevice.DeviceType,
                         newDevice.DeviceId, nameof(newDevice.ConnectionStatus), oldDevice.ConnectionStatus.ToString(),
                         newDevice.ConnectionStatus.ToString()));
 
@@ -231,7 +238,7 @@ namespace SmartHomeApi.Core.Services
                 {
                     var oldValue = oldTelemetry[removedParameter];
 
-                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.Remove, newDevice.DeviceType,
+                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueRemoved, newDevice.DeviceType,
                         newDevice.DeviceId, removedParameter, oldValue?.ToString(), null));
                 }
 
@@ -239,7 +246,7 @@ namespace SmartHomeApi.Core.Services
                 {
                     var newValue = newTelemetry[addedParameter];
 
-                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.Add, newDevice.DeviceType,
+                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueAdded, newDevice.DeviceType,
                         newDevice.DeviceId, addedParameter, null, newValue?.ToString()));
                 }
 
@@ -250,7 +257,7 @@ namespace SmartHomeApi.Core.Services
 
                     if (oldValue != newValue)
                     {
-                        NotifySubscribers(new StateChangedEvent(StateChangedEventType.Update, newDevice.DeviceType,
+                        NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueUpdated, newDevice.DeviceType,
                             newDevice.DeviceId, updatedParameter, oldValue, newValue));
                     }
                 }

@@ -331,3 +331,5 @@ ASALocalRun/
 /SmartHomeApi.WebApi/Virtual_States.txt
 /SmartHomeApi.WebApi/Virtual_MainAlarmClock.txt
 /SmartHomeApi.WebApi/Virtual_HeatingSystemAlarmClock.txt
+/SmartHomeApi.WebApi/Virtual_HeatingSystemMorningAlarmClock.txt
+/SmartHomeApi.WebApi/Virtual_HeatingSystemAfterMorningAlarmClock.txt

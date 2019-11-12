@@ -6,6 +6,9 @@ namespace Scenarios
 {
     public class HeatingSystem : EventHandlerAbstract
     {
+        private readonly int _heatingSystemMorningAdvanceMinutes = 45;
+        private readonly int _heatingSystemMorningDurationMinutes = 60;
+
         public HeatingSystem(IDeviceManager manager) : base(manager)
         {
         }
@@ -23,8 +26,11 @@ namespace Scenarios
                 case "Virtual_MainAlarmClock":
                     await ProcessVirtualMainAlarmClockEvents(args).ConfigureAwait(false);
                     break;
-                case "Virtual_HeatingSystemAlarmClock":
-                    await ProcessVirtualHeatingSystemAlarmClockEvents(args).ConfigureAwait(false);
+                case "Virtual_HeatingSystemMorningAlarmClock":
+                    await ProcessVirtualHeatingSystemMorningAlarmClockEvents(args).ConfigureAwait(false);
+                    break;
+                case "Virtual_HeatingSystemAfterMorningAlarmClock":
+                    await ProcessVirtualHeatingSystemAfterMorningAlarmClockEvents(args).ConfigureAwait(false);
                     break;
             }
         }
@@ -56,10 +62,10 @@ namespace Scenarios
                         Manager.SetValue("Bedroom_Floor", "SetTemperature", "26")).ConfigureAwait(false);
                     break;
                 case "Sleep":
-                    await Task.WhenAll(Manager.SetValue("Kitchen_Floor", "SetTemperature", "28"),
-                        Manager.SetValue("Bathroom_Floor", "SetTemperature", "26"),
-                        Manager.SetValue("Toilet_Floor", "SetTemperature", "26"),
-                        Manager.SetValue("Bedroom_Floor", "SetTemperature", "25")).ConfigureAwait(false);
+                    await Task.WhenAll(Manager.SetValue("Kitchen_Floor", "SetTemperature", "20"),
+                        Manager.SetValue("Bathroom_Floor", "SetTemperature", "20"),
+                        Manager.SetValue("Toilet_Floor", "SetTemperature", "20"),
+                        Manager.SetValue("Bedroom_Floor", "SetTemperature", "24")).ConfigureAwait(false);
                     break;
                 case "Morning":
                     await Task.WhenAll(Manager.SetValue("Kitchen_Floor", "SetTemperature", "30"),
@@ -77,22 +83,45 @@ namespace Scenarios
                 case "NextAlarmDateTime":
                     var mainAlarmTimeStr = args.NewValue;
                     var mainAlarmTime = DateTime.Parse(mainAlarmTimeStr);
-                    var heatingSystemAlarm = mainAlarmTime.AddMinutes(-30);
+                    var heatingSystemAlarm = mainAlarmTime.AddMinutes(-_heatingSystemMorningAdvanceMinutes);
                     var heatingSystemAlarmStr = heatingSystemAlarm.ToLongTimeString();
 
-                    await Manager.SetValue("Virtual_HeatingSystemAlarmClock", "Time", heatingSystemAlarmStr)
+                    await Manager.SetValue("Virtual_HeatingSystemMorningAlarmClock", "Time", heatingSystemAlarmStr)
                                  .ConfigureAwait(false);
                     break;
             }
         }
-        
-        private async Task ProcessVirtualHeatingSystemAlarmClockEvents(StateChangedEvent args)
+
+        private async Task ProcessVirtualHeatingSystemMorningAlarmClockEvents(StateChangedEvent args)
         {
             switch (args.Parameter)
             {
                 case "Alarm":
+                    var alarmTimeStr = args.NewValue;
+                    var alarmTime = DateTime.Parse(alarmTimeStr);
+                    var afterMorningAlarmTime = alarmTime
+                                                .AddMinutes(_heatingSystemMorningAdvanceMinutes)
+                                                .AddMinutes(_heatingSystemMorningDurationMinutes);
+                    var afterMorningAlarmTimeStr = afterMorningAlarmTime.ToLongTimeString();
+
                     await Manager.SetValue("Virtual_States", "Scenario", "Morning").ConfigureAwait(false);
-                    await Manager.SetValue("Virtual_HeatingSystemAlarmClock", "Alarm", null).ConfigureAwait(false);
+                    await Manager.SetValue("Virtual_HeatingSystemMorningAlarmClock", "Alarm", null)
+                                 .ConfigureAwait(false);
+                    await Manager
+                          .SetValue("Virtual_HeatingSystemAfterMorningAlarmClock", "Time", afterMorningAlarmTimeStr)
+                          .ConfigureAwait(false);
+                    break;
+            }
+        }
+
+        private async Task ProcessVirtualHeatingSystemAfterMorningAlarmClockEvents(StateChangedEvent args)
+        {
+            switch (args.Parameter)
+            {
+                case "Alarm":
+                    await Manager.SetValue("Virtual_States", "Scenario", "Indoor").ConfigureAwait(false);
+                    await Manager.SetValue("Virtual_HeatingSystemAfterMorningAlarmClock", "Alarm", null)
+                                 .ConfigureAwait(false);
                     break;
             }
         }

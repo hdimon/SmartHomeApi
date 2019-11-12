@@ -48,10 +48,15 @@ namespace TerneoSxDevice
             return state;
         }
 
-        public override async Task SetValue(string parameter, string value)
+        public override async Task<ISetValueResult> SetValue(string parameter, string value)
         {
+            var result = new SetValueResult();
+
             if (!_settableParametersList.Contains(parameter))
-                return;
+            {
+                result.Success = false;
+                return result;
+            }
 
             var config = (TerneoSxConfig)Config;
 
@@ -62,7 +67,12 @@ namespace TerneoSxDevice
             string responseString = await PostContent(content, 15);
 
             if (string.IsNullOrWhiteSpace(responseString))
-                return;
+            {
+                result.Success = false;
+                return result;
+            }
+
+            return result;
         }
 
         private async Task<string> PostContent(StringContent content, int maxTries = 1)

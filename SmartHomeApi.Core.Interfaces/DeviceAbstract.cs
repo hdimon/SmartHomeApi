@@ -19,6 +19,6 @@ namespace SmartHomeApi.Core.Interfaces
 
         public abstract IDeviceState GetState();
 
-        public abstract Task SetValue(string parameter, string value);
+        public abstract Task<ISetValueResult> SetValue(string parameter, string value);
     }
 }

@@ -35,7 +35,7 @@ namespace VirtualStateDevice
             return _state;
         }
 
-        public override async Task SetValue(string parameter, string value)
+        public override async Task<ISetValueResult> SetValue(string parameter, string value)
         {
             if (_states.ContainsKey(parameter))
             {
@@ -51,6 +51,8 @@ namespace VirtualStateDevice
             }
 
             await _deviceStateStorage.SaveState(_states, DeviceId);
+
+            return new SetValueResult();
         }
     }
 }

@@ -2,8 +2,9 @@
 {
     public enum StateChangedEventType
     {
-        Add,
-        Update,
-        Remove
+        ValueSet,
+        ValueAdded,
+        ValueUpdated,
+        ValueRemoved
     }
 }

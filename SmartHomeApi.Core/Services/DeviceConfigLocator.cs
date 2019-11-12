@@ -34,7 +34,9 @@ namespace SmartHomeApi.Core.Services
                 {
                     new VirtualAlarmClockConfig("Virtual_MainAlarmClock", "VirtualAlarmClockDevice")
                         { EveryDay = true },
-                    new VirtualAlarmClockConfig("Virtual_HeatingSystemAlarmClock", "VirtualAlarmClockDevice")
+                    new VirtualAlarmClockConfig("Virtual_HeatingSystemMorningAlarmClock", "VirtualAlarmClockDevice")
+                        { EveryDay = false },
+                    new VirtualAlarmClockConfig("Virtual_HeatingSystemAfterMorningAlarmClock", "VirtualAlarmClockDevice")
                         { EveryDay = false }
                 };
 
