@@ -18,6 +18,9 @@ namespace Scenarios
             if (args == null)
                 return;
 
+            if (args.EventType == StateChangedEventType.ValueSet)
+                return;
+
             switch (args.DeviceId)
             {
                 case "Virtual_States":
