@@ -2,23 +2,23 @@
 
 namespace SmartHomeApi.Core.Interfaces
 {
-    public abstract class DeviceAbstract : IDevice
+    public abstract class DeviceAbstract : IItem, IStateSettable, IStateGettable, IConfigurable
     {
         protected readonly IDeviceHelpersFabric HelpersFabric;
-        public string DeviceId { get; }
-        public string DeviceType { get; }
+        public string ItemId { get; }
+        public string ItemType { get; }
         public IDeviceConfig Config { get; }
 
         protected DeviceAbstract(IDeviceHelpersFabric helpersFabric, IDeviceConfig config)
         {
             HelpersFabric = helpersFabric;
             Config = config;
-            DeviceId = config.DeviceId;
-            DeviceType = config.DeviceType;
+
+            ItemId = config.DeviceId;
+            ItemType = config.DeviceId;
         }
 
-        public abstract IDeviceState GetState();
-
         public abstract Task<ISetValueResult> SetValue(string parameter, string value);
+        public abstract IItemState GetState();
     }
 }

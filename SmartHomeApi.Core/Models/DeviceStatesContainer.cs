@@ -3,8 +3,8 @@ using SmartHomeApi.Core.Interfaces;
 
 namespace SmartHomeApi.Core.Models
 {
-    public class DeviceStatesContainer : IDeviceStatesContainer
+    public class DeviceStatesContainer : IStatesContainer
     {
-        public Dictionary<string, IDeviceState> DevicesStates { get; set; } = new Dictionary<string, IDeviceState>();
+        public Dictionary<string, IItemState> States { get; set; } = new Dictionary<string, IItemState>();
     }
 }

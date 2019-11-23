@@ -14,7 +14,7 @@ namespace TerneoSxDevice
 {
     public class TerneoSx : DeviceAbstract
     {
-        private IDeviceState _state;
+        private IItemState _state;
         private Task _worker;
         private readonly HttpClient _client = new HttpClient();
         private readonly ReaderWriterLock _readerWriterLock = new ReaderWriterLock();
@@ -33,15 +33,15 @@ namespace TerneoSxDevice
         {
             _settableParametersList = new List<string> { SetTemperatureParameter };
 
-            _state = new DeviceState(DeviceId, DeviceType);
+            _state = new ItemState(ItemId, ItemType);
             RunTelemetryCollectorWorker();
         }
 
-        public override IDeviceState GetState()
+        public override IItemState GetState()
         {
             _readerWriterLock.AcquireReaderLock(Timeout.Infinite);
 
-            IDeviceState state = _state;
+            IItemState state = _state;
 
             _readerWriterLock.ReleaseReaderLock();
 
@@ -135,16 +135,16 @@ namespace TerneoSxDevice
                 var state = await RequestTelemetry();
 
                 bool failed = false;
-                foreach (var telemetryPair in _state.Telemetry)
+                foreach (var telemetryPair in _state.States)
                 {
-                    if (!state.Telemetry.ContainsKey(telemetryPair.Key))
+                    if (!state.States.ContainsKey(telemetryPair.Key))
                     {
                         failed = true;
 
                         if (_requestFailureCount < _requestFailureThreshold)
                         {
                             //Take previous value
-                            state.Telemetry.Add(telemetryPair.Key, telemetryPair.Value);
+                            state.States.Add(telemetryPair.Key, telemetryPair.Value);
                         }
                     }
                 }
@@ -169,9 +169,9 @@ namespace TerneoSxDevice
             }
         }
 
-        private async Task<IDeviceState> RequestTelemetry()
+        private async Task<IItemState> RequestTelemetry()
         {
-            var state = new DeviceState(DeviceId, DeviceType);
+            var state = new ItemState(ItemId, ItemType);
 
             var content = new StringContent("{\"cmd\":4}", Encoding.UTF8, "application/json");
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
@@ -203,24 +203,24 @@ namespace TerneoSxDevice
                 if (double.TryParse(telemetry["t.1"], out var currentTemp))
                     currentTemp = _currentTempAverageValuesHelper.GetAverageValue(Math.Round(currentTemp / 16, 1));
 
-                state.Telemetry.Add(CurrentTemperatureParameter, Math.Round(currentTemp, 1));
+                state.States.Add(CurrentTemperatureParameter, Math.Round(currentTemp, 1));
             }
             if (telemetry.ContainsKey("t.5"))
             {
                 double.TryParse(telemetry["t.5"], out var setTemp);
-                state.Telemetry.Add(SetTemperatureParameter, Math.Round(setTemp / 16, 1));
+                state.States.Add(SetTemperatureParameter, Math.Round(setTemp / 16, 1));
             }
             if (telemetry.ContainsKey("f.0"))
             {
                 var heating = telemetry["f.0"] == "1";
 
-                state.Telemetry.Add(HeatingParameter, heating);
+                state.States.Add(HeatingParameter, heating);
             }
 
             return state;
         }
 
-        private void SetStateSafely(IDeviceState state)
+        private void SetStateSafely(IItemState state)
         {
             try
             {

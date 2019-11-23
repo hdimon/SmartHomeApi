@@ -17,18 +17,18 @@ namespace SmartHomeApi.WebApi.Controllers
 
         [HttpGet]
         [Route("[action]")]
-        public IDeviceStatesContainer GetState()
+        public IStatesContainer GetState()
         {
-            var manager = _fabric.GetDeviceManager();
+            var manager = _fabric.GetApiManager();
 
             return manager.GetState();
         }
 
         [HttpGet]
         [Route("[action]/{deviceId}")]
-        public IDeviceState GetState(string deviceId)
+        public IItemState GetState(string deviceId)
         {
-            var manager = _fabric.GetDeviceManager();
+            var manager = _fabric.GetApiManager();
 
             return manager.GetState(deviceId);
         }
@@ -37,7 +37,7 @@ namespace SmartHomeApi.WebApi.Controllers
         [Route("[action]/{deviceId}/{parameter}")]
         public object GetState(string deviceId, string parameter)
         {
-            var manager = _fabric.GetDeviceManager();
+            var manager = _fabric.GetApiManager();
 
             return manager.GetState(deviceId, parameter);
         }
@@ -54,7 +54,7 @@ namespace SmartHomeApi.WebApi.Controllers
         [Route("[action]/{deviceId}/{parameter}/{value?}")]
         public async Task<ISetValueResult> SetValue(string deviceId, string parameter, string value)
         {
-            var manager = _fabric.GetDeviceManager();
+            var manager = _fabric.GetApiManager();
 
             var result = await manager.SetValue(deviceId, parameter, value);
 

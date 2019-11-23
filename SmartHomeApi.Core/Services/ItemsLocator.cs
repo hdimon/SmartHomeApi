@@ -1,25 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using SmartHomeApi.Core.Interfaces;
 
 namespace SmartHomeApi.Core.Services
 {
-    public class DeviceLocator : IDeviceLocator
+    public class ItemsLocator : IItemsLocator
     {
         private readonly ISmartHomeApiFabric _fabric;
 
-        public string DeviceType => null;
+        public string ItemType => null;
+        public bool ImmediateInitialization => false;
 
-        public DeviceLocator(ISmartHomeApiFabric fabric)
+        public ItemsLocator(ISmartHomeApiFabric fabric)
         {
             _fabric = fabric;
         }
 
-        public List<IDevice> GetDevices()
+        public async Task<IEnumerable<IItem>> GetItems()
         {
-            var locators =  _fabric.GetDevicePluginLocator().GetDeviceLocators();
+            var locators = await _fabric.GetItemsPluginsLocator().GetItemsLocators();
 
-            var devices = new List<IDevice>();
+            var items = new List<IItem>();
 
             foreach (var locator in locators)
             {
@@ -28,7 +30,7 @@ namespace SmartHomeApi.Core.Services
 
                 try
                 {
-                    devices.AddRange(locator.GetDevices());
+                    items.AddRange(await locator.GetItems());
                 }
                 catch (Exception e)
                 {
@@ -37,7 +39,7 @@ namespace SmartHomeApi.Core.Services
                 }
             }
 
-            return devices;
+            return items;
         }
     }
 }

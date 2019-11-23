@@ -27,12 +27,10 @@ namespace SmartHomeApi.WebApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<ISmartHomeApiFabric, SmartHomeApiDefaultFabric>();
-            services.AddSingleton<IDevicePluginLocator, DevicePluginLocator>();
-            services.AddSingleton<IRequestProcessor, RequestProcessor>();
-            services.AddSingleton<IDeviceLocator, DeviceLocator>();
-            services.AddSingleton<IDeviceManager, DeviceManager>();
+            services.AddSingleton<IItemsPluginsLocator, ItemsPluginsLocator>();
+            services.AddSingleton<IItemsLocator, ItemsLocator>();
+            services.AddSingleton<IApiManager, ApiManager>();
             services.AddSingleton<IDeviceConfigLocator, DeviceConfigLocator>();
-            services.AddSingleton<IEventHandlerLocator, EventHandlerLocator>();
             services.AddSingleton<IDeviceHelpersFabric, DeviceHelpersDefaultFabric>();
 
             services.AddTransient<IDeviceStateStorageHelper, DeviceStateStorageHelper>();

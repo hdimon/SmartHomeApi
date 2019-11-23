@@ -18,7 +18,7 @@ namespace SmartHomeApi.Core.UnitTests
             var alarm = new VirtualAlarmClock(fabric, config);
 
             var state = alarm.GetState();
-            Assert.AreEqual(1, state.Telemetry.Count);
+            Assert.AreEqual(1, state.States.Count);
 
             var now = DateTime.Now;
 
@@ -30,9 +30,9 @@ namespace SmartHomeApi.Core.UnitTests
 
             state = alarm.GetState();
 
-            Assert.AreEqual(3, state.Telemetry.Count);
-            Assert.AreEqual(timeStr, state.Telemetry["Time"]);
-            Assert.AreEqual(nextAlarmStr, state.Telemetry["NextAlarmDateTime"]);
+            Assert.AreEqual(3, state.States.Count);
+            Assert.AreEqual(timeStr, state.States["Time"]);
+            Assert.AreEqual(nextAlarmStr, state.States["NextAlarmDateTime"]);
         }
 
         [Test]
@@ -45,7 +45,7 @@ namespace SmartHomeApi.Core.UnitTests
             var alarm = new VirtualAlarmClock(fabric, config);
 
             var state = alarm.GetState();
-            Assert.AreEqual(1, state.Telemetry.Count);
+            Assert.AreEqual(1, state.States.Count);
 
             var now = DateTime.Now;
 
@@ -57,30 +57,30 @@ namespace SmartHomeApi.Core.UnitTests
 
             state = alarm.GetState();
 
-            Assert.AreEqual(3, state.Telemetry.Count);
-            Assert.AreEqual(timeStr, state.Telemetry["Time"]);
-            Assert.AreEqual(nextAlarmStr, state.Telemetry["NextAlarmDateTime"]);
+            Assert.AreEqual(3, state.States.Count);
+            Assert.AreEqual(timeStr, state.States["Time"]);
+            Assert.AreEqual(nextAlarmStr, state.States["NextAlarmDateTime"]);
 
             await Task.Delay(3000);
 
             state = alarm.GetState();
 
-            Assert.AreEqual(4, state.Telemetry.Count);
-            Assert.AreEqual(timeStr, state.Telemetry["Time"]);
-            Assert.AreEqual(nextAlarmStr, state.Telemetry["Alarm"]);
+            Assert.AreEqual(4, state.States.Count);
+            Assert.AreEqual(timeStr, state.States["Time"]);
+            Assert.AreEqual(nextAlarmStr, state.States["Alarm"]);
 
             var nextAlarm = time.AddDays(1);
             nextAlarmStr = nextAlarm.ToString();
 
-            Assert.AreEqual(nextAlarmStr, state.Telemetry["NextAlarmDateTime"]);
+            Assert.AreEqual(nextAlarmStr, state.States["NextAlarmDateTime"]);
 
             //Set another time. Alarm parameter must be reset.
             await alarm.SetValue("Time", DateTime.Now.AddHours(1).ToLongTimeString());
 
             state = alarm.GetState();
 
-            Assert.AreEqual(3, state.Telemetry.Count);
-            Assert.IsFalse(state.Telemetry.ContainsKey("Alarm"));
+            Assert.AreEqual(3, state.States.Count);
+            Assert.IsFalse(state.States.ContainsKey("Alarm"));
         }
 
         [Test]
@@ -93,7 +93,7 @@ namespace SmartHomeApi.Core.UnitTests
             var alarm = new VirtualAlarmClock(fabric, config);
 
             var state = alarm.GetState();
-            Assert.AreEqual(1, state.Telemetry.Count);
+            Assert.AreEqual(1, state.States.Count);
 
             var now = DateTime.Now;
 
@@ -105,10 +105,10 @@ namespace SmartHomeApi.Core.UnitTests
 
             state = alarm.GetState();
 
-            Assert.AreEqual(3, state.Telemetry.Count);
-            Assert.AreEqual(timeStr, state.Telemetry["Time"]);
-            Assert.AreEqual(nextAlarmStr, state.Telemetry["NextAlarmDateTime"]);
-            Assert.AreEqual(true, state.Telemetry["Enabled"]);
+            Assert.AreEqual(3, state.States.Count);
+            Assert.AreEqual(timeStr, state.States["Time"]);
+            Assert.AreEqual(nextAlarmStr, state.States["NextAlarmDateTime"]);
+            Assert.AreEqual(true, state.States["Enabled"]);
 
             await alarm.SetValue("Enabled", "false");
 
@@ -116,10 +116,10 @@ namespace SmartHomeApi.Core.UnitTests
 
             state = alarm.GetState();
 
-            Assert.AreEqual(3, state.Telemetry.Count);
-            Assert.AreEqual(timeStr, state.Telemetry["Time"]);
-            Assert.AreEqual(nextAlarmStr, state.Telemetry["NextAlarmDateTime"]);
-            Assert.AreEqual(false, state.Telemetry["Enabled"]);
+            Assert.AreEqual(3, state.States.Count);
+            Assert.AreEqual(timeStr, state.States["Time"]);
+            Assert.AreEqual(nextAlarmStr, state.States["NextAlarmDateTime"]);
+            Assert.AreEqual(false, state.States["Enabled"]);
 
             var nextAlarm = time.AddDays(1);
             nextAlarmStr = nextAlarm.ToString();
@@ -128,10 +128,10 @@ namespace SmartHomeApi.Core.UnitTests
 
             state = alarm.GetState();
 
-            Assert.AreEqual(3, state.Telemetry.Count);
-            Assert.AreEqual(timeStr, state.Telemetry["Time"]);
-            Assert.AreEqual(nextAlarmStr, state.Telemetry["NextAlarmDateTime"]);
-            Assert.AreEqual(true, state.Telemetry["Enabled"]);
+            Assert.AreEqual(3, state.States.Count);
+            Assert.AreEqual(timeStr, state.States["Time"]);
+            Assert.AreEqual(nextAlarmStr, state.States["NextAlarmDateTime"]);
+            Assert.AreEqual(true, state.States["Enabled"]);
         }
     }
 }

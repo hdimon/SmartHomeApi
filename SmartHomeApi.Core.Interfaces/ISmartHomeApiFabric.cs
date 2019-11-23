@@ -2,12 +2,10 @@
 {
     public interface ISmartHomeApiFabric
     {
-        IDevicePluginLocator GetDevicePluginLocator();
-        IDeviceLocator GetDeviceLocator();
+        IItemsPluginsLocator GetItemsPluginsLocator();
+        IItemsLocator GetItemsLocator();
         IDeviceConfigLocator GetDeviceConfigsLocator();
-        IRequestProcessor GetRequestProcessor();
-        IDeviceManager GetDeviceManager();
-        IEventHandlerLocator GetEventHandlerLocator();
+        IApiManager GetApiManager();
         IDeviceHelpersFabric GetDeviceHelpersFabric();
     }
 }

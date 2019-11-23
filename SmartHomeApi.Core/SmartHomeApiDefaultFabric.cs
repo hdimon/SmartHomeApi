@@ -13,14 +13,14 @@ namespace SmartHomeApi.Core
             _provider = provider;
         }
 
-        public IDevicePluginLocator GetDevicePluginLocator()
+        public IItemsPluginsLocator GetItemsPluginsLocator()
         {
-            return _provider.GetService<IDevicePluginLocator>();
+            return _provider.GetService<IItemsPluginsLocator>();
         }
 
-        public IDeviceLocator GetDeviceLocator()
+        public IItemsLocator GetItemsLocator()
         {
-            return _provider.GetService<IDeviceLocator>();
+            return _provider.GetService<IItemsLocator>();
         }
 
         public IDeviceConfigLocator GetDeviceConfigsLocator()
@@ -28,19 +28,9 @@ namespace SmartHomeApi.Core
             return _provider.GetService<IDeviceConfigLocator>();
         }
 
-        public IRequestProcessor GetRequestProcessor()
+        public IApiManager GetApiManager()
         {
-            return _provider.GetService<IRequestProcessor>();
-        }
-
-        public IDeviceManager GetDeviceManager()
-        {
-            return _provider.GetService<IDeviceManager>();
-        }
-
-        public IEventHandlerLocator GetEventHandlerLocator()
-        {
-            return _provider.GetService<IEventHandlerLocator>();
+            return _provider.GetService<IApiManager>();
         }
 
         public IDeviceHelpersFabric GetDeviceHelpersFabric()

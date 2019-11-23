@@ -4,12 +4,12 @@ using SmartHomeApi.Core.Interfaces;
 
 namespace Scenarios
 {
-    public class HeatingSystem : EventHandlerAbstract
+    public class HeatingSystem : StateChangedSubscriberAbstract
     {
         private readonly int _heatingSystemMorningAdvanceMinutes = 45;
         private readonly int _heatingSystemMorningDurationMinutes = 60;
 
-        public HeatingSystem(IDeviceManager manager) : base(manager)
+        public HeatingSystem(IApiManager manager) : base(manager)
         {
         }
 

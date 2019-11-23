@@ -1,29 +1,31 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading.Tasks;
 using SmartHomeApi.Core.Interfaces;
 
 namespace VirtualStateDevice
 {
-    public class VirtualStateLocator : IDeviceLocator
+    public class VirtualStateLocator : IItemsLocator
     {
-        public string DeviceType => "VirtualStateDevice";
+        public string ItemType => "VirtualStateDevice";
+
+        public bool ImmediateInitialization => true;
 
         private readonly ISmartHomeApiFabric _fabric;
 
-        private readonly ConcurrentDictionary<string, IDevice> _devices = new ConcurrentDictionary<string, IDevice>();
+        private readonly ConcurrentDictionary<string, IItem> _devices = new ConcurrentDictionary<string, IItem>();
 
         public VirtualStateLocator(ISmartHomeApiFabric fabric)
         {
             _fabric = fabric;
         }
 
-        public List<IDevice> GetDevices()
+        public async Task<IEnumerable<IItem>> GetItems()
         {
             var configLocator = _fabric.GetDeviceConfigsLocator();
             var helpersFabric = _fabric.GetDeviceHelpersFabric();
 
-            var configs = configLocator.GetDeviceConfigs(DeviceType);
+            var configs = configLocator.GetDeviceConfigs(ItemType);
 
             foreach (var config in configs)
             {
@@ -35,7 +37,7 @@ namespace VirtualStateDevice
 
             //Remove configs
 
-            return _devices.Values.ToList();
+            return _devices.Values;
         }
     }
 }

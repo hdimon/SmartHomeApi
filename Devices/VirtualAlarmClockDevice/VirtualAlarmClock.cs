@@ -20,7 +20,7 @@ namespace VirtualAlarmClockDevice
         public VirtualAlarmClock(IDeviceHelpersFabric helpersFabric, IDeviceConfig config) : base(helpersFabric, config)
         {
             _deviceStateStorage = HelpersFabric.GetDeviceStateStorageHelper();
-            _states = _deviceStateStorage.RestoreState<ConcurrentDictionary<string, string>>(DeviceId);
+            _states = _deviceStateStorage.RestoreState<ConcurrentDictionary<string, string>>(ItemId);
 
             if (_states == null)
             {
@@ -39,9 +39,9 @@ namespace VirtualAlarmClockDevice
             RunWatchDogWorker();
         }
 
-        public override IDeviceState GetState()
+        public override IItemState GetState()
         {
-            var state = new DeviceState(DeviceId, DeviceType);
+            var state = new ItemState(ItemId, ItemType);
             state.ConnectionStatus = ConnectionStatus.Stable;
 
             foreach (var statePair in _states)
@@ -51,7 +51,7 @@ namespace VirtualAlarmClockDevice
                 if (statePair.Key == EnabledParameter)
                     value = bool.Parse(statePair.Value);
 
-                state.Telemetry.TryAdd(statePair.Key, value);
+                state.States.TryAdd(statePair.Key, value);
             }
 
             return state;
@@ -78,7 +78,7 @@ namespace VirtualAlarmClockDevice
                     break;
             }
 
-            await _deviceStateStorage.SaveState(_states, DeviceId);
+            await _deviceStateStorage.SaveState(_states, ItemId);
 
             return new SetValueResult();
         }
@@ -189,7 +189,7 @@ namespace VirtualAlarmClockDevice
                         SetNextTime();
                     }
 
-                    await _deviceStateStorage.SaveState(_states, DeviceId);
+                    await _deviceStateStorage.SaveState(_states, ItemId);
                 }
             }
         }

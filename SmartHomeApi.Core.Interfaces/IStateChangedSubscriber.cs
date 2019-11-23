@@ -2,7 +2,7 @@
 
 namespace SmartHomeApi.Core.Interfaces
 {
-    public interface IStateChangedSubscriber
+    public interface IStateChangedSubscriber : IItem
     {
         Task Notify(StateChangedEvent args);
     }

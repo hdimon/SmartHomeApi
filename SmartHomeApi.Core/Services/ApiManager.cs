@@ -8,23 +8,33 @@ using SmartHomeApi.Core.Models;
 
 namespace SmartHomeApi.Core.Services
 {
-    public class DeviceManager : IDeviceManager
+    public class ApiManager : IApiManager
     {
         private readonly ISmartHomeApiFabric _fabric;
-        private IDeviceStatesContainer _state;
+        private IStatesContainer _state;
         private Task _worker;
-        private ReaderWriterLock _readerWriterLock = new ReaderWriterLock();
-        private List<IStateChangedSubscriber> _stateChangedSubscribers = new List<IStateChangedSubscriber>();
+        private readonly ReaderWriterLock _readerWriterLock = new ReaderWriterLock();
+        private readonly List<IStateChangedSubscriber> _stateChangedSubscribers = new List<IStateChangedSubscriber>();
 
-        public DeviceManager(ISmartHomeApiFabric fabric)
+        public string ItemType => null;
+        public string ItemId => null;
+
+        public ApiManager(ISmartHomeApiFabric fabric)
         {
             _fabric = fabric;
-            _state = CreateDeviceStatesContainer();
+            _state = CreateStatesContainer();
         }
 
         public async Task Initialize()
         {
-            await _fabric.GetEventHandlerLocator().Initialize();
+            var locators = await _fabric.GetItemsPluginsLocator().GetItemsLocators();
+            var immediateItems = locators.Where(l => l.ImmediateInitialization).ToList();
+
+            foreach (var immediateItem in immediateItems)
+            {
+                await immediateItem.GetItems();
+            }
+
             RunStatesCollectorWorker();
         }
 
@@ -35,18 +45,28 @@ namespace SmartHomeApi.Core.Services
 
         public async Task<ISetValueResult> SetValue(string deviceId, string parameter, string value)
         {
-            var deviceLocator = _fabric.GetDeviceLocator();
+            var itemsLocator = _fabric.GetItemsLocator();
+            var items = await itemsLocator.GetItems();
+
+            var item = items.FirstOrDefault(i => i is IStateSettable it && it.ItemId == deviceId);
+
+            if (item == null)
+                return new SetValueResult(false);
+
+            var not = (IStateSettable)item;
+
+            /*var deviceLocator = _fabric.GetDeviceLocator();
             var devices = deviceLocator.GetDevices();
 
             var device = devices.FirstOrDefault(d => d.DeviceId == deviceId);
 
             if (device == null)
-                return new SetValueResult(false);
+                return new SetValueResult(false);*/
 
-            NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueSet, device.DeviceType, device.DeviceId,
+            NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueSet, not.ItemType, not.ItemId,
                 parameter, null, value));
 
-            var result = await device.SetValue(parameter, value);
+            var result = await not.SetValue(parameter, value);
 
             return result;
         }
@@ -61,46 +81,46 @@ namespace SmartHomeApi.Core.Services
             return new SetValueResult();
         }
 
-        public IDeviceStatesContainer GetState()
+        public IStatesContainer GetState()
         {
             return GetStateSafely();
         }
 
-        public IDeviceState GetState(string deviceId)
+        public IItemState GetState(string deviceId)
         {
             var state = GetStateSafely();
 
-            if (state.DevicesStates.ContainsKey(deviceId))
-                return state.DevicesStates[deviceId];
+            if (state.States.ContainsKey(deviceId))
+                return state.States[deviceId];
 
-            return new DeviceState(deviceId, string.Empty);
+            return new ItemState(deviceId, string.Empty);
         }
 
         public object GetState(string deviceId, string parameter)
         {
             var state = GetStateSafely();
 
-            if (state.DevicesStates.ContainsKey(deviceId))
+            if (state.States.ContainsKey(deviceId))
             {
-                var deviceState = state.DevicesStates[deviceId];
+                var deviceState = state.States[deviceId];
 
-                if (deviceState.Telemetry.ContainsKey(parameter))
-                    return deviceState.Telemetry[parameter];
+                if (deviceState.States.ContainsKey(parameter))
+                    return deviceState.States[parameter];
             }
 
             return string.Empty;
         }
 
-        private IDeviceStatesContainer CreateDeviceStatesContainer()
+        private IStatesContainer CreateStatesContainer()
         {
             return new DeviceStatesContainer();
         }
 
-        private IDeviceStatesContainer GetStateSafely()
+        private IStatesContainer GetStateSafely()
         {
             _readerWriterLock.AcquireReaderLock(Timeout.Infinite);
 
-            IDeviceStatesContainer state = _state;
+            IStatesContainer state = _state;
 
             _readerWriterLock.ReleaseReaderLock();
 
@@ -123,24 +143,25 @@ namespace SmartHomeApi.Core.Services
             {
                 await Task.Delay(500);
 
-                var deviceLocator = _fabric.GetDeviceLocator();
-                var devices = deviceLocator.GetDevices();
+                var deviceLocator = _fabric.GetItemsLocator();
+                var devices = await deviceLocator.GetItems();
+                var state = CreateStatesContainer();
 
-                var state = CreateDeviceStatesContainer();
+                var items = devices.Where(d => d is IStateGettable).Cast<IStateGettable>().ToList();
 
-                var deviceTypes = devices.Select(d => d.DeviceType).Distinct().ToList();
+                var deviceTypes = items.Select(d => d.ItemType).Distinct().ToList();
                 deviceTypes.Sort();
 
                 foreach (var deviceType in deviceTypes)
                 {
-                    var typeDevices = devices.Where(d => d.DeviceType == deviceType).ToList();
-                    typeDevices = typeDevices.OrderBy(d => d.DeviceId).ToList();
+                    var typeDevices = items.Where(d => d.ItemType == deviceType).ToList();
+                    typeDevices = typeDevices.OrderBy(d => d.ItemId).ToList();
 
                     foreach (var device in typeDevices)
                     {
                         var deviceState = device.GetState();
 
-                        state.DevicesStates.Add(deviceState.DeviceId, deviceState);
+                        state.States.Add(deviceState.ItemId, deviceState);
                     }
                 }
 
@@ -151,7 +172,7 @@ namespace SmartHomeApi.Core.Services
             }
         }
 
-        private void SetStateSafely(IDeviceStatesContainer state)
+        private void SetStateSafely(IStatesContainer state)
         {
             try
             {
@@ -170,10 +191,10 @@ namespace SmartHomeApi.Core.Services
             }
         }
 
-        private void NotifySubscribersAboutChanges(IDeviceStatesContainer oldState)
+        private void NotifySubscribersAboutChanges(IStatesContainer oldState)
         {
-            var newDevices = _state.DevicesStates;
-            var oldDevices = oldState.DevicesStates;
+            var newDevices = _state.States;
+            var oldDevices = oldState.States;
 
             var addedDevices = newDevices.Keys.Except(oldDevices.Keys).ToList();
             var removedDevices = oldDevices.Keys.Except(newDevices.Keys).ToList();
@@ -185,69 +206,69 @@ namespace SmartHomeApi.Core.Services
         }
 
         private void NotifySubscribersAboutRemovedDevices(List<string> removedDevices,
-            Dictionary<string, IDeviceState> oldDevices)
+            Dictionary<string, IItemState> oldDevices)
         {
             foreach (var removedDevice in removedDevices)
             {
                 var device = oldDevices[removedDevice];
 
-                foreach (var telemetryPair in device.Telemetry)
+                foreach (var telemetryPair in device.States)
                 {
-                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueRemoved, device.DeviceType,
-                        device.DeviceId, telemetryPair.Key, telemetryPair.Value?.ToString(), null));
+                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueRemoved, device.ItemType,
+                        device.ItemId, telemetryPair.Key, telemetryPair.Value?.ToString(), null));
                 }
             }
         }
 
         private void NotifySubscribersAboutAddedDevices(List<string> addedDevices,
-            Dictionary<string, IDeviceState> newDevices)
+            Dictionary<string, IItemState> newDevices)
         {
             foreach (var addedDevice in addedDevices)
             {
                 var device = newDevices[addedDevice];
 
-                foreach (var telemetryPair in device.Telemetry)
+                foreach (var telemetryPair in device.States)
                 {
-                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueAdded, device.DeviceType,
-                        device.DeviceId, telemetryPair.Key, null, telemetryPair.Value?.ToString()));
+                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueAdded, device.ItemType,
+                        device.ItemId, telemetryPair.Key, null, telemetryPair.Value?.ToString()));
                 }
             }
         }
 
         private void NotifySubscribersAboutUpdatedDevices(List<string> updatedDevices,
-            Dictionary<string, IDeviceState> newDevices, Dictionary<string, IDeviceState> oldDevices)
+            Dictionary<string, IItemState> newDevices, Dictionary<string, IItemState> oldDevices)
         {
             foreach (var updatedDevice in updatedDevices)
             {
                 var newDevice = newDevices[updatedDevice];
                 var oldDevice = oldDevices[updatedDevice];
 
-                var newTelemetry = newDevice.Telemetry;
-                var oldTelemetry = oldDevice.Telemetry;
+                var newTelemetry = newDevice.States;
+                var oldTelemetry = oldDevice.States;
 
                 var addedParameters = newTelemetry.Keys.Except(oldTelemetry.Keys).ToList();
                 var removedParameters = oldTelemetry.Keys.Except(newTelemetry.Keys).ToList();
                 var updatedParameters = newTelemetry.Keys.Except(addedParameters).ToList();
 
                 if (oldDevice.ConnectionStatus != newDevice.ConnectionStatus)
-                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueUpdated, newDevice.DeviceType,
-                        newDevice.DeviceId, nameof(newDevice.ConnectionStatus), oldDevice.ConnectionStatus.ToString(),
+                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueUpdated, newDevice.ItemType,
+                        newDevice.ItemId, nameof(newDevice.ConnectionStatus), oldDevice.ConnectionStatus.ToString(),
                         newDevice.ConnectionStatus.ToString()));
 
                 foreach (var removedParameter in removedParameters)
                 {
                     var oldValue = oldTelemetry[removedParameter];
 
-                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueRemoved, newDevice.DeviceType,
-                        newDevice.DeviceId, removedParameter, oldValue?.ToString(), null));
+                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueRemoved, newDevice.ItemType,
+                        newDevice.ItemId, removedParameter, oldValue?.ToString(), null));
                 }
 
                 foreach (var addedParameter in addedParameters)
                 {
                     var newValue = newTelemetry[addedParameter];
 
-                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueAdded, newDevice.DeviceType,
-                        newDevice.DeviceId, addedParameter, null, newValue?.ToString()));
+                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueAdded, newDevice.ItemType,
+                        newDevice.ItemId, addedParameter, null, newValue?.ToString()));
                 }
 
                 foreach (var updatedParameter in updatedParameters)
@@ -257,8 +278,8 @@ namespace SmartHomeApi.Core.Services
 
                     if (oldValue != newValue)
                     {
-                        NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueUpdated, newDevice.DeviceType,
-                            newDevice.DeviceId, updatedParameter, oldValue, newValue));
+                        NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueUpdated, newDevice.ItemType,
+                            newDevice.ItemId, updatedParameter, oldValue, newValue));
                     }
                 }
             }

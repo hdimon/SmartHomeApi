@@ -2,11 +2,11 @@
 
 namespace SmartHomeApi.Core.Interfaces
 {
-    public abstract class EventHandlerAbstract : IEventHandler
+    public abstract class StateChangedSubscriberAbstract : IStateChangedSubscriber
     {
-        protected readonly IDeviceManager Manager;
+        protected readonly IApiManager Manager;
 
-        protected EventHandlerAbstract(IDeviceManager manager)
+        protected StateChangedSubscriberAbstract(IApiManager manager)
         {
             Manager = manager;
 

@@ -8,9 +8,9 @@ namespace SmartHomeApi.Core.Services
 {
     public class DeviceManagerService : IHostedService, IDisposable
     {
-        private readonly IDeviceManager _deviceManager;
+        private readonly IApiManager _deviceManager;
 
-        public DeviceManagerService(IDeviceManager deviceManager)
+        public DeviceManagerService(IApiManager deviceManager)
         {
             _deviceManager = deviceManager;
         }

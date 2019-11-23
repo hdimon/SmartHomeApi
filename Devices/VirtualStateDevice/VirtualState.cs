@@ -6,7 +6,7 @@ namespace VirtualStateDevice
 {
     public class VirtualState : DeviceAbstract
     {
-        private IDeviceState _state;
+        private IItemState _state;
         private readonly ConcurrentDictionary<string, string> _states;
         private readonly IDeviceStateStorageHelper _deviceStateStorage;
 
@@ -14,20 +14,20 @@ namespace VirtualStateDevice
         {
             _deviceStateStorage = HelpersFabric.GetDeviceStateStorageHelper();
 
-            _states = _deviceStateStorage.RestoreState<ConcurrentDictionary<string, string>>(DeviceId);
+            _states = _deviceStateStorage.RestoreState<ConcurrentDictionary<string, string>>(ItemId);
 
             if (_states == null)
                 _states = new ConcurrentDictionary<string, string>();
         }
 
-        public override IDeviceState GetState()
+        public override IItemState GetState()
         {
-            var state = new DeviceState(DeviceId, DeviceType);
+            var state = new ItemState(ItemId, ItemType);
             state.ConnectionStatus = ConnectionStatus.Stable;
 
             foreach (var statePair in _states)
             {
-                state.Telemetry.TryAdd(statePair.Key, statePair.Value);
+                state.States.TryAdd(statePair.Key, statePair.Value);
             }
 
             _state = state;
@@ -50,7 +50,7 @@ namespace VirtualStateDevice
                     _states.TryAdd(parameter, value);
             }
 
-            await _deviceStateStorage.SaveState(_states, DeviceId);
+            await _deviceStateStorage.SaveState(_states, ItemId);
 
             return new SetValueResult();
         }
