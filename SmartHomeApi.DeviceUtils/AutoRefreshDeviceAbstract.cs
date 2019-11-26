@@ -93,8 +93,7 @@ namespace SmartHomeApi.DeviceUtils
             }
             catch (Exception e)
             {
-                /*Console.WriteLine(e);
-                throw;*/
+                Logger.Error(e);
             }
             finally
             {

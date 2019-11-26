@@ -114,7 +114,7 @@ namespace TerneoSxDevice
             }
             catch (Exception e)
             {
-                
+                Logger.Error(e);
             }
 
             if (telemetry == null)

@@ -8,6 +8,13 @@ namespace SmartHomeApi.Core.DeviceHelpers
 {
     public class DeviceStateStorageHelper : IDeviceStateStorageHelper
     {
+        private readonly IApiLogger _logger;
+
+        public DeviceStateStorageHelper(IApiLogger logger)
+        {
+            _logger = logger;
+        }
+
         public async Task SaveState(object state, string fileNamePattern)
         {
             var content = JsonConvert.SerializeObject(state, Formatting.Indented);
@@ -20,7 +27,7 @@ namespace SmartHomeApi.Core.DeviceHelpers
             }
             catch (Exception e)
             {
-
+                _logger.Error(e, "Error when saving state to file.");
             }
         }
 
@@ -38,7 +45,7 @@ namespace SmartHomeApi.Core.DeviceHelpers
             }
             catch (Exception e)
             {
-
+                _logger.Error(e, "Error when restoring state from file.");
             }
 
             if (content == null)
@@ -50,7 +57,7 @@ namespace SmartHomeApi.Core.DeviceHelpers
             }
             catch (Exception e)
             {
-
+                _logger.Error(e, "Error when deserializing state.");
             }
 
             return obj;

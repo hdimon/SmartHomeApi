@@ -37,5 +37,10 @@ namespace SmartHomeApi.Core
         {
             return _provider.GetService<IDeviceHelpersFabric>();
         }
+
+        public IApiLogger GetApiLogger()
+        {
+            return _provider.GetService<IApiLogger>();
+        }
     }
 }

@@ -32,6 +32,7 @@ namespace SmartHomeApi.WebApi
             services.AddSingleton<IApiManager, ApiManager>();
             services.AddSingleton<IDeviceConfigLocator, DeviceConfigLocator>();
             services.AddSingleton<IDeviceHelpersFabric, DeviceHelpersDefaultFabric>();
+            services.AddSingleton<IApiLogger, ApiLogger>();
 
             services.AddTransient<IDeviceStateStorageHelper, DeviceStateStorageHelper>();
 

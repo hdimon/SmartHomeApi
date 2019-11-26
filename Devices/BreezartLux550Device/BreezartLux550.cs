@@ -46,8 +46,8 @@ namespace BreezartLux550Device
                 _worker = Task.Factory.StartNew(AutoDataRefreshWorker).Unwrap().ContinueWith(
                     t =>
                     {
-                        var test = t;
-                    } /*Log.Error(t.Exception)*/,
+                        Logger.Error(t.Exception);
+                    },
                     TaskContinuationOptions.OnlyOnFaulted);
             }
         }
@@ -242,8 +242,7 @@ namespace BreezartLux550Device
             }
             catch (Exception e)
             {
-                /*Console.WriteLine(e);
-                throw;*/
+                Logger.Error(e);
             }
             finally
             {

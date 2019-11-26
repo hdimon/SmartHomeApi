@@ -7,5 +7,6 @@
         IDeviceConfigLocator GetDeviceConfigsLocator();
         IApiManager GetApiManager();
         IDeviceHelpersFabric GetDeviceHelpersFabric();
+        IApiLogger GetApiLogger();
     }
 }

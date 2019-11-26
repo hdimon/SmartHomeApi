@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using SmartHomeApi.Core.Interfaces;
+﻿using SmartHomeApi.Core.Interfaces;
 
 namespace SmartHomeApi.Core.UnitTests.Stubs
 {
@@ -10,6 +7,11 @@ namespace SmartHomeApi.Core.UnitTests.Stubs
         public IDeviceStateStorageHelper GetDeviceStateStorageHelper()
         {
             return new DeviceStateStorageStubHelper();
+        }
+
+        public IApiLogger GetApiLogger()
+        {
+            return new ApiStubLogger();
         }
     }
 }

@@ -5,6 +5,7 @@ namespace SmartHomeApi.Core.Interfaces
     public abstract class DeviceAbstract : IItem, IStateSettable, IStateGettable, IConfigurable, IInitializable
     {
         protected readonly IDeviceHelpersFabric HelpersFabric;
+        protected readonly IApiLogger Logger;
         public string ItemId { get; }
         public string ItemType { get; }
         public IDeviceConfig Config { get; }
@@ -13,6 +14,7 @@ namespace SmartHomeApi.Core.Interfaces
         {
             HelpersFabric = helpersFabric;
             Config = config;
+            Logger = HelpersFabric.GetApiLogger();
 
             ItemId = config.DeviceId;
             ItemType = config.DeviceType;

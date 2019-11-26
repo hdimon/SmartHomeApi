@@ -3,5 +3,6 @@
     public interface IDeviceHelpersFabric
     {
         IDeviceStateStorageHelper GetDeviceStateStorageHelper();
+        IApiLogger GetApiLogger();
     }
 }

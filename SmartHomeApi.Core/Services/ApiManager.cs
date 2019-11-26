@@ -15,6 +15,7 @@ namespace SmartHomeApi.Core.Services
         private Task _worker;
         private readonly ReaderWriterLock _readerWriterLock = new ReaderWriterLock();
         private readonly List<IStateChangedSubscriber> _stateChangedSubscribers = new List<IStateChangedSubscriber>();
+        private readonly IApiLogger _logger;
 
         public string ItemType => null;
         public string ItemId => null;
@@ -22,6 +23,7 @@ namespace SmartHomeApi.Core.Services
         public ApiManager(ISmartHomeApiFabric fabric)
         {
             _fabric = fabric;
+            _logger = _fabric.GetApiLogger();
             _state = CreateStatesContainer();
         }
 
@@ -174,7 +176,7 @@ namespace SmartHomeApi.Core.Services
                         }
                         catch (Exception e)
                         {
-                            var test = 5;
+                            _logger.Error(e, "Error when collecting items states.");
                         }
                     }
 
@@ -185,7 +187,7 @@ namespace SmartHomeApi.Core.Services
                 }
                 catch (Exception e)
                 {
-                    var test = 5;
+                    _logger.Error(e, "Error when collecting items states.");
                 }
             }
         }
@@ -200,8 +202,7 @@ namespace SmartHomeApi.Core.Services
             }
             catch (Exception e)
             {
-                /*Console.WriteLine(e);
-                throw;*/
+                _logger.Error(e, "Error when setting API state.");
             }
             finally
             {

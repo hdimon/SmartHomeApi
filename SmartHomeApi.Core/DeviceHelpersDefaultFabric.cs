@@ -17,5 +17,10 @@ namespace SmartHomeApi.Core
         {
             return _provider.GetService<IDeviceStateStorageHelper>();
         }
+
+        public IApiLogger GetApiLogger()
+        {
+            return _provider.GetService<IApiLogger>();
+        }
     }
 }

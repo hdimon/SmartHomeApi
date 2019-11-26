@@ -48,7 +48,7 @@ namespace Mega2560ControllerDevice
             }
             catch (Exception e)
             {
-
+                Logger.Error(e);
             }
 
             if (telemetry == null)
