@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Serilog.AspNetCore" Version="3.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Devices\BreezartLux550Device\BreezartLux550Device.csproj" />
     <ProjectReference Include="..\Devices\Mega2560ControllerDevice\Mega2560ControllerDevice.csproj" />
     <ProjectReference Include="..\Devices\TerneoSxDevice\TerneoSxDevice.csproj" />

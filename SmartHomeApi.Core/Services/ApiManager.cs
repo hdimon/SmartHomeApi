@@ -31,6 +31,8 @@ namespace SmartHomeApi.Core.Services
 
         public async Task Initialize()
         {
+            _logger.Info("Starting ApiManager initialization...");
+
             var locators = await _fabric.GetItemsPluginsLocator().GetItemsLocators();
             var immediateItems = locators.Where(l => l.ImmediateInitialization).ToList();
 
@@ -42,6 +44,8 @@ namespace SmartHomeApi.Core.Services
             RunStatesCollectorWorker();
 
             IsInitialized = true;
+
+            _logger.Info("ApiManager initialized.");
         }
 
         private async Task<IEnumerable<IItem>> GetItems(IItemsLocator locator)
@@ -145,8 +149,8 @@ namespace SmartHomeApi.Core.Services
                 _worker = Task.Factory.StartNew(CollectItemsStates).Unwrap().ContinueWith(
                     t =>
                     {
-                        var test = 5;
-                    } /*Log.Error(t.Exception)*/,
+                        _logger.Error(t.Exception);
+                    },
                     TaskContinuationOptions.OnlyOnFaulted);
             }
         }
@@ -318,13 +322,11 @@ namespace SmartHomeApi.Core.Services
         {
             foreach (var stateChangedSubscriber in _stateChangedSubscribers)
             {
-                Task.Run(async () => await stateChangedSubscriber.Notify(args)).ContinueWith(t =>
-                {
-                    /*ILog log = ServiceLocator.Current.GetInstance<ILog>();
-                    log.Error("Unexpected Error", t.Exception);*/
-                    var test = 5;
-                }, TaskContinuationOptions.OnlyOnFaulted);
-                //stateChangedSubscriber.Notify(args);
+                Task.Run(async () => await stateChangedSubscriber.Notify(args))
+                    .ContinueWith(t =>
+                    {
+                        _logger.Error(t.Exception);
+                    }, TaskContinuationOptions.OnlyOnFaulted);
             }
         }
     }

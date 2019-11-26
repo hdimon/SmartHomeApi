@@ -34,8 +34,8 @@ namespace SmartHomeApi.DeviceUtils
                 _worker = Task.Factory.StartNew(AutoDataRefreshWorker).Unwrap().ContinueWith(
                     t =>
                     {
-                        var test = t;
-                    } /*Log.Error(t.Exception)*/,
+                        Logger.Error(t.Exception);
+                    },
                     TaskContinuationOptions.OnlyOnFaulted);
             }
         }

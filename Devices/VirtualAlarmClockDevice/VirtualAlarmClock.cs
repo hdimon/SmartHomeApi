@@ -36,7 +36,7 @@ namespace VirtualAlarmClockDevice
             {
                 Task.Run(async () => await SetTime(TimeParameter, _states[TimeParameter])).ContinueWith(t =>
                 {
-                    var test = 5;
+                    Logger.Error(t.Exception);
                 }, TaskContinuationOptions.OnlyOnFaulted);
             }
 
@@ -168,8 +168,8 @@ namespace VirtualAlarmClockDevice
                 _worker = Task.Factory.StartNew(CheckAlarm).Unwrap().ContinueWith(
                     t =>
                     {
-                        var test = t;
-                    } /*Log.Error(t.Exception)*/,
+                        Logger.Error(t.Exception);
+                    },
                     TaskContinuationOptions.OnlyOnFaulted);
             }
         }
