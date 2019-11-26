@@ -19,7 +19,7 @@ namespace BreezartLux550Device
         private int _requestFailureCount;
         private int _requestFailureThreshold = 60;
         private Queue<string> _getCommandsQueue = new Queue<string>();
-        private Queue<string> _setCommandsQueue = new Queue<string>();
+        private Queue<BreezartLux550SetCommand> _setCommandsQueue = new Queue<BreezartLux550SetCommand>();
         private string _requestStateCommand = "VSt07_FFFF";
         private string _requestSensorsCommand = "VSens_FFFF";
 
@@ -58,19 +58,19 @@ namespace BreezartLux550Device
             {
                 await Task.Delay(500);
 
-                string command;
+                string commandText;
 
                 if (_setCommandsQueue.Any())
                 {
-                    command = _setCommandsQueue.Dequeue();
-                }
-                else
-                {
-                    command = _getCommandsQueue.Dequeue();
-                    _getCommandsQueue.Enqueue(command);
+                    await CreateAndSendCommand();
+
+                    continue;
                 }
 
-                var state = await RequestData(command);
+                commandText = _getCommandsQueue.Dequeue();
+                _getCommandsQueue.Enqueue(commandText);
+
+                var state = await RequestData(commandText);
 
                 bool failed = state == null;
 
@@ -104,6 +104,45 @@ namespace BreezartLux550Device
                     SetStateSafely(state);
                 }
             }
+        }
+
+        private async Task CreateAndSendCommand()
+        {
+            var result = new SetValueResult();
+
+            var command = _setCommandsQueue.Dequeue();
+            var commandText = "";
+
+            switch (command.Parameter)
+            {
+                case "UnitState":
+                    if (command.Value == "On")
+                    {
+                        string turnOnValue = 11.ToString("X").PadLeft(2, '0');
+                        commandText = $"VWPwr_FFFF_{turnOnValue}";
+                    }
+                    else if (command.Value == "Off")
+                    {
+                        string turnOfValue = 10.ToString("X").PadLeft(2, '0');
+                        commandText = $"VWPwr_FFFF_{turnOfValue}";
+                    }
+                    break;
+                case "SetSpeed":
+                    result.Success = false;
+                    command.TaskCompletionSource.SetResult(result);
+                    break;
+                default:
+                    result.Success = false;
+                    command.TaskCompletionSource.SetResult(result);
+                    return;
+            }
+
+            var response = await SendCommand(commandText, 3);
+
+            if (!response.StartsWith("OK_"))
+                result.Success = false;
+
+            command.TaskCompletionSource.SetResult(result);
         }
 
         private async Task<IItemState> RequestData(string command)
@@ -227,9 +266,13 @@ namespace BreezartLux550Device
             }
         }
 
-        public override Task<ISetValueResult> SetValue(string parameter, string value)
+        public override async Task<ISetValueResult> SetValue(string parameter, string value)
         {
-            throw new NotImplementedException();
+            var command = new BreezartLux550SetCommand(parameter, value);
+
+            _setCommandsQueue.Enqueue(command);
+
+            return await command.TaskCompletionSource.Task;
         }
 
         protected void SetStateSafely(IItemState state)
