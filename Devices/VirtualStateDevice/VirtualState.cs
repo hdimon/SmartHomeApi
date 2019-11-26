@@ -7,13 +7,16 @@ namespace VirtualStateDevice
     public class VirtualState : DeviceAbstract
     {
         private IItemState _state;
-        private readonly ConcurrentDictionary<string, string> _states;
+        private ConcurrentDictionary<string, string> _states;
         private readonly IDeviceStateStorageHelper _deviceStateStorage;
 
         public VirtualState(IDeviceHelpersFabric helpersFabric, IDeviceConfig config) : base(helpersFabric, config)
         {
             _deviceStateStorage = HelpersFabric.GetDeviceStateStorageHelper();
+        }
 
+        protected override async Task InitializeDevice()
+        {
             _states = _deviceStateStorage.RestoreState<ConcurrentDictionary<string, string>>(ItemId);
 
             if (_states == null)

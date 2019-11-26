@@ -23,9 +23,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EventHandlers", "EventHandl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scenarios", "EventHandlers\Scenarios\Scenarios.csproj", "{B900D922-E3A6-4187-9545-B29F858095F2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Utils", "Common.Utils\Common.Utils.csproj", "{2787CD55-0240-4489-AAEC-BA87F82664C4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Utils", "Common.Utils\Common.Utils.csproj", "{2787CD55-0240-4489-AAEC-BA87F82664C4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualAlarmClockDevice", "Devices\VirtualAlarmClockDevice\VirtualAlarmClockDevice.csproj", "{FE56A55C-F898-4A68-88EC-D500EB4D89B1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VirtualAlarmClockDevice", "Devices\VirtualAlarmClockDevice\VirtualAlarmClockDevice.csproj", "{FE56A55C-F898-4A68-88EC-D500EB4D89B1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mega2560ControllerDevice", "Devices\Mega2560ControllerDevice\Mega2560ControllerDevice.csproj", "{2B6350CF-12E0-46EE-9ECE-AF4124E2FDBF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BreezartLux550Device", "Devices\BreezartLux550Device\BreezartLux550Device.csproj", "{80FC9BFB-3900-407F-9046-96B3BFFDAB9B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -73,6 +77,14 @@ Global
 		{FE56A55C-F898-4A68-88EC-D500EB4D89B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FE56A55C-F898-4A68-88EC-D500EB4D89B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FE56A55C-F898-4A68-88EC-D500EB4D89B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B6350CF-12E0-46EE-9ECE-AF4124E2FDBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B6350CF-12E0-46EE-9ECE-AF4124E2FDBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B6350CF-12E0-46EE-9ECE-AF4124E2FDBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B6350CF-12E0-46EE-9ECE-AF4124E2FDBF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80FC9BFB-3900-407F-9046-96B3BFFDAB9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80FC9BFB-3900-407F-9046-96B3BFFDAB9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80FC9BFB-3900-407F-9046-96B3BFFDAB9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80FC9BFB-3900-407F-9046-96B3BFFDAB9B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -82,6 +94,8 @@ Global
 		{EF6D90D5-0372-4C02-9682-4D886BC99AF2} = {800CE9B9-BA14-4BAC-8927-55ED48BC8E8F}
 		{B900D922-E3A6-4187-9545-B29F858095F2} = {02F4D3F1-961E-48A8-AA47-AFB23F5CD655}
 		{FE56A55C-F898-4A68-88EC-D500EB4D89B1} = {800CE9B9-BA14-4BAC-8927-55ED48BC8E8F}
+		{2B6350CF-12E0-46EE-9ECE-AF4124E2FDBF} = {800CE9B9-BA14-4BAC-8927-55ED48BC8E8F}
+		{80FC9BFB-3900-407F-9046-96B3BFFDAB9B} = {800CE9B9-BA14-4BAC-8927-55ED48BC8E8F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B0813504-E85A-4020-873B-D4DC655694B7}

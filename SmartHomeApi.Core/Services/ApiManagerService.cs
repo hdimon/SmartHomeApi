@@ -6,28 +6,28 @@ using SmartHomeApi.Core.Interfaces;
 
 namespace SmartHomeApi.Core.Services
 {
-    public class DeviceManagerService : IHostedService, IDisposable
+    public class ApiManagerService : IHostedService, IDisposable
     {
-        private readonly IApiManager _deviceManager;
+        private readonly IApiManager _apiManager;
 
-        public DeviceManagerService(IApiManager deviceManager)
+        public ApiManagerService(IApiManager deviceManager)
         {
-            _deviceManager = deviceManager;
+            _apiManager = deviceManager;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            await _deviceManager.Initialize();
+            await _apiManager.Initialize();
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            _deviceManager.Dispose();
+            _apiManager.Dispose();
         }
 
         public void Dispose()
         {
-            _deviceManager.Dispose();
+            _apiManager.Dispose();
         }
     }
 }

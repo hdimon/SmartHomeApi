@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using BreezartLux550Device;
+using Mega2560ControllerDevice;
 using SmartHomeApi.Core.Interfaces;
 using TerneoSxDevice;
 using VirtualAlarmClockDevice;
@@ -38,6 +40,19 @@ namespace SmartHomeApi.Core.Services
                         { EveryDay = false },
                     new VirtualAlarmClockConfig("Virtual_HeatingSystemAfterMorningAlarmClock", "VirtualAlarmClockDevice")
                         { EveryDay = false }
+                };
+
+            if (deviceType == "Mega2560Controller")
+                return new List<IDeviceConfig>
+                {
+                    new Mega2560ControllerConfig("Bedroom_Mega2560", "Mega2560Controller")
+                        { Mac = "aa:bb:cc:00:00:01", IpAddress = "192.168.1.58" }
+                };
+
+            if (deviceType == "BreezartLux550")
+                return new List<IDeviceConfig>
+                {
+                    new BreezartLux550Config("Breezart", "BreezartLux550") { IpAddress = "192.168.1.37" }
                 };
 
             return new List<IDeviceConfig>();

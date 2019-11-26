@@ -12,15 +12,10 @@ using SmartHomeApi.DeviceUtils;
 
 namespace TerneoSxDevice
 {
-    public class TerneoSx : DeviceAbstract
+    public class TerneoSx : AutoRefreshDeviceAbstract
     {
-        private IItemState _state;
-        private Task _worker;
         private readonly HttpClient _client = new HttpClient();
-        private readonly ReaderWriterLock _readerWriterLock = new ReaderWriterLock();
         private readonly SemaphoreSlim _semaphoreSlimHttpPost = new SemaphoreSlim(1, 1);
-        private int _requestFailureCount;
-        private readonly int _requestFailureThreshold = 30;
         private readonly AverageValuesHelper _currentTempAverageValuesHelper = new AverageValuesHelper(10);
 
         private readonly string CurrentTemperatureParameter = "CurrentTemperature";
@@ -32,20 +27,6 @@ namespace TerneoSxDevice
         public TerneoSx(IDeviceHelpersFabric helpersFabric, IDeviceConfig config) : base(helpersFabric, config)
         {
             _settableParametersList = new List<string> { SetTemperatureParameter };
-
-            _state = new ItemState(ItemId, ItemType);
-            RunTelemetryCollectorWorker();
-        }
-
-        public override IItemState GetState()
-        {
-            _readerWriterLock.AcquireReaderLock(Timeout.Infinite);
-
-            IItemState state = _state;
-
-            _readerWriterLock.ReleaseReaderLock();
-
-            return state;
         }
 
         public override async Task<ISetValueResult> SetValue(string parameter, string value)
@@ -113,63 +94,7 @@ namespace TerneoSxDevice
             return responseString;
         }
 
-        private void RunTelemetryCollectorWorker()
-        {
-            if (_worker == null || _worker.IsCompleted)
-            {
-                _worker = Task.Factory.StartNew(GetTelemetry).Unwrap().ContinueWith(
-                    t =>
-                    {
-                        var test = t;
-                    } /*Log.Error(t.Exception)*/,
-                    TaskContinuationOptions.OnlyOnFaulted);
-            }
-        }
-
-        private async Task GetTelemetry()
-        {
-            while (true)
-            {
-                await Task.Delay(1000);
-
-                var state = await RequestTelemetry();
-
-                bool failed = false;
-                foreach (var telemetryPair in _state.States)
-                {
-                    if (!state.States.ContainsKey(telemetryPair.Key))
-                    {
-                        failed = true;
-
-                        if (_requestFailureCount < _requestFailureThreshold)
-                        {
-                            //Take previous value
-                            state.States.Add(telemetryPair.Key, telemetryPair.Value);
-                        }
-                    }
-                }
-
-                if (failed)
-                {
-                    _requestFailureCount++;
-
-                    if (_requestFailureCount < _requestFailureThreshold)
-                    {
-                        state.ConnectionStatus = ConnectionStatus.Unstable;
-                    }
-                    else if (_requestFailureCount >= _requestFailureThreshold)
-                    {
-                        state.ConnectionStatus = ConnectionStatus.Lost;
-                    }
-                }
-                else
-                    state.ConnectionStatus = ConnectionStatus.Stable;
-
-                SetStateSafely(state);
-            }
-        }
-
-        private async Task<IItemState> RequestTelemetry()
+        protected override async Task<IItemState> RequestData()
         {
             var state = new ItemState(ItemId, ItemType);
 
@@ -218,25 +143,6 @@ namespace TerneoSxDevice
             }
 
             return state;
-        }
-
-        private void SetStateSafely(IItemState state)
-        {
-            try
-            {
-                _readerWriterLock.AcquireWriterLock(Timeout.Infinite);
-
-                _state = state;
-            }
-            catch (Exception e)
-            {
-                /*Console.WriteLine(e);
-                throw;*/
-            }
-            finally
-            {
-                _readerWriterLock.ReleaseWriterLock();
-            }
         }
     }
 }

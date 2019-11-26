@@ -25,6 +25,8 @@ namespace SmartHomeApi.Core.Services
             _state = CreateStatesContainer();
         }
 
+        public bool IsInitialized { get; set; }
+
         public async Task Initialize()
         {
             var locators = await _fabric.GetItemsPluginsLocator().GetItemsLocators();
@@ -32,10 +34,25 @@ namespace SmartHomeApi.Core.Services
 
             foreach (var immediateItem in immediateItems)
             {
-                await immediateItem.GetItems();
+                await GetItems(immediateItem);
             }
 
             RunStatesCollectorWorker();
+
+            IsInitialized = true;
+        }
+
+        private async Task<IEnumerable<IItem>> GetItems(IItemsLocator locator)
+        {
+            var items = await locator.GetItems();
+
+            foreach (var item in items)
+            {
+                if (item is IInitializable initializable)
+                    await initializable.Initialize();
+            }
+
+            return items;
         }
 
         public void Dispose()
@@ -46,7 +63,7 @@ namespace SmartHomeApi.Core.Services
         public async Task<ISetValueResult> SetValue(string deviceId, string parameter, string value)
         {
             var itemsLocator = _fabric.GetItemsLocator();
-            var items = await itemsLocator.GetItems();
+            var items = await GetItems(itemsLocator);
 
             var item = items.FirstOrDefault(i => i is IStateSettable it && it.ItemId == deviceId);
 
@@ -54,14 +71,6 @@ namespace SmartHomeApi.Core.Services
                 return new SetValueResult(false);
 
             var not = (IStateSettable)item;
-
-            /*var deviceLocator = _fabric.GetDeviceLocator();
-            var devices = deviceLocator.GetDevices();
-
-            var device = devices.FirstOrDefault(d => d.DeviceId == deviceId);
-
-            if (device == null)
-                return new SetValueResult(false);*/
 
             NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueSet, not.ItemType, not.ItemId,
                 parameter, null, value));
@@ -131,44 +140,53 @@ namespace SmartHomeApi.Core.Services
         {
             if (_worker == null || _worker.IsCompleted)
             {
-                _worker = Task.Factory.StartNew(CollectDevicesStates).Unwrap().ContinueWith(
-                    t => { } /*Log.Error(t.Exception)*/,
+                _worker = Task.Factory.StartNew(CollectItemsStates).Unwrap().ContinueWith(
+                    t =>
+                    {
+                        var test = 5;
+                    } /*Log.Error(t.Exception)*/,
                     TaskContinuationOptions.OnlyOnFaulted);
             }
         }
 
-        private async Task CollectDevicesStates()
+        private async Task CollectItemsStates()
         {
             while (true)
             {
-                await Task.Delay(500);
+                await Task.Delay(250);
 
-                var deviceLocator = _fabric.GetItemsLocator();
-                var devices = await deviceLocator.GetItems();
-                var state = CreateStatesContainer();
-
-                var items = devices.Where(d => d is IStateGettable).Cast<IStateGettable>().ToList();
-
-                var deviceTypes = items.Select(d => d.ItemType).Distinct().ToList();
-                deviceTypes.Sort();
-
-                foreach (var deviceType in deviceTypes)
+                try
                 {
-                    var typeDevices = items.Where(d => d.ItemType == deviceType).ToList();
-                    typeDevices = typeDevices.OrderBy(d => d.ItemId).ToList();
+                    var itemsLocator = _fabric.GetItemsLocator();
+                    var items = await GetItems(itemsLocator);
+                    var state = CreateStatesContainer();
 
-                    foreach (var device in typeDevices)
+                    var gettableItems = items.Where(d => d is IStateGettable).Cast<IStateGettable>()
+                                             .OrderBy(i => i.ItemType).ThenBy(i => i.ItemId).ToList();
+
+                    foreach (var item in gettableItems)
                     {
-                        var deviceState = device.GetState();
+                        try
+                        {
+                            var deviceState = item.GetState();
 
-                        state.States.Add(deviceState.ItemId, deviceState);
+                            state.States.Add(deviceState.ItemId, deviceState);
+                        }
+                        catch (Exception e)
+                        {
+                            var test = 5;
+                        }
                     }
+
+                    var oldState = GetState();
+                    SetStateSafely(state);
+
+                    NotifySubscribersAboutChanges(oldState);
                 }
-
-                var oldState = GetState();
-                SetStateSafely(state);
-
-                NotifySubscribersAboutChanges(oldState);
+                catch (Exception e)
+                {
+                    var test = 5;
+                }
             }
         }
 

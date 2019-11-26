@@ -8,7 +8,7 @@ namespace VirtualAlarmClockDevice
     public class VirtualAlarmClock : DeviceAbstract
     {
         private readonly IDeviceStateStorageHelper _deviceStateStorage;
-        private readonly ConcurrentDictionary<string, string> _states;
+        private ConcurrentDictionary<string, string> _states;
         private Task _worker;
         private DateTime? _time;
 
@@ -20,6 +20,10 @@ namespace VirtualAlarmClockDevice
         public VirtualAlarmClock(IDeviceHelpersFabric helpersFabric, IDeviceConfig config) : base(helpersFabric, config)
         {
             _deviceStateStorage = HelpersFabric.GetDeviceStateStorageHelper();
+        }
+
+        protected override async Task InitializeDevice()
+        {
             _states = _deviceStateStorage.RestoreState<ConcurrentDictionary<string, string>>(ItemId);
 
             if (_states == null)
