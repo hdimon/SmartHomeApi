@@ -8,16 +8,16 @@ namespace SmartHomeApi.Core.Interfaces
         protected readonly IApiLogger Logger;
         public string ItemId { get; }
         public string ItemType { get; }
-        public IDeviceConfig Config { get; }
+        public IItemConfig Config { get; }
 
-        protected DeviceAbstract(IDeviceHelpersFabric helpersFabric, IDeviceConfig config)
+        protected DeviceAbstract(IDeviceHelpersFabric helpersFabric, IItemConfig config)
         {
             HelpersFabric = helpersFabric;
             Config = config;
             Logger = HelpersFabric.GetApiLogger();
 
-            ItemId = config.DeviceId;
-            ItemType = config.DeviceType;
+            ItemId = config.ItemId;
+            ItemType = config.ItemType;
         }
 
         public abstract Task<ISetValueResult> SetValue(string parameter, string value);

@@ -15,7 +15,7 @@ namespace SmartHomeApi.DeviceUtils
         protected IItemState CurrentState;
         protected readonly ReaderWriterLock RwLock = new ReaderWriterLock();
 
-        protected AutoRefreshDeviceAbstract(IDeviceHelpersFabric helpersFabric, IDeviceConfig config) : base(helpersFabric, config)
+        protected AutoRefreshDeviceAbstract(IDeviceHelpersFabric helpersFabric, IItemConfig config) : base(helpersFabric, config)
         {
             CurrentState = new ItemState(ItemId, ItemType);
         }

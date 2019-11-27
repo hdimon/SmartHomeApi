@@ -22,7 +22,7 @@ namespace Mega2560ControllerDevice
         private readonly AverageValuesHelper _currentHumidityAverageValues = new AverageValuesHelper(10);
         private readonly AverageValuesHelper _currentPressureHPaAverageValues = new AverageValuesHelper(10);
 
-        public Mega2560Controller(IDeviceHelpersFabric helpersFabric, IDeviceConfig config) : base(helpersFabric,
+        public Mega2560Controller(IDeviceHelpersFabric helpersFabric, IItemConfig config) : base(helpersFabric,
             config)
         {
             RefreshIntervalMS = 300;

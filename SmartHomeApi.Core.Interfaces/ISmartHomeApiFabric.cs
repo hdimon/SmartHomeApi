@@ -4,7 +4,7 @@
     {
         IItemsPluginsLocator GetItemsPluginsLocator();
         IItemsLocator GetItemsLocator();
-        IDeviceConfigLocator GetDeviceConfigsLocator();
+        IItemsConfigLocator GetDeviceConfigsLocator();
         IApiManager GetApiManager();
         IDeviceHelpersFabric GetDeviceHelpersFabric();
         IApiLogger GetApiLogger();

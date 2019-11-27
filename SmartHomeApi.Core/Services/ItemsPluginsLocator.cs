@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BreezartLux550Device;
+using EventsPostgreSqlStorage;
 using Mega2560ControllerDevice;
 using Scenarios;
 using SmartHomeApi.Core.Interfaces;
@@ -28,6 +29,7 @@ namespace SmartHomeApi.Core.Services
             var scenarios = new ScenariosLocator(_fabric);
             var mega2560Controller = new Mega2560ControllerLocator(_fabric);
             var breezart = new BreezartLux550Locator(_fabric);
+            var eventsStorage = new StorageLocator(_fabric);
 
             _locators.TryAdd(terneo.ItemType, terneo);
             _locators.TryAdd(virtualState.ItemType, virtualState);
@@ -35,6 +37,7 @@ namespace SmartHomeApi.Core.Services
             _locators.TryAdd(scenarios.ItemType, scenarios);
             _locators.TryAdd(mega2560Controller.ItemType, mega2560Controller);
             _locators.TryAdd(breezart.ItemType, breezart);
+            _locators.TryAdd(eventsStorage.ItemType, eventsStorage);
         }
 
         public async Task<IEnumerable<IItemsLocator>> GetItemsLocators()

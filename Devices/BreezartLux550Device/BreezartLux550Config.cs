@@ -2,7 +2,7 @@
 
 namespace BreezartLux550Device
 {
-    public class BreezartLux550Config : DeviceConfigAbstract
+    public class BreezartLux550Config : ItemConfigAbstract
     {
         public string IpAddress { get; set; }
 

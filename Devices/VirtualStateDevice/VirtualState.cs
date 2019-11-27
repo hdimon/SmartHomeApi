@@ -10,7 +10,7 @@ namespace VirtualStateDevice
         private ConcurrentDictionary<string, string> _states;
         private readonly IDeviceStateStorageHelper _deviceStateStorage;
 
-        public VirtualState(IDeviceHelpersFabric helpersFabric, IDeviceConfig config) : base(helpersFabric, config)
+        public VirtualState(IDeviceHelpersFabric helpersFabric, IItemConfig config) : base(helpersFabric, config)
         {
             _deviceStateStorage = HelpersFabric.GetDeviceStateStorageHelper();
         }

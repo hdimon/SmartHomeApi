@@ -3,19 +3,17 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using SmartHomeApi.Core.Interfaces;
 
-namespace TerneoSxDevice
+namespace EventsPostgreSqlStorage
 {
-    public class TerneoSxLocator : IItemsLocator
+    public class StorageLocator : IItemsLocator
     {
-        public string ItemType => "TerneoSx";
-
-        public bool ImmediateInitialization => false;
-
         private readonly ISmartHomeApiFabric _fabric;
+        public string ItemType => "EventsPostgreSqlStorage";
+        public bool ImmediateInitialization => true;
 
         private readonly ConcurrentDictionary<string, IItem> _devices = new ConcurrentDictionary<string, IItem>();
 
-        public TerneoSxLocator(ISmartHomeApiFabric fabric)
+        public StorageLocator(ISmartHomeApiFabric fabric)
         {
             _fabric = fabric;
         }
@@ -23,7 +21,7 @@ namespace TerneoSxDevice
         public async Task<IEnumerable<IItem>> GetItems()
         {
             var configLocator = _fabric.GetDeviceConfigsLocator();
-            var helpersFabric = _fabric.GetDeviceHelpersFabric();
+            var manager = _fabric.GetApiManager();
 
             var configs = configLocator.GetItemsConfigs(ItemType);
 
@@ -32,7 +30,7 @@ namespace TerneoSxDevice
                 if (_devices.ContainsKey(config.ItemId))
                     continue; //Update config
 
-                _devices.TryAdd(config.ItemId, new TerneoSx(helpersFabric, config));
+                _devices.TryAdd(config.ItemId, new Storage(manager, config));
             }
 
             //Remove configs

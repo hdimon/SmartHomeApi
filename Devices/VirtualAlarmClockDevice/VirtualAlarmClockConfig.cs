@@ -2,7 +2,7 @@
 
 namespace VirtualAlarmClockDevice
 {
-    public class VirtualAlarmClockConfig : DeviceConfigAbstract
+    public class VirtualAlarmClockConfig : ItemConfigAbstract
     {
         public bool EveryDay { get; set; }
 

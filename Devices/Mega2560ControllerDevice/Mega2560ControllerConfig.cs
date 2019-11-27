@@ -2,7 +2,7 @@
 
 namespace Mega2560ControllerDevice
 {
-    public class Mega2560ControllerConfig : DeviceConfigAbstract
+    public class Mega2560ControllerConfig : ItemConfigAbstract
     {
         public string Mac { get; set; }
         public string IpAddress { get; set; }

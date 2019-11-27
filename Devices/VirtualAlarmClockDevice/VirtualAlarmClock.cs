@@ -17,7 +17,7 @@ namespace VirtualAlarmClockDevice
         private const string AlarmParameter = "Alarm";
         private const string EnabledParameter = "Enabled";
 
-        public VirtualAlarmClock(IDeviceHelpersFabric helpersFabric, IDeviceConfig config) : base(helpersFabric, config)
+        public VirtualAlarmClock(IDeviceHelpersFabric helpersFabric, IItemConfig config) : base(helpersFabric, config)
         {
             _deviceStateStorage = HelpersFabric.GetDeviceStateStorageHelper();
         }

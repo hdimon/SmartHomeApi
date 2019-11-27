@@ -14,6 +14,7 @@
     <ProjectReference Include="..\Devices\TerneoSxDevice\TerneoSxDevice.csproj" />
     <ProjectReference Include="..\Devices\VirtualAlarmClockDevice\VirtualAlarmClockDevice.csproj" />
     <ProjectReference Include="..\Devices\VirtualStateDevice\VirtualStateDevice.csproj" />
+    <ProjectReference Include="..\EventHandlers\EventsPostgreSqlStorage\EventsPostgreSqlStorage.csproj" />
     <ProjectReference Include="..\EventHandlers\Scenarios\Scenarios.csproj" />
     <ProjectReference Include="..\SmartHomeApi.Core.Interfaces\SmartHomeApi.Core.Interfaces.csproj" />
   </ItemGroup>

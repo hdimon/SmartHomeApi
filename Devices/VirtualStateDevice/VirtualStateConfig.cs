@@ -2,7 +2,7 @@
 
 namespace VirtualStateDevice
 {
-    public class VirtualStateConfig : DeviceConfigAbstract
+    public class VirtualStateConfig : ItemConfigAbstract
     {
         public VirtualStateConfig(string deviceId, string deviceType) : base(deviceId, deviceType)
         {

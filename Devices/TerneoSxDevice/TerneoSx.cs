@@ -25,7 +25,7 @@ namespace TerneoSxDevice
 
         private readonly List<string> _settableParametersList;
 
-        public TerneoSx(IDeviceHelpersFabric helpersFabric, IDeviceConfig config) : base(helpersFabric, config)
+        public TerneoSx(IDeviceHelpersFabric helpersFabric, IItemConfig config) : base(helpersFabric, config)
         {
             _settableParametersList = new List<string> { SetTemperatureParameter };
         }

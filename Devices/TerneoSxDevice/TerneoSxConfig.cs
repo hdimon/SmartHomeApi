@@ -2,7 +2,7 @@
 
 namespace TerneoSxDevice
 {
-    public class TerneoSxConfig : DeviceConfigAbstract
+    public class TerneoSxConfig : ItemConfigAbstract
     {
         public string SerialNumber { get; set; }
         public string IpAddress { get; set; }

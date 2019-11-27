@@ -25,14 +25,14 @@ namespace VirtualStateDevice
             var configLocator = _fabric.GetDeviceConfigsLocator();
             var helpersFabric = _fabric.GetDeviceHelpersFabric();
 
-            var configs = configLocator.GetDeviceConfigs(ItemType);
+            var configs = configLocator.GetItemsConfigs(ItemType);
 
             foreach (var config in configs)
             {
-                if (_devices.ContainsKey(config.DeviceId))
+                if (_devices.ContainsKey(config.ItemId))
                     continue; //Update config
 
-                _devices.TryAdd(config.DeviceId, new VirtualState(helpersFabric, config));
+                _devices.TryAdd(config.ItemId, new VirtualState(helpersFabric, config));
             }
 
             //Remove configs

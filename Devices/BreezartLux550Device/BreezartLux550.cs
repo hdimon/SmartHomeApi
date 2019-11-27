@@ -23,7 +23,7 @@ namespace BreezartLux550Device
         private string _requestStateCommand = "VSt07_FFFF";
         private string _requestSensorsCommand = "VSens_FFFF";
 
-        public BreezartLux550(IDeviceHelpersFabric helpersFabric, IDeviceConfig config) : base(helpersFabric, config)
+        public BreezartLux550(IDeviceHelpersFabric helpersFabric, IItemConfig config) : base(helpersFabric, config)
         {
             CurrentState = new ItemState(ItemId, ItemType);
         }

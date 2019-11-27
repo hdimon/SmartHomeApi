@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using BreezartLux550Device;
+using EventsPostgreSqlStorage;
 using Mega2560ControllerDevice;
 using SmartHomeApi.Core.Interfaces;
 using TerneoSxDevice;
@@ -8,12 +9,12 @@ using VirtualStateDevice;
 
 namespace SmartHomeApi.Core.Services
 {
-    public class DeviceConfigLocator : IDeviceConfigLocator
+    public class ItemsConfigLocator : IItemsConfigLocator
     {
-        public List<IDeviceConfig> GetDeviceConfigs(string deviceType)
+        public List<IItemConfig> GetItemsConfigs(string itemType)
         {
-            if (deviceType == "TerneoSx")
-                return new List<IDeviceConfig>
+            if (itemType == "TerneoSx")
+                return new List<IItemConfig>
                 {
                     new TerneoSxConfig("Kitchen_Floor", "TerneoSx")
                         { IpAddress = "192.168.1.52", SerialNumber = "14000B000C43504735323620000159", Power = 1800},
@@ -25,14 +26,14 @@ namespace SmartHomeApi.Core.Services
                         { IpAddress = "192.168.1.46", SerialNumber = "13001B000143504735323620000159", Power = 150 }
                 };
 
-            if (deviceType == "VirtualStateDevice")
-                return new List<IDeviceConfig>
+            if (itemType == "VirtualStateDevice")
+                return new List<IItemConfig>
                 {
                     new VirtualStateConfig("Virtual_States", "VirtualStateDevice")
                 };
 
-            if (deviceType == "VirtualAlarmClockDevice")
-                return new List<IDeviceConfig>
+            if (itemType == "VirtualAlarmClockDevice")
+                return new List<IItemConfig>
                 {
                     new VirtualAlarmClockConfig("Virtual_MainAlarmClock", "VirtualAlarmClockDevice")
                         { EveryDay = true },
@@ -42,20 +43,26 @@ namespace SmartHomeApi.Core.Services
                         { EveryDay = false }
                 };
 
-            if (deviceType == "Mega2560Controller")
-                return new List<IDeviceConfig>
+            if (itemType == "Mega2560Controller")
+                return new List<IItemConfig>
                 {
                     new Mega2560ControllerConfig("Bedroom_Mega2560", "Mega2560Controller")
                         { Mac = "aa:bb:cc:00:00:01", IpAddress = "192.168.1.58" }
                 };
 
-            if (deviceType == "BreezartLux550")
-                return new List<IDeviceConfig>
+            if (itemType == "BreezartLux550")
+                return new List<IItemConfig>
                 {
                     new BreezartLux550Config("Breezart", "BreezartLux550") { IpAddress = "192.168.1.37" }
                 };
 
-            return new List<IDeviceConfig>();
+            if (itemType == "EventsPostgreSqlStorage")
+                return new List<IItemConfig>
+                {
+                    new StorageConfig("MainPostgreStorage", "EventsPostgreSqlStorage")
+                };
+
+            return new List<IItemConfig>();
         }
     }
 }
