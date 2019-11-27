@@ -85,6 +85,8 @@ namespace SmartHomeApi.DeviceUtils
 
         protected void SetStateSafely(IItemState state)
         {
+            ExtendItemStates(state);
+
             try
             {
                 RwLock.AcquireWriterLock(Timeout.Infinite);
@@ -99,6 +101,10 @@ namespace SmartHomeApi.DeviceUtils
             {
                 RwLock.ReleaseWriterLock();
             }
+        }
+
+        protected virtual void ExtendItemStates(IItemState state)
+        {
         }
 
         public override IItemState GetState()

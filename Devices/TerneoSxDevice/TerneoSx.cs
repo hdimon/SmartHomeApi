@@ -21,6 +21,7 @@ namespace TerneoSxDevice
         private readonly string CurrentTemperatureParameter = "CurrentTemperature";
         private readonly string SetTemperatureParameter = "SetTemperature";
         private readonly string HeatingParameter = "Heating";
+        private readonly string PowerParameter = "Power";
 
         private readonly List<string> _settableParametersList;
 
@@ -71,7 +72,7 @@ namespace TerneoSxDevice
                 // ignored
             }
 
-            return responseString;
+            return responseString?.Trim();
         }
 
         private async Task<string> PostContentWithLock(StringContent content)
@@ -83,8 +84,10 @@ namespace TerneoSxDevice
             {
                 await _semaphoreSlimHttpPost.WaitAsync();
 
-                var response = await _client.PostAsync($"http://{config.IpAddress}/api.cgi", content);
-                responseString = await response.Content.ReadAsStringAsync();
+                using (var response = await _client.PostAsync($"http://{config.IpAddress}/api.cgi", content))
+                {
+                    responseString = await response.Content.ReadAsStringAsync();
+                }
             }
             finally
             {
@@ -103,7 +106,7 @@ namespace TerneoSxDevice
 
             string responseString = await PostContent(content);
 
-            if (string.IsNullOrWhiteSpace(responseString))
+            if (string.IsNullOrWhiteSpace(responseString) || !responseString.StartsWith("{") || !responseString.EndsWith("}"))
                 return state;
 
             Dictionary<string, string> telemetry = null;
@@ -115,6 +118,7 @@ namespace TerneoSxDevice
             catch (Exception e)
             {
                 Logger.Error(e);
+                Logger.Error($"String failed on deserializing was: {responseString}");
             }
 
             if (telemetry == null)
@@ -143,6 +147,23 @@ namespace TerneoSxDevice
             }
 
             return state;
+        }
+
+        protected override void ExtendItemStates(IItemState state)
+        {
+            var config = (TerneoSxConfig)Config;
+
+            if (state?.States == null) 
+                return;
+
+            if (state.States.ContainsKey(HeatingParameter))
+            {
+                var heating = (bool)state.States[HeatingParameter];
+
+                var power = heating ? config.Power : 0;
+
+                state.States.Add(PowerParameter, power);
+            }
         }
     }
 }

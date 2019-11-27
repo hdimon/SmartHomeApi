@@ -6,6 +6,7 @@ namespace TerneoSxDevice
     {
         public string SerialNumber { get; set; }
         public string IpAddress { get; set; }
+        public int Power { get; set; }
 
         public TerneoSxConfig(string deviceId, string deviceType) : base(deviceId, deviceType)
         {

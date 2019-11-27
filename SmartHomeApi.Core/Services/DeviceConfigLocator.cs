@@ -16,13 +16,13 @@ namespace SmartHomeApi.Core.Services
                 return new List<IDeviceConfig>
                 {
                     new TerneoSxConfig("Kitchen_Floor", "TerneoSx")
-                        { IpAddress = "192.168.1.52", SerialNumber = "14000B000C43504735323620000159" },
+                        { IpAddress = "192.168.1.52", SerialNumber = "14000B000C43504735323620000159", Power = 1800},
                     new TerneoSxConfig("Bedroom_Floor", "TerneoSx")
-                        { IpAddress = "192.168.1.48", SerialNumber = "2B0008000C43504735323620000159" },
+                        { IpAddress = "192.168.1.48", SerialNumber = "2B0008000C43504735323620000159", Power = 300},
                     new TerneoSxConfig("Bathroom_Floor", "TerneoSx")
-                        { IpAddress = "192.168.1.33", SerialNumber = "29000B000C43504735323620000159" },
+                        { IpAddress = "192.168.1.33", SerialNumber = "29000B000C43504735323620000159", Power = 150},
                     new TerneoSxConfig("Toilet_Floor", "TerneoSx")
-                        { IpAddress = "192.168.1.46", SerialNumber = "13001B000143504735323620000159" }
+                        { IpAddress = "192.168.1.46", SerialNumber = "13001B000143504735323620000159", Power = 150 }
                 };
 
             if (deviceType == "VirtualStateDevice")
