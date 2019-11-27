@@ -57,7 +57,7 @@ namespace TerneoSxDevice
             return result;
         }
 
-        private async Task<string> PostContent(StringContent content, int maxTries = 1)
+        private async Task<string> PostContent(StringContent content, int maxTries = 2)
         {
             string responseString = null;
 
@@ -162,7 +162,10 @@ namespace TerneoSxDevice
 
                 var power = heating ? config.Power : 0;
 
-                state.States.Add(PowerParameter, power);
+                if (state.States.ContainsKey(PowerParameter))
+                    state.States[PowerParameter] = power;
+                else
+                    state.States.Add(PowerParameter, power);
             }
         }
     }

@@ -47,6 +47,7 @@ namespace SmartHomeApi.DeviceUtils
                 await Task.Delay(RefreshIntervalMS);
 
                 var state = await RequestData();
+                ExtendItemStates(state);
 
                 bool failed = false;
                 foreach (var telemetryPair in CurrentState.States)
@@ -77,7 +78,10 @@ namespace SmartHomeApi.DeviceUtils
                     }
                 }
                 else
+                {
+                    _requestFailureCount = 0;
                     state.ConnectionStatus = ConnectionStatus.Stable;
+                }
 
                 SetStateSafely(state);
             }
@@ -85,8 +89,6 @@ namespace SmartHomeApi.DeviceUtils
 
         protected void SetStateSafely(IItemState state)
         {
-            ExtendItemStates(state);
-
             try
             {
                 RwLock.AcquireWriterLock(Timeout.Infinite);
