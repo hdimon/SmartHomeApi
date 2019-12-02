@@ -17,6 +17,7 @@ namespace TerneoSxDevice
         private readonly HttpClient _client = new HttpClient();
         private readonly SemaphoreSlim _semaphoreSlimHttpPost = new SemaphoreSlim(1, 1);
         private readonly AverageValuesHelper _currentTempAverageValuesHelper = new AverageValuesHelper(10);
+        private double? _previousCurrentTemp;
 
         private readonly string CurrentTemperatureParameter = "CurrentTemperature";
         private readonly string SetTemperatureParameter = "SetTemperature";
@@ -25,7 +26,7 @@ namespace TerneoSxDevice
 
         private readonly List<string> _settableParametersList;
 
-        public TerneoSx(IDeviceHelpersFabric helpersFabric, IItemConfig config) : base(helpersFabric, config)
+        public TerneoSx(IItemHelpersFabric helpersFabric, IItemConfig config) : base(helpersFabric, config)
         {
             _settableParametersList = new List<string> { SetTemperatureParameter };
         }
@@ -117,8 +118,9 @@ namespace TerneoSxDevice
             }
             catch (Exception e)
             {
-                Logger.Error(e);
-                Logger.Error($"String failed on deserializing was: {responseString}");
+                /*Logger.Error(e);
+                Logger.Error($"String failed on deserializing was: {responseString}");*/
+                Logger.Error("Response failed on deserializing");
             }
 
             if (telemetry == null)
@@ -130,9 +132,19 @@ namespace TerneoSxDevice
             if (telemetry.ContainsKey("t.1"))
             {
                 if (double.TryParse(telemetry["t.1"], out var currentTemp))
-                    currentTemp = _currentTempAverageValuesHelper.GetAverageValue(Math.Round(currentTemp / 16, 1));
+                    currentTemp = _currentTempAverageValuesHelper.GetAverageValue(currentTemp);
 
-                state.States.Add(CurrentTemperatureParameter, Math.Round(currentTemp, 1));
+                var roundedCurrentTemp = Math.Round(currentTemp / 16, 1);
+
+                if (!_previousCurrentTemp.HasValue)
+                    _previousCurrentTemp = roundedCurrentTemp;
+                else
+                {
+                    if (Math.Abs(roundedCurrentTemp - _previousCurrentTemp.Value) > 0.2001)
+                        _previousCurrentTemp = roundedCurrentTemp;
+                }
+
+                state.States.Add(CurrentTemperatureParameter, _previousCurrentTemp);
             }
             if (telemetry.ContainsKey("t.5"))
             {

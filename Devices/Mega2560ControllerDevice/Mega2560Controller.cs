@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -20,9 +21,12 @@ namespace Mega2560ControllerDevice
         private readonly AverageValuesHelper _currentTempAverageValues = new AverageValuesHelper(10);
         private readonly AverageValuesHelper _currentCO2AverageValues = new AverageValuesHelper(40);
         private readonly AverageValuesHelper _currentHumidityAverageValues = new AverageValuesHelper(10);
-        private readonly AverageValuesHelper _currentPressureHPaAverageValues = new AverageValuesHelper(10);
+        private readonly AverageValuesHelper _currentPressureHPaAverageValues = new AverageValuesHelper(1000);
+        private int? _previousCO2;
+        private int? _previousHumidityPercent;
+        private double? _previousTemperatureC;
 
-        public Mega2560Controller(IDeviceHelpersFabric helpersFabric, IItemConfig config) : base(helpersFabric,
+        public Mega2560Controller(IItemHelpersFabric helpersFabric, IItemConfig config) : base(helpersFabric,
             config)
         {
             RefreshIntervalMS = 300;
@@ -64,7 +68,17 @@ namespace Mega2560ControllerDevice
                 if (double.TryParse(telemetry["CO2ppm"], out var currentCO2))
                     currentCO2 = _currentCO2AverageValues.GetAverageValue(currentCO2);
 
-                state.States.Add("CO2ppm", Convert.ToInt32(Math.Round(currentCO2, 0)));
+                var roundedCurrentCO2 = (int)Math.Round(currentCO2, 0);
+
+                if (!_previousCO2.HasValue)
+                    _previousCO2 = roundedCurrentCO2;
+                else
+                {
+                    if (Math.Abs(roundedCurrentCO2 - _previousCO2.Value) > 2)
+                        _previousCO2 = roundedCurrentCO2;
+                }
+
+                state.States.Add("CO2ppm", _previousCO2);
             }
 
             if (telemetry.ContainsKey("TemperatureC"))
@@ -73,7 +87,17 @@ namespace Mega2560ControllerDevice
                     out var currentTemperatureC))
                     currentTemperatureC = _currentTempAverageValues.GetAverageValue(currentTemperatureC);
 
-                state.States.Add("TemperatureC", Math.Round(currentTemperatureC, 1));
+                var roundedCurrentTemperatureC = Math.Round(currentTemperatureC, 1);
+
+                if (!_previousTemperatureC.HasValue)
+                    _previousTemperatureC = roundedCurrentTemperatureC;
+                else
+                {
+                    if (Math.Abs(roundedCurrentTemperatureC - _previousTemperatureC.Value) > 0.1001)
+                        _previousTemperatureC = roundedCurrentTemperatureC;
+                }
+
+                state.States.Add("TemperatureC", _previousTemperatureC);
             }
 
             if (telemetry.ContainsKey("PressureHPa"))
@@ -91,38 +115,34 @@ namespace Mega2560ControllerDevice
                     out var currentHumidityPercent))
                     currentHumidityPercent = _currentHumidityAverageValues.GetAverageValue(currentHumidityPercent);
 
-                state.States.Add("HumidityPercent", Convert.ToInt32(Math.Round(currentHumidityPercent, 0)));
+                var roundedCurrentHumidityPercent = (int)Math.Round(currentHumidityPercent, 0);
+
+                if (!_previousHumidityPercent.HasValue)
+                    _previousHumidityPercent = roundedCurrentHumidityPercent;
+                else
+                {
+                    if (Math.Abs(roundedCurrentHumidityPercent - _previousHumidityPercent.Value) > 1)
+                        _previousHumidityPercent = roundedCurrentHumidityPercent;
+                }
+
+                state.States.Add("HumidityPercent", _previousHumidityPercent);
             }
 
-            if (telemetry.ContainsKey("pin0"))
-            {
-                var pin0 = telemetry["pin0"] == "1";
-
-                state.States.Add("pin0", pin0);
-            }
-
-            if (telemetry.ContainsKey("pin1"))
-            {
-                var pin1 = telemetry["pin1"] == "1";
-
-                state.States.Add("pin1", pin1);
-            }
-
-            if (telemetry.ContainsKey("pin2"))
-            {
-                var pin2 = telemetry["pin2"] == "1";
-
-                state.States.Add("pin2", pin2);
-            }
-
-            if (telemetry.ContainsKey("pin3"))
-            {
-                var pin3 = telemetry["pin3"] == "1";
-
-                state.States.Add("pin3", pin3);
-            }
+            ParsePinsStates(telemetry, state);
 
             return state;
+        }
+
+        private void ParsePinsStates(Dictionary<string, string> telemetry, ItemState state)
+        {
+            var pinKeys = telemetry.Where(t => t.Key.StartsWith("pin"));
+
+            foreach (var pinKeyValuePair in pinKeys)
+            {
+                var pin = pinKeyValuePair.Value == "1";
+
+                state.States.Add(pinKeyValuePair.Key, pin);
+            }
         }
 
         private async Task<string> PostContent(StringContent content, int maxTries = 1)
@@ -152,8 +172,10 @@ namespace Mega2560ControllerDevice
             {
                 await _semaphoreSlimHttpPost.WaitAsync();
 
-                var response = await _client.PostAsync($"http://{config.IpAddress}/get", content);
-                responseString = await response.Content.ReadAsStringAsync();
+                using (var response = await _client.PostAsync($"http://{config.IpAddress}/get", content))
+                {
+                    responseString = await response.Content.ReadAsStringAsync();
+                }
             }
             finally
             {
