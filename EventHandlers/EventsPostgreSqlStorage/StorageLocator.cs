@@ -20,7 +20,7 @@ namespace EventsPostgreSqlStorage
 
         public async Task<IEnumerable<IItem>> GetItems()
         {
-            var configLocator = _fabric.GetDeviceConfigsLocator();
+            var configLocator = _fabric.GetItemsConfigsLocator();
             var manager = _fabric.GetApiManager();
 
             var configs = configLocator.GetItemsConfigs(ItemType);
@@ -30,7 +30,7 @@ namespace EventsPostgreSqlStorage
                 if (_devices.ContainsKey(config.ItemId))
                     continue; //Update config
 
-                _devices.TryAdd(config.ItemId, new Storage(manager, config));
+                _devices.TryAdd(config.ItemId, new Storage(manager, _fabric.GetItemHelpersFabric(), config));
             }
 
             //Remove configs

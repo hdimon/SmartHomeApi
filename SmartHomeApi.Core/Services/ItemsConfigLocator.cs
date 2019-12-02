@@ -60,6 +60,10 @@ namespace SmartHomeApi.Core.Services
                 return new List<IItemConfig>
                 {
                     new StorageConfig("MainPostgreStorage", "EventsPostgreSqlStorage")
+                    {
+                        ConnectionString =
+                            "User ID=postgres;Password=admin19;Host=localhost;Port=5432;Database=SmartHomeApi;Pooling=true;"
+                    }
                 };
 
             return new List<IItemConfig>();

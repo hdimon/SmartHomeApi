@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartHomeApi.Core.Interfaces;
@@ -10,12 +11,13 @@ namespace SmartHomeApi.DeviceUtils
         private Task _worker;
         private int _requestFailureCount;
 
-        protected int RequestFailureThreshold = 30;
+        protected int RequestFailureMinThreshold = 5;
+        protected int RequestFailureMaxThreshold = 30;
         protected int RefreshIntervalMS = 1000;
         protected IItemState CurrentState;
         protected readonly ReaderWriterLock RwLock = new ReaderWriterLock();
 
-        protected AutoRefreshDeviceAbstract(IDeviceHelpersFabric helpersFabric, IItemConfig config) : base(helpersFabric, config)
+        protected AutoRefreshDeviceAbstract(IItemHelpersFabric helpersFabric, IItemConfig config) : base(helpersFabric, config)
         {
             CurrentState = new ItemState(ItemId, ItemType);
         }
@@ -46,17 +48,21 @@ namespace SmartHomeApi.DeviceUtils
             {
                 await Task.Delay(RefreshIntervalMS);
 
+                bool failed = false;
+
                 var state = await RequestData();
                 ExtendItemStates(state);
 
-                bool failed = false;
+                if (!CurrentState.States.Any() && !state.States.Any())
+                    failed = true;
+
                 foreach (var telemetryPair in CurrentState.States)
                 {
                     if (!state.States.ContainsKey(telemetryPair.Key))
                     {
                         failed = true;
 
-                        if (_requestFailureCount < RequestFailureThreshold)
+                        if (_requestFailureCount < RequestFailureMaxThreshold)
                         {
                             //Take previous value
                             state.States.Add(telemetryPair.Key, telemetryPair.Value);
@@ -68,11 +74,15 @@ namespace SmartHomeApi.DeviceUtils
                 {
                     _requestFailureCount++;
 
-                    if (_requestFailureCount < RequestFailureThreshold)
+                    if (_requestFailureCount < RequestFailureMinThreshold)
+                    {
+                        state.ConnectionStatus = ConnectionStatus.Stable;
+                    }
+                    else if (_requestFailureCount < RequestFailureMaxThreshold)
                     {
                         state.ConnectionStatus = ConnectionStatus.Unstable;
                     }
-                    else if (_requestFailureCount >= RequestFailureThreshold)
+                    else if (_requestFailureCount >= RequestFailureMaxThreshold)
                     {
                         state.ConnectionStatus = ConnectionStatus.Lost;
                     }

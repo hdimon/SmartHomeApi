@@ -8,8 +8,9 @@ namespace Scenarios
     {
         private readonly int _heatingSystemMorningAdvanceMinutes = 45;
         private readonly int _heatingSystemMorningDurationMinutes = 60;
+        private readonly int _failoverActionIntervalSeconds = 30;
 
-        public HeatingSystem(IApiManager manager) : base(manager)
+        public HeatingSystem(IApiManager manager, IItemHelpersFabric helpersFabric) : base(manager, helpersFabric)
         {
         }
 
@@ -50,33 +51,50 @@ namespace Scenarios
 
         private async Task ProcessScenarioParameter(StateChangedEvent args)
         {
+            ISetValueResult[] results = null;
+
             switch (args.NewValue)
             {
                 case "Outdoor":
-                    await Task.WhenAll(Manager.SetValue("Kitchen_Floor", "SetTemperature", "20"),
-                        Manager.SetValue("Bathroom_Floor", "SetTemperature", "20"),
-                        Manager.SetValue("Toilet_Floor", "SetTemperature", "20"),
-                        Manager.SetValue("Bedroom_Floor", "SetTemperature", "20")).ConfigureAwait(false);
+                    results = await Task.WhenAll(Manager.SetValue("Kitchen_Floor", "SetTemperature", "20"),
+                                            Manager.SetValue("Bathroom_Floor", "SetTemperature", "20"),
+                                            Manager.SetValue("Toilet_Floor", "SetTemperature", "20"),
+                                            Manager.SetValue("Bedroom_Floor", "SetTemperature", "20"))
+                                        .ConfigureAwait(false);
                     break;
                 case "Indoor":
-                    await Task.WhenAll(Manager.SetValue("Kitchen_Floor", "SetTemperature", "29"),
-                        Manager.SetValue("Bathroom_Floor", "SetTemperature", "28"),
-                        Manager.SetValue("Toilet_Floor", "SetTemperature", "28"),
-                        Manager.SetValue("Bedroom_Floor", "SetTemperature", "26")).ConfigureAwait(false);
+                    results = await Task.WhenAll(Manager.SetValue("Kitchen_Floor", "SetTemperature", "29"),
+                                            Manager.SetValue("Bathroom_Floor", "SetTemperature", "28"),
+                                            Manager.SetValue("Toilet_Floor", "SetTemperature", "28"),
+                                            Manager.SetValue("Bedroom_Floor", "SetTemperature", "26"))
+                                        .ConfigureAwait(false);
                     break;
                 case "Sleep":
-                    await Task.WhenAll(Manager.SetValue("Kitchen_Floor", "SetTemperature", "20"),
-                        Manager.SetValue("Bathroom_Floor", "SetTemperature", "20"),
-                        Manager.SetValue("Toilet_Floor", "SetTemperature", "20"),
-                        Manager.SetValue("Bedroom_Floor", "SetTemperature", "24")).ConfigureAwait(false);
+                    results = await Task.WhenAll(Manager.SetValue("Kitchen_Floor", "SetTemperature", "20"),
+                                            Manager.SetValue("Bathroom_Floor", "SetTemperature", "20"),
+                                            Manager.SetValue("Toilet_Floor", "SetTemperature", "20"),
+                                            Manager.SetValue("Bedroom_Floor", "SetTemperature", "24"))
+                                        .ConfigureAwait(false);
                     break;
                 case "Morning":
-                    await Task.WhenAll(Manager.SetValue("Kitchen_Floor", "SetTemperature", "30"),
-                        Manager.SetValue("Bathroom_Floor", "SetTemperature", "30"),
-                        Manager.SetValue("Toilet_Floor", "SetTemperature", "30"),
-                        Manager.SetValue("Bedroom_Floor", "SetTemperature", "26")).ConfigureAwait(false);
+                    results = await Task.WhenAll(Manager.SetValue("Kitchen_Floor", "SetTemperature", "30"),
+                                            Manager.SetValue("Bathroom_Floor", "SetTemperature", "30"),
+                                            Manager.SetValue("Toilet_Floor", "SetTemperature", "30"),
+                                            Manager.SetValue("Bedroom_Floor", "SetTemperature", "26"))
+                                        .ConfigureAwait(false);
                     break;
             }
+
+            EnsureOperationIsSuccessful(args, results, _failoverActionIntervalSeconds, async () =>
+            {
+                var currentScenario = Manager.GetState("Virtual_States", "Scenario");
+
+                //If scenario has been already changed then stop
+                if (currentScenario?.ToString() != args.NewValue)
+                    return;
+
+                await ProcessScenarioParameter(args).ConfigureAwait(false);
+            });
         }
 
         private async Task ProcessVirtualMainAlarmClockEvents(StateChangedEvent args)
@@ -92,6 +110,15 @@ namespace Scenarios
                     await Manager.SetValue("Virtual_HeatingSystemMorningAlarmClock", "Time", heatingSystemAlarmStr)
                                  .ConfigureAwait(false);
                     break;
+                case "Enabled":
+                    if (!bool.TryParse(args.NewValue, out var enabled))
+                        return;
+
+                    await Manager.SetValue("Virtual_HeatingSystemMorningAlarmClock", "Enabled", args.NewValue)
+                                 .ConfigureAwait(false);
+                    await Manager.SetValue("Virtual_HeatingSystemAfterMorningAlarmClock", "Enabled", args.NewValue)
+                                 .ConfigureAwait(false);
+                    break;
             }
         }
 
@@ -100,6 +127,9 @@ namespace Scenarios
             switch (args.Parameter)
             {
                 case "Alarm":
+                    if (args.EventType == StateChangedEventType.ValueRemoved)
+                        break;
+
                     var alarmTimeStr = args.NewValue;
                     var alarmTime = DateTime.Parse(alarmTimeStr);
                     var afterMorningAlarmTime = alarmTime

@@ -5,7 +5,9 @@ namespace Scenarios
 {
     public class VentilationSystem : StateChangedSubscriberAbstract
     {
-        public VentilationSystem(IApiManager manager) : base(manager)
+        private readonly int _failoverActionIntervalSeconds = 30;
+
+        public VentilationSystem(IApiManager manager, IItemHelpersFabric helpersFabric) : base(manager, helpersFabric)
         {
         }
 
@@ -37,19 +39,35 @@ namespace Scenarios
 
         private async Task ProcessScenarioParameter(StateChangedEvent args)
         {
+            ISetValueResult[] results = null;
+
             switch (args.NewValue)
             {
                 case "Outdoor":
-                    await Task.WhenAll(Manager.SetValue("Breezart", "UnitState", "Off")).ConfigureAwait(false);
+                    results = await Task.WhenAll(Manager.SetValue("Breezart", "UnitState", "Off"))
+                                        .ConfigureAwait(false);
                     break;
                 case "Indoor":
-                    await Task.WhenAll(Manager.SetValue("Breezart", "UnitState", "On")).ConfigureAwait(false);
+                    results = await Task.WhenAll(Manager.SetValue("Breezart", "UnitState", "On")).ConfigureAwait(false);
                     break;
                 case "Sleep":
+                    results = await Task.WhenAll(Manager.SetValue("Breezart", "UnitState", "On")).ConfigureAwait(false);
                     break;
                 case "Morning":
+                    results = await Task.WhenAll(Manager.SetValue("Breezart", "UnitState", "On")).ConfigureAwait(false);
                     break;
             }
+
+            EnsureOperationIsSuccessful(args, results, _failoverActionIntervalSeconds, async () =>
+            {
+                var currentScenario = Manager.GetState("Virtual_States", "Scenario");
+
+                //If scenario has been already changed then stop
+                if (currentScenario?.ToString() != args.NewValue)
+                    return;
+
+                await ProcessScenarioParameter(args).ConfigureAwait(false);
+            });
         }
     }
 }

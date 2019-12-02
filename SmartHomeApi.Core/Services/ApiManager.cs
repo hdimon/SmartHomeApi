@@ -51,14 +51,15 @@ namespace SmartHomeApi.Core.Services
         private async Task<IEnumerable<IItem>> GetItems(IItemsLocator locator)
         {
             var items = await locator.GetItems();
+            var itemsList = items.ToList();
 
-            foreach (var item in items)
+            foreach (var item in itemsList)
             {
                 if (item is IInitializable initializable)
                     await initializable.Initialize();
             }
 
-            return items;
+            return itemsList;
         }
 
         public void Dispose()
@@ -124,6 +125,14 @@ namespace SmartHomeApi.Core.Services
             }
 
             return string.Empty;
+        }
+
+        public async Task<IList<IItem>> GetItems()
+        {
+            var itemsLocator = _fabric.GetItemsLocator();
+            var items = await GetItems(itemsLocator);
+
+            return items.ToList();
         }
 
         private IStatesContainer CreateStatesContainer()

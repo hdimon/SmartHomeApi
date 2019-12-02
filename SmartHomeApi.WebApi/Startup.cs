@@ -1,5 +1,8 @@
+using System;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,6 +19,8 @@ namespace SmartHomeApi.WebApi
 {
     public class Startup
     {
+        private IServiceProvider _services;
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -31,10 +36,10 @@ namespace SmartHomeApi.WebApi
             services.AddSingleton<IItemsLocator, ItemsLocator>();
             services.AddSingleton<IApiManager, ApiManager>();
             services.AddSingleton<IItemsConfigLocator, ItemsConfigLocator>();
-            services.AddSingleton<IDeviceHelpersFabric, DeviceHelpersDefaultFabric>();
+            services.AddSingleton<IItemHelpersFabric, ItemHelpersDefaultFabric>();
             services.AddSingleton<IApiLogger, ApiLogger>();
 
-            services.AddTransient<IDeviceStateStorageHelper, DeviceStateStorageHelper>();
+            services.AddTransient<IItemStateStorageHelper, ItemStateStorageHelper>();
 
             services.AddControllers();
 
@@ -52,12 +57,26 @@ namespace SmartHomeApi.WebApi
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime applicationLifetime)
         {
+            _services = app.ApplicationServices;
+
+            //applicationLifetime.ApplicationStopped.Register(StopEvent);
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseExceptionHandler(a => a.Run(async context =>
+            {
+                var feature = context.Features.Get<IExceptionHandlerPathFeature>();
+                var exception = feature.Error;
+
+                var result = JsonConvert.SerializeObject(new { error = exception.Message });
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync(result);
+            }));
 
             app.UseRouting();
 
@@ -68,5 +87,12 @@ namespace SmartHomeApi.WebApi
                 endpoints.MapControllers();
             });
         }
+
+        /*private void StopEvent()
+        {
+            var manager = _services.GetService<IApiManager>();
+
+            manager?.Dispose();
+        }*/
     }
 }

@@ -18,8 +18,9 @@ namespace Scenarios
             _fabric = fabric;
             var manager = _fabric.GetApiManager();
 
-            _scenarios.Add(new HeatingSystem(manager));
-            _scenarios.Add(new VentilationSystem(manager));
+            _scenarios.Add(new HeatingSystem(manager, _fabric.GetItemHelpersFabric()));
+            _scenarios.Add(new VentilationSystem(manager, _fabric.GetItemHelpersFabric()));
+            _scenarios.Add(new AlarmClocksProcessor(manager, _fabric.GetItemHelpersFabric()));
         }
 
         public async Task<IEnumerable<IItem>> GetItems()
