@@ -2,9 +2,9 @@
 
 namespace SmartHomeApi.Core.UnitTests.Stubs
 {
-    class DeviceHelpersStubFabric : IDeviceHelpersFabric
+    class DeviceHelpersStubFabric : IItemHelpersFabric
     {
-        public IDeviceStateStorageHelper GetDeviceStateStorageHelper()
+        public IItemStateStorageHelper GetDeviceStateStorageHelper()
         {
             return new DeviceStateStorageStubHelper();
         }

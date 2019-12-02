@@ -23,7 +23,7 @@ namespace SmartHomeApi.Core
             return _provider.GetService<IItemsLocator>();
         }
 
-        public IItemsConfigLocator GetDeviceConfigsLocator()
+        public IItemsConfigLocator GetItemsConfigsLocator()
         {
             return _provider.GetService<IItemsConfigLocator>();
         }
@@ -33,9 +33,9 @@ namespace SmartHomeApi.Core
             return _provider.GetService<IApiManager>();
         }
 
-        public IDeviceHelpersFabric GetDeviceHelpersFabric()
+        public IItemHelpersFabric GetItemHelpersFabric()
         {
-            return _provider.GetService<IDeviceHelpersFabric>();
+            return _provider.GetService<IItemHelpersFabric>();
         }
 
         public IApiLogger GetApiLogger()

@@ -6,11 +6,11 @@ using SmartHomeApi.Core.Interfaces;
 
 namespace SmartHomeApi.Core.DeviceHelpers
 {
-    public class DeviceStateStorageHelper : IDeviceStateStorageHelper
+    public class ItemStateStorageHelper : IItemStateStorageHelper
     {
         private readonly IApiLogger _logger;
 
-        public DeviceStateStorageHelper(IApiLogger logger)
+        public ItemStateStorageHelper(IApiLogger logger)
         {
             _logger = logger;
         }

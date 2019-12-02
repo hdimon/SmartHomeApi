@@ -4,13 +4,13 @@ namespace SmartHomeApi.Core.Interfaces
 {
     public abstract class DeviceAbstract : IItem, IStateSettable, IStateGettable, IConfigurable, IInitializable
     {
-        protected readonly IDeviceHelpersFabric HelpersFabric;
+        protected readonly IItemHelpersFabric HelpersFabric;
         protected readonly IApiLogger Logger;
         public string ItemId { get; }
         public string ItemType { get; }
         public IItemConfig Config { get; }
 
-        protected DeviceAbstract(IDeviceHelpersFabric helpersFabric, IItemConfig config)
+        protected DeviceAbstract(IItemHelpersFabric helpersFabric, IItemConfig config)
         {
             HelpersFabric = helpersFabric;
             Config = config;

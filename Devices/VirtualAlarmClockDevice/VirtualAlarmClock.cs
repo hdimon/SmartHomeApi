@@ -7,7 +7,7 @@ namespace VirtualAlarmClockDevice
 {
     public class VirtualAlarmClock : DeviceAbstract
     {
-        private readonly IDeviceStateStorageHelper _deviceStateStorage;
+        private readonly IItemStateStorageHelper _deviceStateStorage;
         private ConcurrentDictionary<string, string> _states;
         private Task _worker;
         private DateTime? _time;
@@ -17,7 +17,7 @@ namespace VirtualAlarmClockDevice
         private const string AlarmParameter = "Alarm";
         private const string EnabledParameter = "Enabled";
 
-        public VirtualAlarmClock(IDeviceHelpersFabric helpersFabric, IItemConfig config) : base(helpersFabric, config)
+        public VirtualAlarmClock(IItemHelpersFabric helpersFabric, IItemConfig config) : base(helpersFabric, config)
         {
             _deviceStateStorage = HelpersFabric.GetDeviceStateStorageHelper();
         }

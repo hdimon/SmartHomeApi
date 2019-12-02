@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using SmartHomeApi.Core.Interfaces;
 
 namespace SmartHomeApi.Core.UnitTests.Stubs
 {
-    class DeviceStateStorageStubHelper : IDeviceStateStorageHelper
+    class DeviceStateStorageStubHelper : IItemStateStorageHelper
     {
         public async Task SaveState(object state, string fileNamePattern)
         {

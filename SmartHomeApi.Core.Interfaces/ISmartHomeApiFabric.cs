@@ -4,9 +4,9 @@
     {
         IItemsPluginsLocator GetItemsPluginsLocator();
         IItemsLocator GetItemsLocator();
-        IItemsConfigLocator GetDeviceConfigsLocator();
+        IItemsConfigLocator GetItemsConfigsLocator();
         IApiManager GetApiManager();
-        IDeviceHelpersFabric GetDeviceHelpersFabric();
+        IItemHelpersFabric GetItemHelpersFabric();
         IApiLogger GetApiLogger();
     }
 }

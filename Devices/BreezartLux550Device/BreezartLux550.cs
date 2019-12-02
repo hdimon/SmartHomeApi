@@ -23,20 +23,28 @@ namespace BreezartLux550Device
         private string _requestStateCommand = "VSt07_FFFF";
         private string _requestSensorsCommand = "VSens_FFFF";
 
-        public BreezartLux550(IDeviceHelpersFabric helpersFabric, IItemConfig config) : base(helpersFabric, config)
+        public BreezartLux550(IItemHelpersFabric helpersFabric, IItemConfig config) : base(helpersFabric, config)
         {
             CurrentState = new ItemState(ItemId, ItemType);
         }
 
         protected override async Task InitializeDevice()
         {
-            var config = (BreezartLux550Config)Config;
-            _client = new TcpClient(config.IpAddress, 1560);
+            SetTcpClient();
 
             _getCommandsQueue.Enqueue(_requestStateCommand);
             _getCommandsQueue.Enqueue(_requestSensorsCommand);
 
             RunDataCollectorWorker();
+        }
+
+        private void SetTcpClient()
+        {
+            if (_client == null || !_client.Connected)
+            {
+                var config = (BreezartLux550Config)Config;
+                _client = new TcpClient(config.IpAddress, 1560);
+            }
         }
 
         private void RunDataCollectorWorker()
@@ -139,7 +147,7 @@ namespace BreezartLux550Device
 
             var response = await SendCommand(commandText, 3);
 
-            if (!response.StartsWith("OK_"))
+            if (string.IsNullOrWhiteSpace(response) || !response.StartsWith("OK_"))
                 result.Success = false;
 
             command.TaskCompletionSource.SetResult(result);
@@ -221,6 +229,7 @@ namespace BreezartLux550Device
 
                 await _semaphoreSlim.WaitAsync();
 
+                SetTcpClient();
                 NetworkStream stream = _client.GetStream();
 
                 // Send the message to the connected TcpServer. 

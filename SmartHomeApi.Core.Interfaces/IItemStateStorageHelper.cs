@@ -2,7 +2,7 @@
 
 namespace SmartHomeApi.Core.Interfaces
 {
-    public interface IDeviceStateStorageHelper
+    public interface IItemStateStorageHelper
     {
         Task SaveState(object state, string fileNamePattern);
         T RestoreState<T>(string fileNamePattern);

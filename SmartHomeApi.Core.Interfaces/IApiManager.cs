@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SmartHomeApi.Core.Interfaces
@@ -11,5 +12,6 @@ namespace SmartHomeApi.Core.Interfaces
         IStatesContainer GetState();
         IItemState GetState(string deviceId);
         object GetState(string deviceId, string parameter);
+        Task<IList<IItem>> GetItems();
     }
 }

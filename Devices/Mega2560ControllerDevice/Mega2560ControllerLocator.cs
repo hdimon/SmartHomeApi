@@ -21,8 +21,8 @@ namespace Mega2560ControllerDevice
 
         public async Task<IEnumerable<IItem>> GetItems()
         {
-            var configLocator = _fabric.GetDeviceConfigsLocator();
-            var helpersFabric = _fabric.GetDeviceHelpersFabric();
+            var configLocator = _fabric.GetItemsConfigsLocator();
+            var helpersFabric = _fabric.GetItemHelpersFabric();
 
             var configs = configLocator.GetItemsConfigs(ItemType);
 

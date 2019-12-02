@@ -4,18 +4,18 @@ using SmartHomeApi.Core.Interfaces;
 
 namespace SmartHomeApi.Core
 {
-    public class DeviceHelpersDefaultFabric : IDeviceHelpersFabric
+    public class ItemHelpersDefaultFabric : IItemHelpersFabric
     {
         private readonly IServiceProvider _provider;
 
-        public DeviceHelpersDefaultFabric(IServiceProvider provider)
+        public ItemHelpersDefaultFabric(IServiceProvider provider)
         {
             _provider = provider;
         }
 
-        public IDeviceStateStorageHelper GetDeviceStateStorageHelper()
+        public IItemStateStorageHelper GetDeviceStateStorageHelper()
         {
-            return _provider.GetService<IDeviceStateStorageHelper>();
+            return _provider.GetService<IItemStateStorageHelper>();
         }
 
         public IApiLogger GetApiLogger()
