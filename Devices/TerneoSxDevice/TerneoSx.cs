@@ -49,7 +49,7 @@ namespace TerneoSxDevice
 
             string responseString = await PostContent(content, 15);
 
-            if (string.IsNullOrWhiteSpace(responseString))
+            if (string.IsNullOrWhiteSpace(responseString) || responseString.Trim() != "{\"success\":\"true\"}")
             {
                 result.Success = false;
                 return result;

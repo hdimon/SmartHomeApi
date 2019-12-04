@@ -130,6 +130,21 @@ namespace Scenarios
                     if (args.EventType == StateChangedEventType.ValueRemoved)
                         break;
 
+                    var currentScenario = Manager.GetState("Virtual_States", "Scenario");
+
+                    //1. If scenario is already morning it means alarm clock was reset
+                    //(for example initially it was set on 8:30 but in 8:20 or 8:40 (i.e. during Morning interval) it was reset to 8:50)
+                    //then just cancel alarm.
+                    //2. If scenario is Outdoor it means nobody is in home so just cancel alarm, no need to heat flat.
+                    //3. If scenario is Indoor it means daytime sleep, cancel alarm because flat is already heated likely.
+                    if (currentScenario?.ToString() == "Morning" || currentScenario?.ToString() == "Outdoor" ||
+                        currentScenario?.ToString() == "Indoor")
+                    {
+                        await Manager.SetValue("Virtual_HeatingSystemMorningAlarmClock", "Alarm", null)
+                                     .ConfigureAwait(false);
+                        break;
+                    }
+
                     var alarmTimeStr = args.NewValue;
                     var alarmTime = DateTime.Parse(alarmTimeStr);
                     var afterMorningAlarmTime = alarmTime
