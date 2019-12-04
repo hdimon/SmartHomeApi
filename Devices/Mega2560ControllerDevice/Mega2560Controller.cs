@@ -25,6 +25,7 @@ namespace Mega2560ControllerDevice
         private int? _previousCO2;
         private int? _previousHumidityPercent;
         private double? _previousTemperatureC;
+        private readonly List<string> _availablePinCommands = new List<string> { "high", "low", "pimp", "nimp" };
 
         public Mega2560Controller(IItemHelpersFabric helpersFabric, IItemConfig config) : base(helpersFabric,
             config)
@@ -32,14 +33,28 @@ namespace Mega2560ControllerDevice
             RefreshIntervalMS = 300;
         }
 
+        protected override Task InitializeDevice()
+        {
+            _client.Timeout = new TimeSpan(0, 0, 10);
+
+            return base.InitializeDevice();
+        }
+
         protected override async Task<IItemState> RequestData()
         {
-            var state = new ItemState(ItemId, ItemType);
-
             var content = new StringContent("", Encoding.UTF8, "application/text");
             content.Headers.ContentType = new MediaTypeHeaderValue("application/text");
 
             string responseString = await PostContent(content);
+
+            var state = ParseState(responseString);
+
+            return state;
+        }
+
+        private ItemState ParseState(string responseString)
+        {
+            var state = new ItemState(ItemId, ItemType);
 
             if (string.IsNullOrWhiteSpace(responseString))
                 return state;
@@ -145,15 +160,15 @@ namespace Mega2560ControllerDevice
             }
         }
 
-        private async Task<string> PostContent(StringContent content, int maxTries = 1)
+        private async Task<string> PostContent(StringContent content, string action = "get",
+            string requestParams = null, int maxTries = 1)
         {
             string responseString = null;
 
             try
             {
-                responseString =
-                    await AsyncHelpers.RetryOnFault(() => PostContentWithLock(content), maxTries,
-                        () => Task.Delay(2000));
+                responseString = await AsyncHelpers.RetryOnFault(
+                    () => PostContentWithLock(content, action, requestParams), maxTries, () => Task.Delay(2000));
             }
             catch (Exception e)
             {
@@ -163,16 +178,19 @@ namespace Mega2560ControllerDevice
             return responseString;
         }
 
-        private async Task<string> PostContentWithLock(StringContent content)
+        private async Task<string> PostContentWithLock(StringContent content, string action = "get",
+            string requestParams = null)
         {
             var config = (Mega2560ControllerConfig)Config;
             string responseString;
+            string paramsString = string.IsNullOrWhiteSpace(requestParams) ? string.Empty : $"?{requestParams}";
 
             try
             {
                 await _semaphoreSlimHttpPost.WaitAsync();
 
-                using (var response = await _client.PostAsync($"http://{config.IpAddress}/get", content))
+                using (var response =
+                    await _client.PostAsync($"http://{config.IpAddress}/{action}{paramsString}", content))
                 {
                     responseString = await response.Content.ReadAsStringAsync();
                 }
@@ -187,7 +205,29 @@ namespace Mega2560ControllerDevice
 
         public override async Task<ISetValueResult> SetValue(string parameter, string value)
         {
-            throw new NotImplementedException();
+            var result = new SetValueResult();
+
+            if (!parameter.StartsWith("pin") || !_availablePinCommands.Contains(value))
+            {
+                result.Success = false;
+                return result;
+            }
+
+            var content = new StringContent("", Encoding.UTF8, "application/text");
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/text");
+
+            string responseString = await PostContent(content, "set", $"{parameter}={value}");
+
+            if (string.IsNullOrWhiteSpace(responseString))
+            {
+                result.Success = false;
+                return result;
+            }
+
+            var state = ParseState(responseString);
+            SetStateSafely(state);
+
+            return result;
         }
     }
 }
