@@ -40,6 +40,8 @@ namespace SmartHomeApi.Core.Services
                     new VirtualAlarmClockConfig("Virtual_HeatingSystemMorningAlarmClock", "VirtualAlarmClockDevice")
                         { EveryDay = false },
                     new VirtualAlarmClockConfig("Virtual_HeatingSystemAfterMorningAlarmClock", "VirtualAlarmClockDevice")
+                        { EveryDay = false },
+                    new VirtualAlarmClockConfig("Virtual_TowelHeaterTurningOffAlarmClock", "VirtualAlarmClockDevice")
                         { EveryDay = false }
                 };
 
@@ -47,7 +49,9 @@ namespace SmartHomeApi.Core.Services
                 return new List<IItemConfig>
                 {
                     new Mega2560ControllerConfig("Bedroom_Mega2560", "Mega2560Controller")
-                        { Mac = "aa:bb:cc:00:00:01", IpAddress = "192.168.1.58" }
+                        { Mac = "aa:bb:cc:00:00:01", IpAddress = "192.168.1.58" },
+                    new Mega2560ControllerConfig("Toilet_Mega2560", "Mega2560Controller")
+                        { Mac = "aa:bb:cc:00:00:02", IpAddress = "192.168.1.60" }
                 };
 
             if (itemType == "BreezartLux550")

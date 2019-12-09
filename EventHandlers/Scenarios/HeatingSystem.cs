@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using SmartHomeApi.Core.Interfaces;
 
@@ -8,7 +9,14 @@ namespace Scenarios
     {
         private readonly int _heatingSystemMorningAdvanceMinutes = 45;
         private readonly int _heatingSystemMorningDurationMinutes = 60;
+        private readonly int _towelHeaterDurationMinutes = 60;
         private readonly int _failoverActionIntervalSeconds = 30;
+        private const string _morningScenario = "Morning";
+        private const string _indoorScenario = "Indoor";
+        private const string _outdoorSubScenarioGoingHome = "GoingHome";
+        private const string _outdoorSubScenarioNone = "None";
+        private const string _outdoorScenario = "Outdoor";
+        private const string _sleepScenario = "Sleep";
 
         public HeatingSystem(IApiManager manager, IItemHelpersFabric helpersFabric) : base(manager, helpersFabric)
         {
@@ -36,6 +44,9 @@ namespace Scenarios
                 case "Virtual_HeatingSystemAfterMorningAlarmClock":
                     await ProcessVirtualHeatingSystemAfterMorningAlarmClockEvents(args).ConfigureAwait(false);
                     break;
+                case "Virtual_TowelHeaterTurningOffAlarmClock":
+                    await ProcessVirtualTowelHeaterTurningOffAlarmClockEvents(args).ConfigureAwait(false);
+                    break;
             }
         }
 
@@ -46,6 +57,9 @@ namespace Scenarios
                 case "Scenario":
                     await ProcessScenarioParameter(args).ConfigureAwait(false);
                     break;
+                case "OutdoorSubScenario":
+                    await ProcessOutdoorSubScenarioParameter(args).ConfigureAwait(false);
+                    break;
             }
         }
 
@@ -53,34 +67,53 @@ namespace Scenarios
         {
             ISetValueResult[] results = null;
 
+            DateTime towelHeaterAlarm;
+            string towelHeaterAlarmStr;
+
+            List<Task<ISetValueResult>> commands;
             switch (args.NewValue)
             {
-                case "Outdoor":
-                    results = await Task.WhenAll(Manager.SetValue("Kitchen_Floor", "SetTemperature", "20"),
+                case _outdoorScenario:
+                    towelHeaterAlarm = DateTime.Now.AddMinutes(_towelHeaterDurationMinutes);
+                    towelHeaterAlarmStr = towelHeaterAlarm.ToLongTimeString();
+
+                    commands = new List<Task<ISetValueResult>>
+                        { Manager.SetValue("Virtual_States", "OutdoorSubScenario", _outdoorSubScenarioNone) };
+                    commands.AddRange(GetOutdoorScenarioTemperatureCommands());
+                    commands.Add(Manager.SetValue("Virtual_TowelHeaterTurningOffAlarmClock", "Time",
+                        towelHeaterAlarmStr));
+
+                    results = await Task.WhenAll(commands).ConfigureAwait(false);
+                    break;
+                case _indoorScenario:
+
+                    commands = new List<Task<ISetValueResult>>
+                        { Manager.SetValue("Virtual_States", "OutdoorSubScenario", _outdoorSubScenarioNone) };
+                    commands.AddRange(GetIndoorScenarioTemperatureCommands());
+                    commands.Add(Manager.SetValue("Toilet_Mega2560", "pin3", "low"));
+
+                    results = await Task.WhenAll(commands).ConfigureAwait(false);
+                    break;
+                case _sleepScenario:
+                    towelHeaterAlarm = DateTime.Now.AddMinutes(_towelHeaterDurationMinutes);
+                    towelHeaterAlarmStr = towelHeaterAlarm.ToLongTimeString();
+
+                    results = await Task.WhenAll(Manager.SetValue("Virtual_States", "OutdoorSubScenario", _outdoorSubScenarioNone),
+                                            Manager.SetValue("Kitchen_Floor", "SetTemperature", "20"),
                                             Manager.SetValue("Bathroom_Floor", "SetTemperature", "20"),
                                             Manager.SetValue("Toilet_Floor", "SetTemperature", "20"),
-                                            Manager.SetValue("Bedroom_Floor", "SetTemperature", "20"))
+                                            Manager.SetValue("Bedroom_Floor", "SetTemperature", "22"),
+                                            Manager.SetValue("Virtual_TowelHeaterTurningOffAlarmClock", "Time",
+                                                towelHeaterAlarmStr))
                                         .ConfigureAwait(false);
                     break;
-                case "Indoor":
-                    results = await Task.WhenAll(Manager.SetValue("Kitchen_Floor", "SetTemperature", "29"),
-                                            Manager.SetValue("Bathroom_Floor", "SetTemperature", "28"),
-                                            Manager.SetValue("Toilet_Floor", "SetTemperature", "28"),
-                                            Manager.SetValue("Bedroom_Floor", "SetTemperature", "26"))
-                                        .ConfigureAwait(false);
-                    break;
-                case "Sleep":
-                    results = await Task.WhenAll(Manager.SetValue("Kitchen_Floor", "SetTemperature", "20"),
-                                            Manager.SetValue("Bathroom_Floor", "SetTemperature", "20"),
-                                            Manager.SetValue("Toilet_Floor", "SetTemperature", "20"),
-                                            Manager.SetValue("Bedroom_Floor", "SetTemperature", "24"))
-                                        .ConfigureAwait(false);
-                    break;
-                case "Morning":
-                    results = await Task.WhenAll(Manager.SetValue("Kitchen_Floor", "SetTemperature", "30"),
+                case _morningScenario:
+                    results = await Task.WhenAll(Manager.SetValue("Virtual_States", "OutdoorSubScenario", _outdoorSubScenarioNone),
+                                            Manager.SetValue("Kitchen_Floor", "SetTemperature", "30"),
                                             Manager.SetValue("Bathroom_Floor", "SetTemperature", "30"),
                                             Manager.SetValue("Toilet_Floor", "SetTemperature", "30"),
-                                            Manager.SetValue("Bedroom_Floor", "SetTemperature", "26"))
+                                            Manager.SetValue("Bedroom_Floor", "SetTemperature", "26"),
+                                            Manager.SetValue("Toilet_Mega2560", "pin3", "low"))
                                         .ConfigureAwait(false);
                     break;
             }
@@ -91,6 +124,64 @@ namespace Scenarios
 
                 //If scenario has been already changed then stop
                 if (currentScenario?.ToString() != args.NewValue)
+                    return;
+
+                await ProcessScenarioParameter(args).ConfigureAwait(false);
+            });
+        }
+
+        private IList<Task<ISetValueResult>> GetOutdoorScenarioTemperatureCommands()
+        {
+            var commands = new List<Task<ISetValueResult>>
+            {
+                Manager.SetValue("Kitchen_Floor", "SetTemperature", "20"),
+                Manager.SetValue("Bathroom_Floor", "SetTemperature", "20"),
+                Manager.SetValue("Toilet_Floor", "SetTemperature", "20"),
+                Manager.SetValue("Bedroom_Floor", "SetTemperature", "20")
+            };
+
+            return commands;
+        }
+
+        private IList<Task<ISetValueResult>> GetIndoorScenarioTemperatureCommands()
+        {
+            var commands = new List<Task<ISetValueResult>>
+            {
+                Manager.SetValue("Kitchen_Floor", "SetTemperature", "29"),
+                Manager.SetValue("Bathroom_Floor", "SetTemperature", "28"),
+                Manager.SetValue("Toilet_Floor", "SetTemperature", "28"),
+                Manager.SetValue("Bedroom_Floor", "SetTemperature", "26")
+            };
+
+            return commands;
+        }
+
+        private async Task ProcessOutdoorSubScenarioParameter(StateChangedEvent args)
+        {
+            ISetValueResult[] results = null;
+
+            IList<Task<ISetValueResult>> commands;
+
+            switch (args.NewValue)
+            {
+                case _outdoorSubScenarioGoingHome:
+                    commands = GetIndoorScenarioTemperatureCommands();
+                    commands.Add(Manager.SetValue("Toilet_Mega2560", "pin3", "low"));
+                    results = await Task.WhenAll(commands).ConfigureAwait(false);
+                    break;
+                case _outdoorSubScenarioNone:
+                    commands = GetOutdoorScenarioTemperatureCommands();
+                    commands.Add(Manager.SetValue("Toilet_Mega2560", "pin3", "high"));
+                    results = await Task.WhenAll(commands).ConfigureAwait(false);
+                    break;
+            }
+
+            EnsureOperationIsSuccessful(args, results, _failoverActionIntervalSeconds, async () =>
+            {
+                var currentScenario = Manager.GetState("Virtual_States", "Scenario");
+
+                //If scenario not outdoor then stop
+                if (currentScenario?.ToString() != _outdoorScenario)
                     return;
 
                 await ProcessScenarioParameter(args).ConfigureAwait(false);
@@ -111,7 +202,7 @@ namespace Scenarios
                                  .ConfigureAwait(false);
                     break;
                 case "Enabled":
-                    if (!bool.TryParse(args.NewValue, out var enabled))
+                    if (!bool.TryParse(args.NewValue, out bool _))
                         return;
 
                     await Manager.SetValue("Virtual_HeatingSystemMorningAlarmClock", "Enabled", args.NewValue)
@@ -137,8 +228,8 @@ namespace Scenarios
                     //then just cancel alarm.
                     //2. If scenario is Outdoor it means nobody is in home so just cancel alarm, no need to heat flat.
                     //3. If scenario is Indoor it means daytime sleep, cancel alarm because flat is already heated likely.
-                    if (currentScenario?.ToString() == "Morning" || currentScenario?.ToString() == "Outdoor" ||
-                        currentScenario?.ToString() == "Indoor")
+                    if (currentScenario?.ToString() == _morningScenario || currentScenario?.ToString() == _outdoorScenario ||
+                        currentScenario?.ToString() == _indoorScenario)
                     {
                         await Manager.SetValue("Virtual_HeatingSystemMorningAlarmClock", "Alarm", null)
                                      .ConfigureAwait(false);
@@ -152,7 +243,7 @@ namespace Scenarios
                                                 .AddMinutes(_heatingSystemMorningDurationMinutes);
                     var afterMorningAlarmTimeStr = afterMorningAlarmTime.ToLongTimeString();
 
-                    await Manager.SetValue("Virtual_States", "Scenario", "Morning").ConfigureAwait(false);
+                    await Manager.SetValue("Virtual_States", "Scenario", _morningScenario).ConfigureAwait(false);
                     await Manager.SetValue("Virtual_HeatingSystemMorningAlarmClock", "Alarm", null)
                                  .ConfigureAwait(false);
                     await Manager
@@ -167,9 +258,48 @@ namespace Scenarios
             switch (args.Parameter)
             {
                 case "Alarm":
-                    await Manager.SetValue("Virtual_States", "Scenario", "Indoor").ConfigureAwait(false);
+                    await Manager.SetValue("Virtual_States", "Scenario", _indoorScenario).ConfigureAwait(false);
                     await Manager.SetValue("Virtual_HeatingSystemAfterMorningAlarmClock", "Alarm", null)
                                  .ConfigureAwait(false);
+                    break;
+            }
+        }
+        private async Task ProcessVirtualTowelHeaterTurningOffAlarmClockEvents(StateChangedEvent args)
+        {
+            switch (args.Parameter)
+            {
+                case "Alarm":
+                    await Manager.SetValue("Virtual_TowelHeaterTurningOffAlarmClock", "Alarm", null)
+                                 .ConfigureAwait(false);
+
+                    var currentScenario = Manager.GetState("Virtual_States", "Scenario");
+                    var currentOutdoorSubScenario = Manager.GetState("Virtual_States", "OutdoorSubScenario");
+
+                    //If scenario is Morning or Indoor or Outdoor but already going home then no need to turn off
+                    if (currentScenario?.ToString() == _morningScenario ||
+                        currentScenario?.ToString() == _indoorScenario ||
+                        currentScenario?.ToString() == _outdoorScenario &&
+                        currentOutdoorSubScenario?.ToString() == _outdoorSubScenarioGoingHome)
+                        return;
+
+                    //Turn off TowelHeater
+                    var results = await Task.WhenAll(Manager.SetValue("Toilet_Mega2560", "pin3", "high"))
+                                            .ConfigureAwait(false);
+
+                    EnsureOperationIsSuccessful(args, results, _failoverActionIntervalSeconds, async () =>
+                    {
+                        currentScenario = Manager.GetState("Virtual_States", "Scenario");
+                        currentOutdoorSubScenario = Manager.GetState("Virtual_States", "OutdoorSubScenario");
+
+                        //If scenario is Morning or Indoor or Outdoor but already going home then no need to turn off
+                        if (currentScenario?.ToString() == _morningScenario ||
+                            currentScenario?.ToString() == _indoorScenario ||
+                            currentScenario?.ToString() == _outdoorScenario &&
+                            currentOutdoorSubScenario?.ToString() == _outdoorSubScenarioGoingHome)
+                            return;
+
+                        await ProcessVirtualTowelHeaterTurningOffAlarmClockEvents(args).ConfigureAwait(false);
+                    });
                     break;
             }
         }
