@@ -98,23 +98,21 @@ namespace Scenarios
                     towelHeaterAlarm = DateTime.Now.AddMinutes(_towelHeaterDurationMinutes);
                     towelHeaterAlarmStr = towelHeaterAlarm.ToLongTimeString();
 
-                    results = await Task.WhenAll(Manager.SetValue("Virtual_States", "OutdoorSubScenario", _outdoorSubScenarioNone),
-                                            Manager.SetValue("Kitchen_Floor", "SetTemperature", "20"),
-                                            Manager.SetValue("Bathroom_Floor", "SetTemperature", "20"),
-                                            Manager.SetValue("Toilet_Floor", "SetTemperature", "20"),
-                                            Manager.SetValue("Bedroom_Floor", "SetTemperature", "22"),
-                                            Manager.SetValue("Virtual_TowelHeaterTurningOffAlarmClock", "Time",
-                                                towelHeaterAlarmStr))
-                                        .ConfigureAwait(false);
+                    commands = new List<Task<ISetValueResult>>
+                        { Manager.SetValue("Virtual_States", "OutdoorSubScenario", _outdoorSubScenarioNone) };
+                    commands.AddRange(GetSleepScenarioTemperatureCommands());
+                    commands.Add(Manager.SetValue("Virtual_TowelHeaterTurningOffAlarmClock", "Time",
+                        towelHeaterAlarmStr));
+
+                    results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
                 case _morningScenario:
-                    results = await Task.WhenAll(Manager.SetValue("Virtual_States", "OutdoorSubScenario", _outdoorSubScenarioNone),
-                                            Manager.SetValue("Kitchen_Floor", "SetTemperature", "30"),
-                                            Manager.SetValue("Bathroom_Floor", "SetTemperature", "30"),
-                                            Manager.SetValue("Toilet_Floor", "SetTemperature", "30"),
-                                            Manager.SetValue("Bedroom_Floor", "SetTemperature", "26"),
-                                            Manager.SetValue("Toilet_Mega2560", "pin3", "low"))
-                                        .ConfigureAwait(false);
+                    commands = new List<Task<ISetValueResult>>
+                        { Manager.SetValue("Virtual_States", "OutdoorSubScenario", _outdoorSubScenarioNone) };
+                    commands.AddRange(GetMorningScenarioTemperatureCommands());
+                    commands.Add(Manager.SetValue("Toilet_Mega2560", "pin3", "low"));
+
+                    results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
             }
 
@@ -150,6 +148,32 @@ namespace Scenarios
                 Manager.SetValue("Kitchen_Floor", "SetTemperature", "29"),
                 Manager.SetValue("Bathroom_Floor", "SetTemperature", "28"),
                 Manager.SetValue("Toilet_Floor", "SetTemperature", "28"),
+                Manager.SetValue("Bedroom_Floor", "SetTemperature", "26")
+            };
+
+            return commands;
+        }
+
+        private IList<Task<ISetValueResult>> GetSleepScenarioTemperatureCommands()
+        {
+            var commands = new List<Task<ISetValueResult>>
+            {
+                Manager.SetValue("Kitchen_Floor", "SetTemperature", "20"),
+                Manager.SetValue("Bathroom_Floor", "SetTemperature", "20"),
+                Manager.SetValue("Toilet_Floor", "SetTemperature", "20"),
+                Manager.SetValue("Bedroom_Floor", "SetTemperature", "22")
+            };
+
+            return commands;
+        }
+
+        private IList<Task<ISetValueResult>> GetMorningScenarioTemperatureCommands()
+        {
+            var commands = new List<Task<ISetValueResult>>
+            {
+                Manager.SetValue("Kitchen_Floor", "SetTemperature", "30"),
+                Manager.SetValue("Bathroom_Floor", "SetTemperature", "30"),
+                Manager.SetValue("Toilet_Floor", "SetTemperature", "30"),
                 Manager.SetValue("Bedroom_Floor", "SetTemperature", "26")
             };
 
