@@ -225,6 +225,14 @@ namespace Mega2560ControllerDevice
             }
 
             var state = ParseState(responseString);
+
+            if (state.States.Any())
+                state.ConnectionStatus = ConnectionStatus.Stable;
+            else
+            {
+                result.Success = false;
+            }
+
             SetStateSafely(state);
 
             return result;
