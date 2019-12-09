@@ -86,7 +86,6 @@ namespace Scenarios
                     results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
                 case _indoorScenario:
-
                     commands = new List<Task<ISetValueResult>>
                         { Manager.SetValue("Virtual_States", "OutdoorSubScenario", _outdoorSubScenarioNone) };
                     commands.AddRange(GetIndoorScenarioTemperatureCommands());
@@ -186,14 +185,22 @@ namespace Scenarios
 
             IList<Task<ISetValueResult>> commands;
 
+            var currentScenario = Manager.GetState("Virtual_States", "Scenario");
+
             switch (args.NewValue)
             {
                 case _outdoorSubScenarioGoingHome:
+                    if (currentScenario?.ToString() != _outdoorScenario)
+                        return;
+
                     commands = GetIndoorScenarioTemperatureCommands();
                     commands.Add(Manager.SetValue("Toilet_Mega2560", "pin3", "low"));
                     results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
                 case _outdoorSubScenarioNone:
+                    if (currentScenario?.ToString() != _outdoorScenario)
+                        return;
+
                     commands = GetOutdoorScenarioTemperatureCommands();
                     commands.Add(Manager.SetValue("Toilet_Mega2560", "pin3", "high"));
                     results = await Task.WhenAll(commands).ConfigureAwait(false);
@@ -202,7 +209,7 @@ namespace Scenarios
 
             EnsureOperationIsSuccessful(args, results, _failoverActionIntervalSeconds, async () =>
             {
-                var currentScenario = Manager.GetState("Virtual_States", "Scenario");
+                currentScenario = Manager.GetState("Virtual_States", "Scenario");
 
                 //If scenario not outdoor then stop
                 if (currentScenario?.ToString() != _outdoorScenario)
