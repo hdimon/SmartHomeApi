@@ -10,6 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Common.Utils\Common.Utils.csproj" />
     <ProjectReference Include="..\..\SmartHomeApi.Core.Interfaces\SmartHomeApi.Core.Interfaces.csproj" />
   </ItemGroup>
 

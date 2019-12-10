@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Common.Utils;
 using Dapper;
 using Npgsql;
 using SmartHomeApi.Core.Interfaces;
@@ -43,21 +44,14 @@ namespace EventsPostgreSqlStorage
                 EventDate = DateTimeOffset.Now
             };
 
-            await SaveEvent(initEvent, true);
+            await SaveEventWithRetryOnFault(initEvent, true);
         }
 
-        private async Task SaveEvent(EventItem eventItem, bool rethrowExceptionOnFault = false)
+        private async Task SaveEventWithRetryOnFault(EventItem eventItem, bool rethrowExceptionOnFault = false)
         {
             try
             {
-                using (NpgsqlConnection dbConnection = new NpgsqlConnection(_config.ConnectionString))
-                {
-                    await dbConnection.OpenAsync();
-                    await dbConnection.ExecuteAsync(
-                        "INSERT INTO \"Events\" (\"EventDate\",\"EventType\",\"DeviceType\",\"DeviceId\",\"Parameter\",\"OldValue\",\"NewValue\") " +
-                        "VALUES(@EventDate,@EventType,@DeviceType,@DeviceId,@Parameter,@OldValue,@NewValue)",
-                        eventItem);
-                }
+                await AsyncHelpers.RetryOnFault(() => SaveEvent(eventItem), 6, () => Task.Delay(5000));
             }
             catch (Exception e)
             {
@@ -68,11 +62,23 @@ namespace EventsPostgreSqlStorage
             }
         }
 
+        private async Task SaveEvent(EventItem eventItem)
+        {
+            using (NpgsqlConnection dbConnection = new NpgsqlConnection(_config.ConnectionString))
+            {
+                await dbConnection.OpenAsync();
+                await dbConnection.ExecuteAsync(
+                    "INSERT INTO \"Events\" (\"EventDate\",\"EventType\",\"DeviceType\",\"DeviceId\",\"Parameter\",\"OldValue\",\"NewValue\") " +
+                    "VALUES(@EventDate,@EventType,@DeviceType,@DeviceId,@Parameter,@OldValue,@NewValue)",
+                    eventItem);
+            }
+        }
+
         public async Task Notify(StateChangedEvent args)
         {
             var eventItem = new EventItem(args);
 
-            await SaveEvent(eventItem);
+            await SaveEventWithRetryOnFault(eventItem);
         }
     }
 }
