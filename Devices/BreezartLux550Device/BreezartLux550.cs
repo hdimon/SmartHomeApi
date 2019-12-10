@@ -134,10 +134,22 @@ namespace BreezartLux550Device
                         string turnOfValue = 10.ToString("X").PadLeft(2, '0');
                         commandText = $"VWPwr_FFFF_{turnOfValue}";
                     }
+
                     break;
                 case "SetSpeed":
-                    result.Success = false;
-                    command.TaskCompletionSource.SetResult(result);
+                    int speed = Convert.ToInt32(command.Value);
+
+                    if (speed < 1 || speed > 10)
+                    {
+                        result.Success = false;
+                        command.TaskCompletionSource.SetResult(result);
+                    }
+                    else
+                    {
+                        string speedValue = speed.ToString("X").PadLeft(2, '0');
+                        commandText = $"VWSpd_FFFF_{speedValue}";
+                    }
+
                     break;
                 default:
                     result.Success = false;
