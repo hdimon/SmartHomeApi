@@ -160,7 +160,7 @@ namespace Scenarios
                 Manager.SetValue("Kitchen_Floor", "SetTemperature", "20"),
                 Manager.SetValue("Bathroom_Floor", "SetTemperature", "20"),
                 Manager.SetValue("Toilet_Floor", "SetTemperature", "20"),
-                Manager.SetValue("Bedroom_Floor", "SetTemperature", "22")
+                Manager.SetValue("Bedroom_Floor", "SetTemperature", "20")
             };
 
             return commands;

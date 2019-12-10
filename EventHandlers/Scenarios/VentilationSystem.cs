@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using SmartHomeApi.Core.Interfaces;
 
 namespace Scenarios
@@ -41,20 +42,29 @@ namespace Scenarios
         {
             ISetValueResult[] results = null;
 
+            IList<Task<ISetValueResult>> commands;
+
             switch (args.NewValue)
             {
                 case "Outdoor":
-                    results = await Task.WhenAll(Manager.SetValue("Breezart", "UnitState", "Off"))
-                                        .ConfigureAwait(false);
+                    commands = GetOutdoorScenarioCommands();
+
+                    results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
                 case "Indoor":
-                    results = await Task.WhenAll(Manager.SetValue("Breezart", "UnitState", "On")).ConfigureAwait(false);
+                    commands = GetIndoorScenarioCommands();
+
+                    results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
                 case "Sleep":
-                    results = await Task.WhenAll(Manager.SetValue("Breezart", "UnitState", "On")).ConfigureAwait(false);
+                    commands = GetSleepScenarioCommands();
+
+                    results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
                 case "Morning":
-                    results = await Task.WhenAll(Manager.SetValue("Breezart", "UnitState", "On")).ConfigureAwait(false);
+                    commands = GetMorningScenarioCommands();
+
+                    results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
             }
 
@@ -68,6 +78,52 @@ namespace Scenarios
 
                 await ProcessScenarioParameter(args).ConfigureAwait(false);
             });
+        }
+
+        private IList<Task<ISetValueResult>> GetOutdoorScenarioCommands()
+        {
+            var commands = new List<Task<ISetValueResult>> { Manager.SetValue("Breezart", "UnitState", "Off") };
+
+            var currentToiletVentStatus = Manager.GetState("Toilet_Mega2560", "pin2");
+
+            //Turn off toilet ventilator
+            if (currentToiletVentStatus?.ToString() == "true")
+                commands.Add(Manager.SetValue("Toilet_Mega2560", "pin2", "pimp"));
+
+            return commands;
+        }
+
+        private IList<Task<ISetValueResult>> GetIndoorScenarioCommands()
+        {
+            var commands = new List<Task<ISetValueResult>> { Manager.SetValue("Breezart", "UnitState", "On") };
+
+            var currentToiletVentStatus = Manager.GetState("Toilet_Mega2560", "pin2");
+
+            //Turn on toilet ventilator
+            if (currentToiletVentStatus?.ToString() == "false")
+                commands.Add(Manager.SetValue("Toilet_Mega2560", "pin2", "pimp"));
+
+            return commands;
+        }
+
+        private IList<Task<ISetValueResult>> GetSleepScenarioCommands()
+        {
+            var commands = new List<Task<ISetValueResult>> { Manager.SetValue("Breezart", "UnitState", "On") };
+
+            var currentToiletVentStatus = Manager.GetState("Toilet_Mega2560", "pin2");
+
+            //Turn off toilet ventilator
+            if (currentToiletVentStatus?.ToString() == "true")
+                commands.Add(Manager.SetValue("Toilet_Mega2560", "pin2", "pimp"));
+
+            return commands;
+        }
+
+        private IList<Task<ISetValueResult>> GetMorningScenarioCommands()
+        {
+            var commands = new List<Task<ISetValueResult>> { Manager.SetValue("Breezart", "UnitState", "On") };
+
+            return commands;
         }
     }
 }
