@@ -22,6 +22,24 @@ namespace Common.Utils
             return default(T);
         }
 
+        public static async Task RetryOnFault(Func<Task> function, int maxTries, Func<Task> retryWhen)
+        {
+            for (int i = 0; i < maxTries; i++)
+            {
+                try
+                {
+                    await function();
+                    return;
+                }
+                catch
+                {
+                    if (i == maxTries - 1) throw;
+                }
+
+                await retryWhen().ConfigureAwait(false);
+            }
+        }
+
         public static async Task<T> RetryOnFault<T>(Func<Task<T>> function, int maxTries, Func<Task> retryWhen)
         {
             for (int i = 0; i < maxTries; i++)
