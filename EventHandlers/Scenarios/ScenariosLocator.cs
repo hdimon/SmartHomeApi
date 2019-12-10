@@ -20,6 +20,7 @@ namespace Scenarios
 
             _scenarios.Add(new HeatingSystem(manager, _fabric.GetItemHelpersFabric()));
             _scenarios.Add(new VentilationSystem(manager, _fabric.GetItemHelpersFabric()));
+            _scenarios.Add(new LightingSystem(manager, _fabric.GetItemHelpersFabric()));
             _scenarios.Add(new AlarmClocksProcessor(manager, _fabric.GetItemHelpersFabric()));
         }
 
