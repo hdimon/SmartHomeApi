@@ -132,7 +132,7 @@ namespace Scenarios
         {
             var currentValue = Manager.GetState(deviceId, pin);
 
-            if (currentValue?.ToString() == currentCheckValue)
+            if (currentValue?.ToString().ToLowerInvariant() == currentCheckValue)
                 commands.Add(Manager.SetValue(deviceId, pin, "pimp"));
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
@@ -51,7 +52,7 @@ namespace BreezartLux550Device
         {
             if (_worker == null || _worker.IsCompleted)
             {
-                _worker = Task.Factory.StartNew(AutoDataRefreshWorker).Unwrap().ContinueWith(
+                _worker = Task.Factory.StartNew(AutoDataRefreshWorkerWrapper).Unwrap().ContinueWith(
                     t =>
                     {
                         Logger.Error(t.Exception);
@@ -60,57 +61,69 @@ namespace BreezartLux550Device
             }
         }
 
-        private async Task AutoDataRefreshWorker()
+        private async Task AutoDataRefreshWorkerWrapper()
         {
             while (true)
             {
                 await Task.Delay(500);
 
-                string commandText;
-
-                if (_setCommandsQueue.Any())
+                try
                 {
-                    await CreateAndSendCommand();
+                    await AutoDataRefreshWorker();
+                }
+                catch (Exception e)
+                {
+                    Logger.Error(e);
+                }
+            }
+        }
 
-                    continue;
+        private async Task AutoDataRefreshWorker()
+        {
+            string commandText;
+
+            if (_setCommandsQueue.Any())
+            {
+                await CreateAndSendCommand();
+
+                return;
+            }
+
+            commandText = _getCommandsQueue.Dequeue();
+            _getCommandsQueue.Enqueue(commandText);
+
+            var state = await RequestData(commandText);
+
+            bool failed = state == null;
+
+            if (failed)
+            {
+                _requestFailureCount++;
+
+                if (_requestFailureCount < _requestFailureThreshold)
+                {
+                    CurrentState.ConnectionStatus = ConnectionStatus.Unstable;
+                }
+                else if (_requestFailureCount >= _requestFailureThreshold)
+                {
+                    CurrentState.ConnectionStatus = ConnectionStatus.Lost;
+                }
+            }
+            else
+            {
+                state.ConnectionStatus = ConnectionStatus.Stable;
+
+                foreach (var telemetryPair in CurrentState.States)
+                {
+                    if (!state.States.ContainsKey(telemetryPair.Key))
+                    {
+                        state.States.Add(telemetryPair.Key, telemetryPair.Value);
+                    }
                 }
 
-                commandText = _getCommandsQueue.Dequeue();
-                _getCommandsQueue.Enqueue(commandText);
+                state.States = new Dictionary<string, object>(state.States.OrderBy(s => s.Key));
 
-                var state = await RequestData(commandText);
-
-                bool failed = state == null;
-
-                if (failed)
-                {
-                    _requestFailureCount++;
-
-                    if (_requestFailureCount < _requestFailureThreshold)
-                    {
-                        CurrentState.ConnectionStatus = ConnectionStatus.Unstable;
-                    }
-                    else if (_requestFailureCount >= _requestFailureThreshold)
-                    {
-                        CurrentState.ConnectionStatus = ConnectionStatus.Lost;
-                    }
-                }
-                else
-                {
-                    state.ConnectionStatus = ConnectionStatus.Stable;
-
-                    foreach (var telemetryPair in CurrentState.States)
-                    {
-                        if (!state.States.ContainsKey(telemetryPair.Key))
-                        {
-                            state.States.Add(telemetryPair.Key, telemetryPair.Value);
-                        }
-                    }
-
-                    state.States = new Dictionary<string, object>(state.States.OrderBy(s => s.Key));
-
-                    SetStateSafely(state);
-                }
+                SetStateSafely(state);
             }
         }
 
@@ -137,7 +150,12 @@ namespace BreezartLux550Device
 
                     break;
                 case "SetSpeed":
-                    int speed = Convert.ToInt32(command.Value);
+                    if (!int.TryParse(command.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var speed))
+                    {
+                        result.Success = false;
+                        command.TaskCompletionSource.SetResult(result);
+                        break;
+                    }
 
                     if (speed < 1 || speed > 10)
                     {
@@ -157,7 +175,7 @@ namespace BreezartLux550Device
                     return;
             }
 
-            var response = await SendCommand(commandText, 3);
+            var response = await SendCommand(commandText, 20);
 
             if (string.IsNullOrWhiteSpace(response) || !response.StartsWith("OK_"))
                 result.Success = false;
