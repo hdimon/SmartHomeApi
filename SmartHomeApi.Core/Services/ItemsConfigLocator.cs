@@ -48,10 +48,12 @@ namespace SmartHomeApi.Core.Services
             if (itemType == "Mega2560Controller")
                 return new List<IItemConfig>
                 {
-                    new Mega2560ControllerConfig("Bedroom_Mega2560", "Mega2560Controller")
-                        { Mac = "aa:bb:cc:00:00:01", IpAddress = "192.168.1.58" },
+                    /*new Mega2560ControllerConfig("Kitchen_Mega2560", "Mega2560Controller")
+                        { Mac = "aa:bb:cc:00:00:01", IpAddress = "192.168.1.58" },*/
                     new Mega2560ControllerConfig("Toilet_Mega2560", "Mega2560Controller")
-                        { Mac = "aa:bb:cc:00:00:02", IpAddress = "192.168.1.60" }
+                        { Mac = "aa:bb:cc:00:00:02", IpAddress = "192.168.1.60" },
+                    new Mega2560ControllerConfig("Bedroom_Mega2560", "Mega2560Controller")
+                        { Mac = "aa:bb:cc:00:00:03", IpAddress = "192.168.1.61" }
                 };
 
             if (itemType == "BreezartLux550")
