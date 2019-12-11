@@ -74,8 +74,14 @@ namespace Scenarios
 
             var recommendedSpeed = _ventilationSpeedManager.GetRecommendedSpeed();
 
-            await Manager.SetValue(Breezart, "SetSpeed", recommendedSpeed.ToString(CultureInfo.InvariantCulture))
-                         .ConfigureAwait(false);
+            var currentSetSpeedObj = Manager.GetState(Breezart, "SetSpeed");
+
+            var parseResult = int.TryParse(currentSetSpeedObj.ToString(), NumberStyles.Any,
+                CultureInfo.InvariantCulture, out var currentSetSpeed);
+
+            if (!parseResult || recommendedSpeed != currentSetSpeed)
+                await Manager.SetValue(Breezart, "SetSpeed", recommendedSpeed.ToString(CultureInfo.InvariantCulture))
+                             .ConfigureAwait(false);
         }
 
         protected override async Task ProcessNotification(StateChangedEvent args)
