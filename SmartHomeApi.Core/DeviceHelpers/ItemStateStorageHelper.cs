@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Common.Utils;
 using Newtonsoft.Json;
 using SmartHomeApi.Core.Interfaces;
 
@@ -23,7 +24,8 @@ namespace SmartHomeApi.Core.DeviceHelpers
 
             try
             {
-                await File.WriteAllTextAsync(fileName, content);
+                await AsyncHelpers.RetryOnFault(() => File.WriteAllTextAsync(fileName, content), 5,
+                    () => Task.Delay(2000));
             }
             catch (Exception e)
             {
