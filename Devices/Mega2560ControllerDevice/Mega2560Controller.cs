@@ -54,6 +54,7 @@ namespace Mega2560ControllerDevice
 
         private ItemState ParseState(string responseString)
         {
+            var config = (Mega2560ControllerConfig)Config;
             var state = new ItemState(ItemId, ItemType);
 
             if (string.IsNullOrWhiteSpace(responseString))
@@ -78,7 +79,7 @@ namespace Mega2560ControllerDevice
                 state.States.Add("Mac", telemetry["Mac"]);
             }
 
-            if (telemetry.ContainsKey("CO2ppm"))
+            if (telemetry.ContainsKey("CO2ppm") && config.HasCO2Sensor)
             {
                 if (double.TryParse(telemetry["CO2ppm"], out var currentCO2))
                     currentCO2 = _currentCO2AverageValues.GetAverageValue(currentCO2);
@@ -96,7 +97,7 @@ namespace Mega2560ControllerDevice
                 state.States.Add("CO2ppm", _previousCO2);
             }
 
-            if (telemetry.ContainsKey("TemperatureC"))
+            if (telemetry.ContainsKey("TemperatureC") && config.HasTemperatureSensor)
             {
                 if (double.TryParse(telemetry["TemperatureC"], NumberStyles.Any, CultureInfo.InvariantCulture,
                     out var currentTemperatureC))
@@ -115,7 +116,7 @@ namespace Mega2560ControllerDevice
                 state.States.Add("TemperatureC", _previousTemperatureC);
             }
 
-            if (telemetry.ContainsKey("PressureHPa"))
+            if (telemetry.ContainsKey("PressureHPa") && config.HasPressureSensor)
             {
                 if (double.TryParse(telemetry["PressureHPa"], NumberStyles.Any, CultureInfo.InvariantCulture,
                     out var currentPressureHPa))
@@ -124,7 +125,7 @@ namespace Mega2560ControllerDevice
                 state.States.Add("PressureHPa", Convert.ToInt32(Math.Round(currentPressureHPa, 0)));
             }
 
-            if (telemetry.ContainsKey("HumidityPercent"))
+            if (telemetry.ContainsKey("HumidityPercent") && config.HasHumiditySensor)
             {
                 if (double.TryParse(telemetry["HumidityPercent"], NumberStyles.Any, CultureInfo.InvariantCulture,
                     out var currentHumidityPercent))
@@ -143,7 +144,8 @@ namespace Mega2560ControllerDevice
                 state.States.Add("HumidityPercent", _previousHumidityPercent);
             }
 
-            ParsePinsStates(telemetry, state);
+            if (config.HasPins)
+                ParsePinsStates(telemetry, state);
 
             return state;
         }
