@@ -195,7 +195,12 @@ namespace Scenarios
 
                 if (change <= 10)
                 {
-                    if (endAverage > 800) //Accelerate decreasing
+                    //Accelerate decreasing
+                    if (endAverage > 1200)
+                        recommendedSpeed = _recommendedSpeed + 3;
+                    else if (endAverage > 1000)
+                        recommendedSpeed = _recommendedSpeed + 2;
+                    else if (endAverage > 800)
                         recommendedSpeed = _recommendedSpeed + 1;
                 }
                 else
@@ -208,22 +213,38 @@ namespace Scenarios
             }
             else if (changeDuringPeriod == 0)
             {
-                if (endAverage > 800) //Initiate decreasing
+                //Initiate decreasing
+                if (endAverage > 1200)
+                    recommendedSpeed = _recommendedSpeed + 3;
+                else if (endAverage > 1000)
+                    recommendedSpeed = _recommendedSpeed + 2;
+                else if (endAverage > 800)
                     recommendedSpeed = _recommendedSpeed + 1;
                 //Otherwise leave speed as is
             }
             else //Concentration is increasing
             {
-                if (changeDuringPeriod <= 10)
+                //Try to decrease
+                if (endAverage > 1200)
+                    recommendedSpeed = _recommendedSpeed + 4;
+                else if (endAverage > 1100) //1000
+                    recommendedSpeed = _recommendedSpeed + 3;
+                else if (endAverage > 900) //800
+                    recommendedSpeed = _recommendedSpeed + 2;
+                else if (endAverage > 700) //600
+                    recommendedSpeed = _recommendedSpeed + 1;
+
+                /*if (changeDuringPeriod <= 10)
                 {
-                    if (endAverage > 800) //Try to decrease
+                    //Try to decrease
+                    if (endAverage > 800) 
                         recommendedSpeed = _recommendedSpeed + 1;
                 }
                 else
                 {
                     if (endAverage > 600) //Try to decrease
                         recommendedSpeed = _recommendedSpeed + 1;
-                }
+                }*/
             }
 
             if (recommendedSpeed < _minSpeed)
