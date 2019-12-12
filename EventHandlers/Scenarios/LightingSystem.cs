@@ -10,11 +10,18 @@ namespace Scenarios
 
         private const string TrueValue = "true";
         private const string FalseValue = "false";
+
         private const string ToiletMega2560 = "Toilet_Mega2560";
         private const string BathroomLightPin = "pin6";
         private const string BathroomSinkLightPin = "pin4";
         private const string ToiletLightPin = "pin5";
         private const string ToiletSinkLightPin = "pin7";
+
+        private const string KitchenMega2560 = "Kitchen_Mega2560";
+        private const string KitchenSpotsLightPin = "pin2";
+        private const string KitchenBalconySpotsLightPin = "pin4";
+        private const string KitchenCentralLightPin = "pin5";
+        private const string KitchenLedPin = "pin0";
 
         public LightingSystem(IApiManager manager, IItemHelpersFabric helpersFabric) : base(manager, helpersFabric)
         {
@@ -103,7 +110,8 @@ namespace Scenarios
 
             AddPositiveImpulseCommandWithStateCheck(commands, ToiletMega2560, BathroomLightPin, FalseValue);
             AddPositiveImpulseCommandWithStateCheck(commands, ToiletMega2560, ToiletLightPin, FalseValue);
-            //+Kitchen, Hall, Bedroom
+            AddPositiveImpulseCommandWithStateCheck(commands, KitchenMega2560, KitchenSpotsLightPin, FalseValue);
+            //Hall, Bedroom
 
             return commands;
         }
@@ -142,6 +150,10 @@ namespace Scenarios
             AddPositiveImpulseCommandWithStateCheck(commands, ToiletMega2560, BathroomSinkLightPin, TrueValue);
             AddPositiveImpulseCommandWithStateCheck(commands, ToiletMega2560, ToiletLightPin, TrueValue);
             AddPositiveImpulseCommandWithStateCheck(commands, ToiletMega2560, ToiletSinkLightPin, TrueValue);
+            AddPositiveImpulseCommandWithStateCheck(commands, KitchenMega2560, KitchenSpotsLightPin, TrueValue);
+            AddPositiveImpulseCommandWithStateCheck(commands, KitchenMega2560, KitchenBalconySpotsLightPin, TrueValue);
+            AddPositiveImpulseCommandWithStateCheck(commands, KitchenMega2560, KitchenCentralLightPin, TrueValue);
+            AddPositiveImpulseCommandWithStateCheck(commands, KitchenMega2560, KitchenLedPin, TrueValue);
         }
     }
 }
