@@ -147,7 +147,7 @@ namespace Scenarios
                 recommendedSpeeds.Add(pair.Key, rec);
             }
 
-            int recommendedSpeed = recommendedSpeeds.Max(p => p.Value);
+            int recommendedSpeed = recommendedSpeeds.Any() ? recommendedSpeeds.Max(p => p.Value) : _minSpeed;
 
             _recommendedSpeed = recommendedSpeed;
             return _recommendedSpeed;
