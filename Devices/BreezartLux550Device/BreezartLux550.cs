@@ -45,6 +45,8 @@ namespace BreezartLux550Device
             {
                 var config = (BreezartLux550Config)Config;
                 _client = new TcpClient(config.IpAddress, 1560);
+                _client.ReceiveTimeout = 5000;
+                _client.SendTimeout = 5000;
             }
         }
 
