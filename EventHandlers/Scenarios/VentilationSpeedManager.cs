@@ -202,6 +202,8 @@ namespace Scenarios
                         recommendedSpeed = _recommendedSpeed + 2;
                     else if (endAverage > 800)
                         recommendedSpeed = _recommendedSpeed + 1;
+                    else
+                        recommendedSpeed = _recommendedSpeed - 1;
                 }
                 else
                 {
