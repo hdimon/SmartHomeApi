@@ -51,7 +51,7 @@ namespace SmartHomeApi.Core.Services
                     new Mega2560ControllerConfig("Kitchen_Mega2560", "Mega2560Controller")
                     {
                         Mac = "aa:bb:cc:00:00:01", IpAddress = "192.168.1.58", HasCO2Sensor = false,
-                        HasTemperatureSensor = false, HasHumiditySensor = false, HasPressureSensor = false,
+                        HasTemperatureSensor = true, HasHumiditySensor = true, HasPressureSensor = true,
                         HasPins = true
                     },
                     new Mega2560ControllerConfig("Toilet_Mega2560", "Mega2560Controller")
