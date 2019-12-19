@@ -14,7 +14,7 @@ using SmartHomeApi.DeviceUtils;
 
 namespace Mega2560ControllerDevice
 {
-    public class Mega2560Controller : AutoRefreshDeviceAbstract
+    public class Mega2560Controller : AutoRefreshDeviceAbstract, IStateTransformable
     {
         private readonly HttpClient _client = new HttpClient();
         private readonly SemaphoreSlim _semaphoreSlimHttpPost = new SemaphoreSlim(1, 1);
@@ -30,7 +30,7 @@ namespace Mega2560ControllerDevice
         public Mega2560Controller(IItemHelpersFabric helpersFabric, IItemConfig config) : base(helpersFabric,
             config)
         {
-            RefreshIntervalMS = 300;
+            RefreshIntervalMS = 500;
         }
 
         protected override Task InitializeDevice()
@@ -236,6 +236,33 @@ namespace Mega2560ControllerDevice
             }
 
             SetStateSafely(state);
+
+            return result;
+        }
+
+        public TransformationResult Transform(string parameter, string value)
+        {
+            var result = new TransformationResult();
+
+            if (parameter.StartsWith("pin"))
+            {
+                if (CurrentState.States.ContainsKey(parameter))
+                {
+                    var currentPinValue = CurrentState.States[parameter];
+
+                    if (bool.TryParse(currentPinValue.ToString(), out bool res))
+                    {
+                        if (value == "pimp")
+                        {
+                            result.TransformedValue = !res;
+                            result.Status = TransformationStatus.Success;
+                            return result;
+                        }
+                    }
+                }
+            }
+
+            result.Status = TransformationStatus.Continue;
 
             return result;
         }

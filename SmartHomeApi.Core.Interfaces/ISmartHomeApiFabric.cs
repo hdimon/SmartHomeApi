@@ -8,5 +8,6 @@
         IApiManager GetApiManager();
         IItemHelpersFabric GetItemHelpersFabric();
         IApiLogger GetApiLogger();
+        IStatesContainerTransformer GetStateContainerTransformer();
     }
 }

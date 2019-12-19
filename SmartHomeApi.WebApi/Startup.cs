@@ -38,6 +38,7 @@ namespace SmartHomeApi.WebApi
             services.AddSingleton<IItemsConfigLocator, ItemsConfigLocator>();
             services.AddSingleton<IItemHelpersFabric, ItemHelpersDefaultFabric>();
             services.AddSingleton<IApiLogger, ApiLogger>();
+            services.AddSingleton<IStatesContainerTransformer, StatesContainerTransformer>();
 
             services.AddTransient<IItemStateStorageHelper, ItemStateStorageHelper>();
 

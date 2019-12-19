@@ -16,6 +16,7 @@ namespace SmartHomeApi.Core.Services
         private readonly ReaderWriterLock _readerWriterLock = new ReaderWriterLock();
         private readonly List<IStateChangedSubscriber> _stateChangedSubscribers = new List<IStateChangedSubscriber>();
         private readonly IApiLogger _logger;
+        private readonly IStatesContainerTransformer _stateContainerTransformer;
 
         public string ItemType => null;
         public string ItemId => null;
@@ -25,6 +26,7 @@ namespace SmartHomeApi.Core.Services
             _fabric = fabric;
             _logger = _fabric.GetApiLogger();
             _state = CreateStatesContainer();
+            _stateContainerTransformer = _fabric.GetStateContainerTransformer();
         }
 
         public bool IsInitialized { get; set; }
@@ -79,10 +81,16 @@ namespace SmartHomeApi.Core.Services
 
             var not = (IStateSettable)item;
 
-            NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueSet, not.ItemType, not.ItemId,
-                parameter, null, value));
+            var ev = new StateChangedEvent(StateChangedEventType.ValueSet, not.ItemType, not.ItemId, parameter, null,
+                value);
+
+            _stateContainerTransformer.AddStateChangedEvent(ev);
+
+            NotifySubscribers(ev);
 
             var result = await not.SetValue(parameter, value);
+
+            _stateContainerTransformer.RemoveStateChangedEvent(ev);
 
             return result;
         }
@@ -97,14 +105,20 @@ namespace SmartHomeApi.Core.Services
             return new SetValueResult();
         }
 
-        public IStatesContainer GetState()
-        {
-            return GetStateSafely();
-        }
-
-        public IItemState GetState(string deviceId)
+        public async Task<IStatesContainer> GetState(bool transform = false)
         {
             var state = GetStateSafely();
+
+            //state = await TransformStateIfRequired(state, transform);
+
+            return state;
+        }
+
+        public async Task<IItemState> GetState(string deviceId, bool transform = false)
+        {
+            var state = GetStateSafely();
+
+            //state = await TransformStateIfRequired(state, transform);
 
             if (state.States.ContainsKey(deviceId))
                 return state.States[deviceId];
@@ -112,9 +126,11 @@ namespace SmartHomeApi.Core.Services
             return new ItemState(deviceId, string.Empty);
         }
 
-        public object GetState(string deviceId, string parameter)
+        public async Task<object> GetState(string deviceId, string parameter, bool transform = false)
         {
             var state = GetStateSafely();
+
+            //state = await TransformStateIfRequired(state, transform);
 
             if (state.States.ContainsKey(deviceId))
             {
@@ -193,7 +209,7 @@ namespace SmartHomeApi.Core.Services
                         }
                     }
 
-                    var oldState = GetState();
+                    var oldState = await GetState();
                     SetStateSafely(state);
 
                     NotifySubscribersAboutChanges(oldState);
@@ -223,26 +239,52 @@ namespace SmartHomeApi.Core.Services
             }
         }
 
+        private async Task<List<IStateTransformable>> GetTransformableItems()
+        {
+            var itemsLocator = _fabric.GetItemsLocator();
+            var items = await GetItems(itemsLocator);
+
+            var transformableItems = items.Where(d => d is IStateTransformable).Cast<IStateTransformable>().ToList();
+
+            return transformableItems;
+        }
+
+        private async Task<IStatesContainer> TransformStateIfRequired(IStatesContainer state, bool transform)
+        {
+            if (!transform)
+                return state;
+
+            var transformableItems = await GetTransformableItems();
+
+            if (transformableItems.Any() || _stateContainerTransformer.TransformationIsNeeded())
+            {
+                state = (IStatesContainer)state.Clone();
+                _stateContainerTransformer.Transform(state, transformableItems);
+            }
+
+            return state;
+        }
+
         private void NotifySubscribersAboutChanges(IStatesContainer oldState)
         {
-            var newDevices = _state.States;
-            var oldDevices = oldState.States;
+            var newStates = _state.States;
+            var oldStates = oldState.States;
 
-            var addedDevices = newDevices.Keys.Except(oldDevices.Keys).ToList();
-            var removedDevices = oldDevices.Keys.Except(newDevices.Keys).ToList();
-            var updatedDevices = newDevices.Keys.Except(addedDevices).ToList();
+            var addedDevices = newStates.Keys.Except(oldStates.Keys).ToList();
+            var removedDevices = oldStates.Keys.Except(newStates.Keys).ToList();
+            var updatedDevices = newStates.Keys.Except(addedDevices).ToList();
 
-            NotifySubscribersAboutRemovedDevices(removedDevices, oldDevices);
-            NotifySubscribersAboutAddedDevices(addedDevices, newDevices);
-            NotifySubscribersAboutUpdatedDevices(updatedDevices, newDevices, oldDevices);
+            NotifySubscribersAboutRemovedDevices(removedDevices, oldStates);
+            NotifySubscribersAboutAddedDevices(addedDevices, newStates);
+            NotifySubscribersAboutUpdatedDevices(updatedDevices, newStates, oldStates);
         }
 
         private void NotifySubscribersAboutRemovedDevices(List<string> removedDevices,
-            Dictionary<string, IItemState> oldDevices)
+            Dictionary<string, IItemState> oldStates)
         {
             foreach (var removedDevice in removedDevices)
             {
-                var device = oldDevices[removedDevice];
+                var device = oldStates[removedDevice];
 
                 foreach (var telemetryPair in device.States)
                 {
@@ -253,11 +295,11 @@ namespace SmartHomeApi.Core.Services
         }
 
         private void NotifySubscribersAboutAddedDevices(List<string> addedDevices,
-            Dictionary<string, IItemState> newDevices)
+            Dictionary<string, IItemState> newStates)
         {
             foreach (var addedDevice in addedDevices)
             {
-                var device = newDevices[addedDevice];
+                var device = newStates[addedDevice];
 
                 foreach (var telemetryPair in device.States)
                 {
@@ -268,12 +310,12 @@ namespace SmartHomeApi.Core.Services
         }
 
         private void NotifySubscribersAboutUpdatedDevices(List<string> updatedDevices,
-            Dictionary<string, IItemState> newDevices, Dictionary<string, IItemState> oldDevices)
+            Dictionary<string, IItemState> newStates, Dictionary<string, IItemState> oldStates)
         {
             foreach (var updatedDevice in updatedDevices)
             {
-                var newDevice = newDevices[updatedDevice];
-                var oldDevice = oldDevices[updatedDevice];
+                var newDevice = newStates[updatedDevice];
+                var oldDevice = oldStates[updatedDevice];
 
                 var newTelemetry = newDevice.States;
                 var oldTelemetry = oldDevice.States;
@@ -310,8 +352,9 @@ namespace SmartHomeApi.Core.Services
 
                     if (oldValue != newValue)
                     {
-                        NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueUpdated, newDevice.ItemType,
-                            newDevice.ItemId, updatedParameter, oldValue, newValue));
+                        if (!_stateContainerTransformer.ParameterIsTransformed(updatedDevice, updatedParameter))
+                            NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueUpdated,
+                                newDevice.ItemType, newDevice.ItemId, updatedParameter, oldValue, newValue));
                     }
                 }
             }

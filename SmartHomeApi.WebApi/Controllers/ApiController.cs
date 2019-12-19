@@ -17,29 +17,29 @@ namespace SmartHomeApi.WebApi.Controllers
 
         [HttpGet]
         [Route("[action]")]
-        public IStatesContainer GetState()
+        public async Task<IStatesContainer> GetState()
         {
             var manager = _fabric.GetApiManager();
 
-            return manager.GetState();
+            return await manager.GetState(true);
         }
 
         [HttpGet]
         [Route("[action]/{deviceId}")]
-        public IItemState GetState(string deviceId)
+        public async Task<IItemState> GetState(string deviceId)
         {
             var manager = _fabric.GetApiManager();
 
-            return manager.GetState(deviceId);
+            return await manager.GetState(deviceId, true);
         }
 
         [HttpGet]
         [Route("[action]/{deviceId}/{parameter}")]
-        public object GetState(string deviceId, string parameter)
+        public async Task<object> GetState(string deviceId, string parameter)
         {
             var manager = _fabric.GetApiManager();
 
-            return manager.GetState(deviceId, parameter);
+            return await manager.GetState(deviceId, parameter, true);
         }
 
         /*[HttpPost]

@@ -65,7 +65,8 @@ namespace Scenarios
 
         private async Task VentilationSpeedManagerWorker()
         {
-            var breezartManualManagement = Manager.GetState("Virtual_States", "BreezartManualManagement");
+            var breezartManualManagement =
+                await Manager.GetState("Virtual_States", "BreezartManualManagement").ConfigureAwait(false);
 
             //If not parsed or manual management then return
             if (breezartManualManagement == null ||
@@ -74,7 +75,7 @@ namespace Scenarios
 
             var recommendedSpeed = _ventilationSpeedManager.GetRecommendedSpeed();
 
-            var currentSetSpeedObj = Manager.GetState(Breezart, "SetSpeed");
+            var currentSetSpeedObj = await Manager.GetState(Breezart, "SetSpeed").ConfigureAwait(false);
 
             var parseResult = int.TryParse(currentSetSpeedObj.ToString(), NumberStyles.Any,
                 CultureInfo.InvariantCulture, out var currentSetSpeed);
@@ -128,22 +129,22 @@ namespace Scenarios
             switch (args.NewValue)
             {
                 case "Outdoor":
-                    commands = GetOutdoorScenarioCommands();
+                    commands = await GetOutdoorScenarioCommands().ConfigureAwait(false);
 
                     results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
                 case "Indoor":
-                    commands = GetIndoorScenarioCommands();
+                    commands = await GetIndoorScenarioCommands().ConfigureAwait(false);
 
                     results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
                 case "Sleep":
-                    commands = GetSleepScenarioCommands();
+                    commands = await GetSleepScenarioCommands().ConfigureAwait(false);
 
                     results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
                 case "Morning":
-                    commands = GetMorningScenarioCommands();
+                    commands = await GetMorningScenarioCommands().ConfigureAwait(false);
 
                     results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
@@ -151,7 +152,7 @@ namespace Scenarios
 
             EnsureOperationIsSuccessful(args, results, _failoverActionIntervalSeconds, async () =>
             {
-                var currentScenario = Manager.GetState("Virtual_States", "Scenario");
+                var currentScenario = await Manager.GetState("Virtual_States", "Scenario").ConfigureAwait(false);
 
                 //If scenario has been already changed then stop
                 if (currentScenario?.ToString() != args.NewValue)
@@ -161,11 +162,11 @@ namespace Scenarios
             });
         }
 
-        private IList<Task<ISetValueResult>> GetOutdoorScenarioCommands()
+        private async Task<IList<Task<ISetValueResult>>> GetOutdoorScenarioCommands()
         {
             var commands = new List<Task<ISetValueResult>> { Manager.SetValue("Breezart", "UnitState", "Off") };
 
-            var currentToiletVentStatus = Manager.GetState(ToiletMega2560, "pin2");
+            var currentToiletVentStatus = await Manager.GetState(ToiletMega2560, "pin2").ConfigureAwait(false);
 
             //Turn off toilet ventilator
             if (currentToiletVentStatus?.ToString().ToLowerInvariant() == "true")
@@ -174,11 +175,11 @@ namespace Scenarios
             return commands;
         }
 
-        private IList<Task<ISetValueResult>> GetIndoorScenarioCommands()
+        private async Task<IList<Task<ISetValueResult>>> GetIndoorScenarioCommands()
         {
             var commands = new List<Task<ISetValueResult>> { Manager.SetValue("Breezart", "UnitState", "On") };
 
-            var currentToiletVentStatus = Manager.GetState(ToiletMega2560, "pin2");
+            var currentToiletVentStatus = await Manager.GetState(ToiletMega2560, "pin2").ConfigureAwait(false);
 
             //Turn on toilet ventilator
             if (currentToiletVentStatus?.ToString().ToLowerInvariant() == "false")
@@ -187,11 +188,11 @@ namespace Scenarios
             return commands;
         }
 
-        private IList<Task<ISetValueResult>> GetSleepScenarioCommands()
+        private async Task<IList<Task<ISetValueResult>>> GetSleepScenarioCommands()
         {
             var commands = new List<Task<ISetValueResult>> { Manager.SetValue("Breezart", "UnitState", "On") };
 
-            var currentToiletVentStatus = Manager.GetState(ToiletMega2560, "pin2");
+            var currentToiletVentStatus = await Manager.GetState(ToiletMega2560, "pin2").ConfigureAwait(false);
 
             //Turn off toilet ventilator
             if (currentToiletVentStatus?.ToString().ToLowerInvariant() == "true")
@@ -200,7 +201,7 @@ namespace Scenarios
             return commands;
         }
 
-        private IList<Task<ISetValueResult>> GetMorningScenarioCommands()
+        private async Task<IList<Task<ISetValueResult>>> GetMorningScenarioCommands()
         {
             var commands = new List<Task<ISetValueResult>> { Manager.SetValue("Breezart", "UnitState", "On") };
 

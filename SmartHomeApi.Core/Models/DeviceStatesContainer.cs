@@ -6,5 +6,17 @@ namespace SmartHomeApi.Core.Models
     public class DeviceStatesContainer : IStatesContainer
     {
         public Dictionary<string, IItemState> States { get; set; } = new Dictionary<string, IItemState>();
+
+        public object Clone()
+        {
+            var clone = new DeviceStatesContainer();
+
+            foreach (var itemState in States)
+            {
+                clone.States.Add(itemState.Key, (IItemState)itemState.Value.Clone());
+            }
+
+            return clone;
+        }
     }
 }

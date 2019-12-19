@@ -117,7 +117,7 @@ namespace Scenarios
 
             EnsureOperationIsSuccessful(args, results, _failoverActionIntervalSeconds, async () =>
             {
-                var currentScenario = Manager.GetState("Virtual_States", "Scenario");
+                var currentScenario = await Manager.GetState("Virtual_States", "Scenario").ConfigureAwait(false);
 
                 //If scenario has been already changed then stop
                 if (currentScenario?.ToString() != args.NewValue)
@@ -185,7 +185,7 @@ namespace Scenarios
 
             IList<Task<ISetValueResult>> commands;
 
-            var currentScenario = Manager.GetState("Virtual_States", "Scenario");
+            var currentScenario = await Manager.GetState("Virtual_States", "Scenario").ConfigureAwait(false);
 
             switch (args.NewValue)
             {
@@ -209,7 +209,7 @@ namespace Scenarios
 
             EnsureOperationIsSuccessful(args, results, _failoverActionIntervalSeconds, async () =>
             {
-                currentScenario = Manager.GetState("Virtual_States", "Scenario");
+                currentScenario = await Manager.GetState("Virtual_States", "Scenario").ConfigureAwait(false);
 
                 //If scenario not outdoor then stop
                 if (currentScenario?.ToString() != _outdoorScenario)
@@ -252,7 +252,7 @@ namespace Scenarios
                     if (args.EventType == StateChangedEventType.ValueRemoved)
                         break;
 
-                    var currentScenario = Manager.GetState("Virtual_States", "Scenario");
+                    var currentScenario = await Manager.GetState("Virtual_States", "Scenario").ConfigureAwait(false);
 
                     //1. If scenario is already morning it means alarm clock was reset
                     //(for example initially it was set on 8:30 but in 8:20 or 8:40 (i.e. during Morning interval) it was reset to 8:50)
@@ -303,8 +303,9 @@ namespace Scenarios
                     await Manager.SetValue("Virtual_TowelHeaterTurningOffAlarmClock", "Alarm", null)
                                  .ConfigureAwait(false);
 
-                    var currentScenario = Manager.GetState("Virtual_States", "Scenario");
-                    var currentOutdoorSubScenario = Manager.GetState("Virtual_States", "OutdoorSubScenario");
+                    var currentScenario = await Manager.GetState("Virtual_States", "Scenario").ConfigureAwait(false);
+                    var currentOutdoorSubScenario =
+                        await Manager.GetState("Virtual_States", "OutdoorSubScenario").ConfigureAwait(false);
 
                     //If scenario is Morning or Indoor or Outdoor but already going home then no need to turn off
                     if (currentScenario?.ToString() == _morningScenario ||
@@ -319,8 +320,9 @@ namespace Scenarios
 
                     EnsureOperationIsSuccessful(args, results, _failoverActionIntervalSeconds, async () =>
                     {
-                        currentScenario = Manager.GetState("Virtual_States", "Scenario");
-                        currentOutdoorSubScenario = Manager.GetState("Virtual_States", "OutdoorSubScenario");
+                        currentScenario = await Manager.GetState("Virtual_States", "Scenario").ConfigureAwait(false);
+                        currentOutdoorSubScenario =
+                            await Manager.GetState("Virtual_States", "OutdoorSubScenario").ConfigureAwait(false);
 
                         //If scenario is Morning or Indoor or Outdoor but already going home then no need to turn off
                         if (currentScenario?.ToString() == _morningScenario ||

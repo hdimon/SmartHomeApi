@@ -17,5 +17,18 @@ namespace SmartHomeApi.Core.Interfaces
             ItemType = itemType;
             ConnectionStatus = ConnectionStatus.Unknown;
         }
+
+        public object Clone()
+        {
+            var clone = new ItemState(ItemId, ItemType);
+            clone.ConnectionStatus = ConnectionStatus;
+
+            foreach (var state in States)
+            {
+                clone.States.Add(state.Key, state.Value);
+            }
+
+            return clone;
+        }
     }
 }
