@@ -255,11 +255,14 @@ namespace BreezartLux550Device
         {
             string responseString;
 
+            if (string.IsNullOrEmpty(command))
+                return null;
+
             try
             {
-                byte[] data = System.Text.Encoding.UTF8.GetBytes(command);
-
                 await _semaphoreSlim.WaitAsync();
+
+                byte[] data = System.Text.Encoding.UTF8.GetBytes(command);
 
                 SetTcpClient();
                 NetworkStream stream = _client.GetStream();
