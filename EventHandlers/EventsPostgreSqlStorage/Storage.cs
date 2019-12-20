@@ -14,6 +14,7 @@ namespace EventsPostgreSqlStorage
         private readonly IItemHelpersFabric _helpersFabric;
         private readonly StorageConfig _config;
         private readonly IApiLogger _logger;
+        private readonly AsyncLazy _initializeTask;
 
         public bool IsInitialized { get; private set; }
 
@@ -23,9 +24,16 @@ namespace EventsPostgreSqlStorage
             _helpersFabric = helpersFabric;
             _logger = _helpersFabric.GetApiLogger();
             _config = (StorageConfig)config;
+
+            _initializeTask = new AsyncLazy(InitializeSafely);
         }
 
         public async Task Initialize()
+        {
+            await _initializeTask.Value;
+        }
+
+        private async Task InitializeSafely()
         {
             if (IsInitialized)
                 return;

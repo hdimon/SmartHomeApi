@@ -57,7 +57,7 @@ namespace SmartHomeApi.Core.Services
 
             foreach (var item in itemsList)
             {
-                if (item is IInitializable initializable)
+                if (item is IInitializable initializable && !initializable.IsInitialized)
                     await initializable.Initialize();
             }
 

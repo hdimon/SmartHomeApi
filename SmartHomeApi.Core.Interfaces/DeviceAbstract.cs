@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Common.Utils;
 
 namespace SmartHomeApi.Core.Interfaces
 {
@@ -6,6 +8,7 @@ namespace SmartHomeApi.Core.Interfaces
     {
         protected readonly IItemHelpersFabric HelpersFabric;
         protected readonly IApiLogger Logger;
+        private readonly AsyncLazy _initializeTask;
         public string ItemId { get; }
         public string ItemType { get; }
         public IItemConfig Config { get; }
@@ -18,6 +21,8 @@ namespace SmartHomeApi.Core.Interfaces
 
             ItemId = config.ItemId;
             ItemType = config.ItemType;
+
+            _initializeTask = new AsyncLazy(InitializeSafely);
         }
 
         public abstract Task<ISetValueResult> SetValue(string parameter, string value);
@@ -27,10 +32,23 @@ namespace SmartHomeApi.Core.Interfaces
 
         public async Task Initialize()
         {
+            await _initializeTask.Value;
+        }
+
+        private async Task InitializeSafely()
+        {
             if (IsInitialized)
                 return;
 
-            await InitializeDevice();
+            try
+            {
+                await InitializeDevice();
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e);
+            }
+
             IsInitialized = true;
         }
 
