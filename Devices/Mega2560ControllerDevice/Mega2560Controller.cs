@@ -259,21 +259,21 @@ namespace Mega2560ControllerDevice
                             return result;
                         }
                     }
+
+                    if (value == "high")
+                    {
+                        result.TransformedValue = true;
+                        result.Status = TransformationStatus.Success;
+                        return result;
+                    }
+
+                    if (value == "low")
+                    {
+                        result.TransformedValue = false;
+                        result.Status = TransformationStatus.Success;
+                        return result;
+                    }
                 }
-            }
-
-            if (parameter == "high")
-            {
-                result.TransformedValue = true;
-                result.Status = TransformationStatus.Success;
-                return result;
-            }
-
-            if (parameter == "low")
-            {
-                result.TransformedValue = false;
-                result.Status = TransformationStatus.Success;
-                return result;
             }
 
             result.Status = TransformationStatus.Continue;

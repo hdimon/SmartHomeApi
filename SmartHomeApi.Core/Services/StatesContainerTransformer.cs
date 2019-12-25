@@ -38,7 +38,7 @@ namespace SmartHomeApi.Core.Services
             {
                 if (state.States.ContainsKey(ev.DeviceId) && state.States[ev.DeviceId].States.ContainsKey(ev.Parameter))
                 {
-                    var transformer = transformables.FirstOrDefault(t => t.ItemType == ev.DeviceType);
+                    var transformer = transformables.FirstOrDefault(t => t.ItemId == ev.DeviceId);
 
                     var parameterValueObject = state.States[ev.DeviceId].States[ev.Parameter];
 

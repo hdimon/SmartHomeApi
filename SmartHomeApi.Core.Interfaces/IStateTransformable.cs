@@ -2,6 +2,7 @@
 {
     public interface IStateTransformable
     {
+        string ItemId { get; }
         string ItemType { get; }
 
         TransformationResult Transform(string parameter, string value);

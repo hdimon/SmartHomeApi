@@ -109,7 +109,7 @@ namespace SmartHomeApi.Core.Services
         {
             var state = GetStateSafely();
 
-            //state = await TransformStateIfRequired(state, transform);
+            state = await TransformStateIfRequired(state, transform);
 
             return state;
         }
@@ -118,7 +118,7 @@ namespace SmartHomeApi.Core.Services
         {
             var state = GetStateSafely();
 
-            //state = await TransformStateIfRequired(state, transform);
+            state = await TransformStateIfRequired(state, transform);
 
             if (state.States.ContainsKey(deviceId))
                 return state.States[deviceId];
@@ -130,7 +130,7 @@ namespace SmartHomeApi.Core.Services
         {
             var state = GetStateSafely();
 
-            //state = await TransformStateIfRequired(state, transform);
+            state = await TransformStateIfRequired(state, transform);
 
             if (state.States.ContainsKey(deviceId))
             {
