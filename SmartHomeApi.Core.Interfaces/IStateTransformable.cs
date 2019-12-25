@@ -5,6 +5,6 @@
         string ItemId { get; }
         string ItemType { get; }
 
-        TransformationResult Transform(string parameter, string value);
+        TransformationResult Transform(string parameter, string oldValue, string newValue);
     }
 }

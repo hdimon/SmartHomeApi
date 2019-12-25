@@ -81,8 +81,10 @@ namespace SmartHomeApi.Core.Services
 
             var not = (IStateSettable)item;
 
-            var ev = new StateChangedEvent(StateChangedEventType.ValueSet, not.ItemType, not.ItemId, parameter, null,
-                value);
+            var currentPatameterState = await GetState(not.ItemId, parameter);
+
+            var ev = new StateChangedEvent(StateChangedEventType.ValueSet, not.ItemType, not.ItemId, parameter,
+                currentPatameterState?.ToString(), value);
 
             _stateContainerTransformer.AddStateChangedEvent(ev);
 

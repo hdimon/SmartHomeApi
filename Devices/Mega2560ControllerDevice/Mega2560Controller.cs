@@ -240,39 +240,34 @@ namespace Mega2560ControllerDevice
             return result;
         }
 
-        public TransformationResult Transform(string parameter, string value)
+        public TransformationResult Transform(string parameter, string oldValue, string value)
         {
             var result = new TransformationResult();
 
             if (parameter.StartsWith("pin"))
             {
-                if (CurrentState.States.ContainsKey(parameter))
+                if (bool.TryParse(oldValue, out bool res))
                 {
-                    var currentPinValue = CurrentState.States[parameter];
-
-                    if (bool.TryParse(currentPinValue.ToString(), out bool res))
+                    if (value == "pimp")
                     {
-                        if (value == "pimp")
-                        {
-                            result.TransformedValue = !res;
-                            result.Status = TransformationStatus.Success;
-                            return result;
-                        }
-                    }
-
-                    if (value == "high")
-                    {
-                        result.TransformedValue = true;
+                        result.TransformedValue = !res;
                         result.Status = TransformationStatus.Success;
                         return result;
                     }
+                }
 
-                    if (value == "low")
-                    {
-                        result.TransformedValue = false;
-                        result.Status = TransformationStatus.Success;
-                        return result;
-                    }
+                if (value == "high")
+                {
+                    result.TransformedValue = true;
+                    result.Status = TransformationStatus.Success;
+                    return result;
+                }
+
+                if (value == "low")
+                {
+                    result.TransformedValue = false;
+                    result.Status = TransformationStatus.Success;
+                    return result;
                 }
             }
 

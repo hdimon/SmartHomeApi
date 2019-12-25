@@ -49,7 +49,7 @@ namespace SmartHomeApi.Core.Services
                     {
                         try
                         {
-                            result = transformer.Transform(ev.Parameter, ev.NewValue);
+                            result = transformer.Transform(ev.Parameter, ev.OldValue, ev.NewValue);
                         }
                         catch (Exception e)
                         {
