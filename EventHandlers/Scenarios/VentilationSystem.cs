@@ -143,11 +143,6 @@ namespace Scenarios
 
                     results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
-                case "Morning":
-                    commands = await GetMorningScenarioCommands().ConfigureAwait(false);
-
-                    results = await Task.WhenAll(commands).ConfigureAwait(false);
-                    break;
             }
 
             EnsureOperationIsSuccessful(args, results, _failoverActionIntervalSeconds, async () =>
@@ -171,6 +166,12 @@ namespace Scenarios
             //Turn off toilet ventilator
             if (currentToiletVentStatus?.ToString().ToLowerInvariant() == "true")
                 commands.Add(Manager.SetValue(ToiletMega2560, "pin2", "pimp"));
+
+            var currentKitchenVentStatus = await Manager.GetState(KitchenMega2560, "pin3").ConfigureAwait(false);
+
+            //Turn off kitchen ventilator
+            if (currentKitchenVentStatus?.ToString().ToLowerInvariant() == "true")
+                commands.Add(Manager.SetValue(KitchenMega2560, "pin3", "pimp"));
 
             return commands;
         }
@@ -198,12 +199,11 @@ namespace Scenarios
             if (currentToiletVentStatus?.ToString().ToLowerInvariant() == "true")
                 commands.Add(Manager.SetValue(ToiletMega2560, "pin2", "pimp"));
 
-            return commands;
-        }
+            var currentKitchenVentStatus = await Manager.GetState(KitchenMega2560, "pin3").ConfigureAwait(false);
 
-        private async Task<IList<Task<ISetValueResult>>> GetMorningScenarioCommands()
-        {
-            var commands = new List<Task<ISetValueResult>> { Manager.SetValue("Breezart", "UnitState", "On") };
+            //Turn off kitchen ventilator
+            if (currentKitchenVentStatus?.ToString().ToLowerInvariant() == "true")
+                commands.Add(Manager.SetValue(KitchenMega2560, "pin3", "pimp"));
 
             return commands;
         }

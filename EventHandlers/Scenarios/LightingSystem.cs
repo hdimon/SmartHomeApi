@@ -67,17 +67,12 @@ namespace Scenarios
                     results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
                 case "Indoor":
-                    commands = await GetIndoorScenarioCommands().ConfigureAwait(false);
+                    commands = await GetIndoorScenarioCommands(args).ConfigureAwait(false);
 
                     results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
                 case "Sleep":
                     commands = await GetSleepScenarioCommands().ConfigureAwait(false);
-
-                    results = await Task.WhenAll(commands).ConfigureAwait(false);
-                    break;
-                case "Morning":
-                    commands = await GetMorningScenarioCommands().ConfigureAwait(false);
 
                     results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
@@ -104,14 +99,23 @@ namespace Scenarios
             return commands;
         }
 
-        private async Task<IList<Task<ISetValueResult>>> GetIndoorScenarioCommands()
+        private async Task<IList<Task<ISetValueResult>>> GetIndoorScenarioCommands(StateChangedEvent args)
         {
             var commands = new List<Task<ISetValueResult>>();
 
-            await AddPositiveImpulseCommandWithStateCheck(commands, ToiletMega2560, BathroomLightPin, FalseValue);
-            await AddPositiveImpulseCommandWithStateCheck(commands, ToiletMega2560, ToiletLightPin, FalseValue);
-            await AddPositiveImpulseCommandWithStateCheck(commands, KitchenMega2560, KitchenSpotsLightPin, FalseValue);
-            //Hall, Bedroom
+            if (args.OldValue == "Outdoor")
+            {
+                await AddPositiveImpulseCommandWithStateCheck(commands, ToiletMega2560, BathroomLightPin, FalseValue);
+                await AddPositiveImpulseCommandWithStateCheck(commands, ToiletMega2560, ToiletLightPin, FalseValue);
+                await AddPositiveImpulseCommandWithStateCheck(commands, KitchenMega2560, KitchenSpotsLightPin,
+                    FalseValue);
+                //Hall, Bedroom
+            }
+            else if (args.OldValue == "Sleep")
+            {
+                await AddPositiveImpulseCommandWithStateCheck(commands, ToiletMega2560, BathroomLightPin, FalseValue);
+                await AddPositiveImpulseCommandWithStateCheck(commands, ToiletMega2560, ToiletLightPin, FalseValue);
+            }
 
             return commands;
         }
@@ -121,16 +125,6 @@ namespace Scenarios
             var commands = new List<Task<ISetValueResult>>();
 
             await TurnOffAllLighting(commands).ConfigureAwait(false);
-
-            return commands;
-        }
-
-        private async Task<IList<Task<ISetValueResult>>> GetMorningScenarioCommands()
-        {
-            var commands = new List<Task<ISetValueResult>>();
-
-            await AddPositiveImpulseCommandWithStateCheck(commands, ToiletMega2560, BathroomLightPin, FalseValue);
-            await AddPositiveImpulseCommandWithStateCheck(commands, ToiletMega2560, ToiletLightPin, FalseValue);
 
             return commands;
         }
