@@ -95,7 +95,13 @@ namespace Scenarios
                 case _indoorScenario:
                     commands = new List<Task<ISetValueResult>>
                         { Manager.SetValue("Virtual_States", "OutdoorSubScenario", _outdoorSubScenarioNone) };
-                    commands.AddRange(GetIndoorScenarioTemperatureCommands());
+
+                    var indoorSubScenario =
+                        await Manager.GetState("Virtual_States", "IndoorSubScenario").ConfigureAwait(false);
+
+                    if (indoorSubScenario?.ToString() == _indoorSubScenarioNone)
+                        commands.AddRange(GetIndoorScenarioTemperatureCommands());
+
                     commands.Add(Manager.SetValue("Toilet_Mega2560", "pin3", "low"));
 
                     results = await Task.WhenAll(commands).ConfigureAwait(false);
