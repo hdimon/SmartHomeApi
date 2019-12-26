@@ -82,7 +82,12 @@ namespace Mega2560ControllerDevice
             if (telemetry.ContainsKey("CO2ppm") && config.HasCO2Sensor)
             {
                 if (double.TryParse(telemetry["CO2ppm"], out var currentCO2))
-                    currentCO2 = _currentCO2AverageValues.GetAverageValue(currentCO2);
+                {
+                    if (currentCO2 < 20000)
+                        currentCO2 = _currentCO2AverageValues.GetAverageValue(currentCO2);
+                    else
+                        currentCO2 = 0; //Emergency case
+                }
 
                 var roundedCurrentCO2 = (int)Math.Round(currentCO2, 0);
 
