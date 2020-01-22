@@ -25,6 +25,15 @@ namespace Mega2560ControllerDevice
         private int? _previousCO2;
         private int? _previousHumidityPercent;
         private double? _previousTemperatureC;
+
+        private readonly AverageValuesHelper _currentSlave1TempAverageValues = new AverageValuesHelper(10);
+        private readonly AverageValuesHelper _currentSlave1CO2AverageValues = new AverageValuesHelper(40);
+        private readonly AverageValuesHelper _currentSlave1HumidityAverageValues = new AverageValuesHelper(10);
+        private readonly AverageValuesHelper _currentSlave1PressureHPaAverageValues = new AverageValuesHelper(1000);
+        private int? _previousSlave1CO2;
+        private int? _previousSlave1HumidityPercent;
+        private double? _previousSlave1TemperatureC;
+
         private readonly List<string> _availablePinCommands = new List<string> { "high", "low", "pimp", "nimp" };
 
         public Mega2560Controller(IItemHelpersFabric helpersFabric, IItemConfig config) : base(helpersFabric,
@@ -54,7 +63,6 @@ namespace Mega2560ControllerDevice
 
         private ItemState ParseState(string responseString)
         {
-            var config = (Mega2560ControllerConfig)Config;
             var state = new ItemState(ItemId, ItemType);
 
             if (string.IsNullOrWhiteSpace(responseString))
@@ -79,84 +87,207 @@ namespace Mega2560ControllerDevice
                 state.States.Add("Mac", telemetry["Mac"]);
             }
 
-            if (telemetry.ContainsKey("CO2ppm") && config.HasCO2Sensor)
-            {
-                if (double.TryParse(telemetry["CO2ppm"], out var currentCO2))
-                {
-                    if (currentCO2 < 20000)
-                        currentCO2 = _currentCO2AverageValues.GetAverageValue(currentCO2);
-                    else
-                        currentCO2 = 0; //Emergency case
-                }
+            ParseCO2State(telemetry, state);
+            ParseTemperatureCState(telemetry, state);
+            ParsePressureHPaState(telemetry, state);
+            ParseHumidityPercentState(telemetry, state);
+            ParsePinsStates(telemetry, state);
 
-                var roundedCurrentCO2 = (int)Math.Round(currentCO2, 0);
-
-                if (!_previousCO2.HasValue)
-                    _previousCO2 = roundedCurrentCO2;
-                else
-                {
-                    if (Math.Abs(roundedCurrentCO2 - _previousCO2.Value) > 2)
-                        _previousCO2 = roundedCurrentCO2;
-                }
-
-                state.States.Add("CO2ppm", _previousCO2);
-            }
-
-            if (telemetry.ContainsKey("TemperatureC") && config.HasTemperatureSensor)
-            {
-                if (double.TryParse(telemetry["TemperatureC"], NumberStyles.Any, CultureInfo.InvariantCulture,
-                    out var currentTemperatureC))
-                    currentTemperatureC = _currentTempAverageValues.GetAverageValue(currentTemperatureC);
-
-                var roundedCurrentTemperatureC = Math.Round(currentTemperatureC, 1);
-
-                if (!_previousTemperatureC.HasValue)
-                    _previousTemperatureC = roundedCurrentTemperatureC;
-                else
-                {
-                    if (Math.Abs(roundedCurrentTemperatureC - _previousTemperatureC.Value) > 0.1001)
-                        _previousTemperatureC = roundedCurrentTemperatureC;
-                }
-
-                state.States.Add("TemperatureC", _previousTemperatureC);
-            }
-
-            if (telemetry.ContainsKey("PressureHPa") && config.HasPressureSensor)
-            {
-                if (double.TryParse(telemetry["PressureHPa"], NumberStyles.Any, CultureInfo.InvariantCulture,
-                    out var currentPressureHPa))
-                    currentPressureHPa = _currentPressureHPaAverageValues.GetAverageValue(currentPressureHPa);
-
-                state.States.Add("PressureHPa", Convert.ToInt32(Math.Round(currentPressureHPa, 0)));
-            }
-
-            if (telemetry.ContainsKey("HumidityPercent") && config.HasHumiditySensor)
-            {
-                if (double.TryParse(telemetry["HumidityPercent"], NumberStyles.Any, CultureInfo.InvariantCulture,
-                    out var currentHumidityPercent))
-                    currentHumidityPercent = _currentHumidityAverageValues.GetAverageValue(currentHumidityPercent);
-
-                var roundedCurrentHumidityPercent = (int)Math.Round(currentHumidityPercent, 0);
-
-                if (!_previousHumidityPercent.HasValue)
-                    _previousHumidityPercent = roundedCurrentHumidityPercent;
-                else
-                {
-                    if (Math.Abs(roundedCurrentHumidityPercent - _previousHumidityPercent.Value) > 1)
-                        _previousHumidityPercent = roundedCurrentHumidityPercent;
-                }
-
-                state.States.Add("HumidityPercent", _previousHumidityPercent);
-            }
-
-            if (config.HasPins)
-                ParsePinsStates(telemetry, state);
+            ParseSlave1CO2State(telemetry, state);
+            ParseSlave1TemperatureCState(telemetry, state);
+            ParseSlave1PressureHPaState(telemetry, state);
+            ParseSlave1HumidityPercentState(telemetry, state);
 
             return state;
         }
 
+        private void ParseCO2State(Dictionary<string, string> telemetry, ItemState state)
+        {
+            var config = (Mega2560ControllerConfig)Config;
+
+            if (!telemetry.ContainsKey("CO2ppm") || !config.HasCO2Sensor)
+                return;
+
+            if (double.TryParse(telemetry["CO2ppm"], out var currentCO2))
+            {
+                if (currentCO2 < 20000)
+                    currentCO2 = _currentCO2AverageValues.GetAverageValue(currentCO2);
+                else
+                    currentCO2 = 0; //Emergency case
+            }
+
+            var roundedCurrentCO2 = (int)Math.Round(currentCO2, 0);
+
+            if (!_previousCO2.HasValue)
+                _previousCO2 = roundedCurrentCO2;
+            else
+            {
+                if (Math.Abs(roundedCurrentCO2 - _previousCO2.Value) > 2)
+                    _previousCO2 = roundedCurrentCO2;
+            }
+
+            state.States.Add("CO2ppm", _previousCO2);
+        }
+
+        private void ParseTemperatureCState(Dictionary<string, string> telemetry, ItemState state)
+        {
+            var config = (Mega2560ControllerConfig)Config;
+
+            if (!telemetry.ContainsKey("TemperatureC") || !config.HasTemperatureSensor)
+                return;
+
+            if (double.TryParse(telemetry["TemperatureC"], NumberStyles.Any, CultureInfo.InvariantCulture,
+                out var currentTemperatureC))
+                currentTemperatureC = _currentTempAverageValues.GetAverageValue(currentTemperatureC);
+
+            var roundedCurrentTemperatureC = Math.Round(currentTemperatureC, 1);
+
+            if (!_previousTemperatureC.HasValue)
+                _previousTemperatureC = roundedCurrentTemperatureC;
+            else
+            {
+                if (Math.Abs(roundedCurrentTemperatureC - _previousTemperatureC.Value) > 0.1001)
+                    _previousTemperatureC = roundedCurrentTemperatureC;
+            }
+
+            state.States.Add("TemperatureC", _previousTemperatureC);
+        }
+
+        private void ParsePressureHPaState(Dictionary<string, string> telemetry, ItemState state)
+        {
+            var config = (Mega2560ControllerConfig)Config;
+
+            if (!telemetry.ContainsKey("PressureHPa") || !config.HasPressureSensor)
+                return;
+
+            if (double.TryParse(telemetry["PressureHPa"], NumberStyles.Any, CultureInfo.InvariantCulture,
+                out var currentPressureHPa))
+                currentPressureHPa = _currentPressureHPaAverageValues.GetAverageValue(currentPressureHPa);
+
+            state.States.Add("PressureHPa", Convert.ToInt32(Math.Round(currentPressureHPa, 0)));
+        }
+
+        private void ParseHumidityPercentState(Dictionary<string, string> telemetry, ItemState state)
+        {
+            var config = (Mega2560ControllerConfig)Config;
+
+            if (!telemetry.ContainsKey("HumidityPercent") || !config.HasHumiditySensor)
+                return;
+
+            if (double.TryParse(telemetry["HumidityPercent"], NumberStyles.Any, CultureInfo.InvariantCulture,
+                out var currentHumidityPercent))
+                currentHumidityPercent = _currentHumidityAverageValues.GetAverageValue(currentHumidityPercent);
+
+            var roundedCurrentHumidityPercent = (int)Math.Round(currentHumidityPercent, 0);
+
+            if (!_previousHumidityPercent.HasValue)
+                _previousHumidityPercent = roundedCurrentHumidityPercent;
+            else
+            {
+                if (Math.Abs(roundedCurrentHumidityPercent - _previousHumidityPercent.Value) > 1)
+                    _previousHumidityPercent = roundedCurrentHumidityPercent;
+            }
+
+            state.States.Add("HumidityPercent", _previousHumidityPercent);
+        }
+
+        private void ParseSlave1CO2State(Dictionary<string, string> telemetry, ItemState state)
+        {
+            var config = (Mega2560ControllerConfig)Config;
+
+            if (!telemetry.ContainsKey("Slave1CO2ppm") || !config.HasSlave1CO2Sensor)
+                return;
+
+            if (double.TryParse(telemetry["Slave1CO2ppm"], out var currentCO2))
+            {
+                if (currentCO2 < 20000)
+                    currentCO2 = _currentSlave1CO2AverageValues.GetAverageValue(currentCO2);
+                else
+                    currentCO2 = 0; //Emergency case
+            }
+
+            var roundedCurrentCO2 = (int)Math.Round(currentCO2, 0);
+
+            if (!_previousSlave1CO2.HasValue)
+                _previousSlave1CO2 = roundedCurrentCO2;
+            else
+            {
+                if (Math.Abs(roundedCurrentCO2 - _previousSlave1CO2.Value) > 2)
+                    _previousSlave1CO2 = roundedCurrentCO2;
+            }
+
+            state.States.Add("Slave1CO2ppm", _previousSlave1CO2);
+        }
+
+        private void ParseSlave1TemperatureCState(Dictionary<string, string> telemetry, ItemState state)
+        {
+            var config = (Mega2560ControllerConfig)Config;
+
+            if (!telemetry.ContainsKey("Slave1TemperatureC") || !config.HasSlave1TemperatureSensor)
+                return;
+
+            if (double.TryParse(telemetry["Slave1TemperatureC"], NumberStyles.Any, CultureInfo.InvariantCulture,
+                out var currentTemperatureC))
+                currentTemperatureC = _currentSlave1TempAverageValues.GetAverageValue(currentTemperatureC);
+
+            var roundedCurrentTemperatureC = Math.Round(currentTemperatureC, 1);
+
+            if (!_previousSlave1TemperatureC.HasValue)
+                _previousSlave1TemperatureC = roundedCurrentTemperatureC;
+            else
+            {
+                if (Math.Abs(roundedCurrentTemperatureC - _previousSlave1TemperatureC.Value) > 0.1001)
+                    _previousSlave1TemperatureC = roundedCurrentTemperatureC;
+            }
+
+            state.States.Add("Slave1TemperatureC", _previousSlave1TemperatureC);
+        }
+
+        private void ParseSlave1PressureHPaState(Dictionary<string, string> telemetry, ItemState state)
+        {
+            var config = (Mega2560ControllerConfig)Config;
+
+            if (!telemetry.ContainsKey("Slave1PressureHPa") || !config.HasSlave1PressureSensor)
+                return;
+
+            if (double.TryParse(telemetry["Slave1PressureHPa"], NumberStyles.Any, CultureInfo.InvariantCulture,
+                out var currentPressureHPa))
+                currentPressureHPa = _currentSlave1PressureHPaAverageValues.GetAverageValue(currentPressureHPa);
+
+            state.States.Add("Slave1PressureHPa", Convert.ToInt32(Math.Round(currentPressureHPa, 0)));
+        }
+
+        private void ParseSlave1HumidityPercentState(Dictionary<string, string> telemetry, ItemState state)
+        {
+            var config = (Mega2560ControllerConfig)Config;
+
+            if (!telemetry.ContainsKey("Slave1HumidityPercent") || !config.HasSlave1HumiditySensor)
+                return;
+
+            if (double.TryParse(telemetry["Slave1HumidityPercent"], NumberStyles.Any, CultureInfo.InvariantCulture,
+                out var currentHumidityPercent))
+                currentHumidityPercent = _currentSlave1HumidityAverageValues.GetAverageValue(currentHumidityPercent);
+
+            var roundedCurrentHumidityPercent = (int)Math.Round(currentHumidityPercent, 0);
+
+            if (!_previousSlave1HumidityPercent.HasValue)
+                _previousSlave1HumidityPercent = roundedCurrentHumidityPercent;
+            else
+            {
+                if (Math.Abs(roundedCurrentHumidityPercent - _previousSlave1HumidityPercent.Value) > 1)
+                    _previousSlave1HumidityPercent = roundedCurrentHumidityPercent;
+            }
+
+            state.States.Add("Slave1HumidityPercent", _previousSlave1HumidityPercent);
+        }
+
         private void ParsePinsStates(Dictionary<string, string> telemetry, ItemState state)
         {
+            var config = (Mega2560ControllerConfig)Config;
+
+            if (!config.HasPins)
+                return;
+
             var pinKeys = telemetry.Where(t => t.Key.StartsWith("pin"));
 
             foreach (var pinKeyValuePair in pinKeys)

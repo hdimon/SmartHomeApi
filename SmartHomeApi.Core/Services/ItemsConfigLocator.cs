@@ -56,15 +56,13 @@ namespace SmartHomeApi.Core.Services
                     },
                     new Mega2560ControllerConfig("Toilet_Mega2560", "Mega2560Controller")
                     {
-                        Mac = "aa:bb:cc:00:00:02", IpAddress = "192.168.1.60", HasCO2Sensor = false,
-                        HasTemperatureSensor = false, HasHumiditySensor = false, HasPressureSensor = false,
-                        HasPins = true
+                        Mac = "aa:bb:cc:00:00:02", IpAddress = "192.168.1.60", HasPins = true
                     },
                     new Mega2560ControllerConfig("Bedroom_Mega2560", "Mega2560Controller")
                     {
                         Mac = "aa:bb:cc:00:00:03", IpAddress = "192.168.1.61", HasCO2Sensor = true,
                         HasTemperatureSensor = true, HasHumiditySensor = true, HasPressureSensor = true,
-                        HasPins = false
+                        HasPins = true
                     }
                 };
 
