@@ -23,6 +23,13 @@ namespace Scenarios
         private const string KitchenCentralLightPin = "pin5";
         private const string KitchenLedPin = "pin0";
 
+        private const string BedroomMega2560 = "Bedroom_Mega2560";
+        private const string BedroomSpotsLightPin = "pin6";
+        private const string BedroomBalconySpotsLightPin = "pin4";
+        private const string BedroomCentralLightPin = "pin7";
+        private const string HallSpotsLightPin = "pin5";
+        private const string HallSconcesPin = "pin3";
+
         public LightingSystem(IApiManager manager, IItemHelpersFabric helpersFabric) : base(manager, helpersFabric)
         {
         }
@@ -94,7 +101,7 @@ namespace Scenarios
         {
             var commands = new List<Task<ISetValueResult>>();
 
-            await TurnOffAllLighting(commands);
+            await TurnOffAllLighting(commands).ConfigureAwait(false);
 
             return commands;
         }
@@ -109,7 +116,9 @@ namespace Scenarios
                 await AddPositiveImpulseCommandWithStateCheck(commands, ToiletMega2560, ToiletLightPin, FalseValue);
                 await AddPositiveImpulseCommandWithStateCheck(commands, KitchenMega2560, KitchenSpotsLightPin,
                     FalseValue);
-                //Hall, Bedroom
+                await AddPositiveImpulseCommandWithStateCheck(commands, BedroomMega2560, BedroomSpotsLightPin,
+                    FalseValue);
+                await AddPositiveImpulseCommandWithStateCheck(commands, BedroomMega2560, HallSpotsLightPin, FalseValue);
             }
             else if (args.OldValue == "Sleep")
             {
@@ -148,6 +157,11 @@ namespace Scenarios
             await AddPositiveImpulseCommandWithStateCheck(commands, KitchenMega2560, KitchenBalconySpotsLightPin, TrueValue);
             await AddPositiveImpulseCommandWithStateCheck(commands, KitchenMega2560, KitchenCentralLightPin, TrueValue);
             await AddPositiveImpulseCommandWithStateCheck(commands, KitchenMega2560, KitchenLedPin, TrueValue);
+            await AddPositiveImpulseCommandWithStateCheck(commands, BedroomMega2560, HallSpotsLightPin, TrueValue);
+            await AddPositiveImpulseCommandWithStateCheck(commands, BedroomMega2560, HallSconcesPin, TrueValue);
+            await AddPositiveImpulseCommandWithStateCheck(commands, BedroomMega2560, BedroomSpotsLightPin, TrueValue);
+            await AddPositiveImpulseCommandWithStateCheck(commands, BedroomMega2560, BedroomBalconySpotsLightPin, TrueValue);
+            await AddPositiveImpulseCommandWithStateCheck(commands, BedroomMega2560, BedroomCentralLightPin, TrueValue);
         }
     }
 }
