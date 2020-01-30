@@ -31,6 +31,13 @@ namespace TerneoSxDevice
             _settableParametersList = new List<string> { SetTemperatureParameter };
         }
 
+        protected override Task InitializeDevice()
+        {
+            _client.Timeout = new TimeSpan(0, 0, 10);
+
+            return base.InitializeDevice();
+        }
+
         public override async Task<ISetValueResult> SetValue(string parameter, string value)
         {
             var result = new SetValueResult();
