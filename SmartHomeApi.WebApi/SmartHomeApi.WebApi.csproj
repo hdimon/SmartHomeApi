@@ -5,6 +5,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Logs\**" />
+    <Content Remove="Logs\**" />
+    <EmbeddedResource Remove="Logs\**" />
+    <None Remove="Logs\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Virtual_HeatingSystemAfterMorningAlarmClock.txt" />
+    <None Remove="Virtual_HeatingSystemAlarmClock.txt" />
+    <None Remove="Virtual_HeatingSystemMorningAlarmClock.txt" />
+    <None Remove="Virtual_MainAlarmClock.txt" />
+    <None Remove="Virtual_States.txt" />
+    <None Remove="Virtual_TowelHeaterTurningOffAlarmClock.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.1.0-preview1.19506.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.0-preview1-19509-03" />
