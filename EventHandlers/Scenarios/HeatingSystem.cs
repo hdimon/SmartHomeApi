@@ -264,10 +264,13 @@ namespace Scenarios
 
             EnsureOperationIsSuccessful(args, results, _failoverActionIntervalSeconds, async () =>
             {
-                currentScenario = await Manager.GetState("Virtual_States", "Scenario").ConfigureAwait(false);
+               var currentSc = await Manager.GetState("Virtual_States", "Scenario").ConfigureAwait(false);
+                var indoorSubScenario =
+                    await Manager.GetState("Virtual_States", "IndoorSubScenario").ConfigureAwait(false);
 
-                //If scenario not indoor or sleep then stop
-                if (currentScenario?.ToString() != _indoorScenario && currentScenario?.ToString() != _sleepScenario)
+                //If scenario not indoor or sleep or if subScenario was changed then stop
+                if (currentSc?.ToString() != _indoorScenario && currentSc?.ToString() != _sleepScenario ||
+                    indoorSubScenario?.ToString() != args.NewValue)
                     return;
 
                 await ProcessIndoorSubScenarioParameter(args).ConfigureAwait(false);
