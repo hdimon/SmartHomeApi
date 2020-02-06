@@ -1,7 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using BreezartLux550Device;
 using EventsPostgreSqlStorage;
 using Mega2560ControllerDevice;
+using Microsoft.Extensions.Configuration;
 using SmartHomeApi.Core.Interfaces;
 using TerneoSxDevice;
 using VirtualAlarmClockDevice;
@@ -11,8 +17,108 @@ namespace SmartHomeApi.Core.Services
 {
     public class ItemsConfigLocator : IItemsConfigLocator
     {
+        private readonly ISmartHomeApiFabric _fabric;
+        private readonly IApiLogger _logger;
+        private Task _worker;
+        private string _configDirectory;
+
+        private ConcurrentDictionary<string, ConfigContainer> _configContainers =
+            new ConcurrentDictionary<string, ConfigContainer>();
+
+        public bool IsInitialized { get; private set; }
+
+        public ItemsConfigLocator(ISmartHomeApiFabric fabric)
+        {
+            _fabric = fabric;
+            _logger = _fabric.GetApiLogger();
+            _configDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Configs");
+        }
+
+        public async Task Initialize()
+        {
+            RunConfigsCollectorWorker();
+
+            IsInitialized = true;
+        }
+
+        private void RunConfigsCollectorWorker()
+        {
+            if (_worker == null || _worker.IsCompleted)
+            {
+                _worker = Task.Factory.StartNew(ConfigsCollectorWorkerWrapper).Unwrap().ContinueWith(
+                    t =>
+                    {
+                        _logger.Error(t.Exception);
+                    },
+                    TaskContinuationOptions.OnlyOnFaulted);
+            }
+        }
+
+        private async Task ConfigsCollectorWorkerWrapper()
+        {
+            while (true)
+            {
+                await Task.Delay(1000);
+
+                try
+                {
+                    await ConfigsCollectorWorker();
+                }
+                catch (Exception e)
+                {
+                    _logger.Error(e);
+                }
+            }
+        }
+
+        private async Task ConfigsCollectorWorker()
+        {
+            try
+            {
+                var ext = new List<string> { ".json" };
+                var files = Directory.EnumerateFiles(_configDirectory, "*.*", SearchOption.AllDirectories)
+                                     .Where(s => ext.Contains(Path.GetExtension(s).ToLowerInvariant())).ToList();
+
+                var newFiles = files.Except(_configContainers.Keys.ToList()).ToList();
+
+                foreach (var newFile in newFiles)
+                {
+                    var container = new ConfigContainer();
+                    container.FilePath = newFile;
+                    container.Builder = new ConfigurationBuilder().AddJsonFile(newFile, optional: true);
+                    container.Root = container.Builder.Build();
+
+                    _configContainers.AddOrUpdate(newFile, s => container, (s, configContainer) => container);
+                }
+
+                foreach (var configContainer in _configContainers)
+                {
+                    SetItemConfig(configContainer.Value);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.Error(e);
+            }
+        }
+
+        private void SetItemConfig(ConfigContainer container)
+        {
+            string itemType = container.Root.GetValue<string>("ItemType", null);
+
+            switch (itemType)
+            {
+                case "TerneoSx":
+                    //container.ItemConfig = container.Root.Get<TerneoSxConfig>();
+                    break;
+            }
+        }
+
         public List<IItemConfig> GetItemsConfigs(string itemType)
         {
+            /*root.Reload();
+            var ip = root.GetValue<string>("IpAddress");*/
+
             if (itemType == "TerneoSx")
                 return new List<IItemConfig>
                 {
@@ -60,8 +166,8 @@ namespace SmartHomeApi.Core.Services
                     },
                     new Mega2560ControllerConfig("Bedroom_Mega2560", "Mega2560Controller")
                     {
-                        Mac = "aa:bb:cc:00:00:03", IpAddress = "192.168.1.61", HasCO2Sensor = true,
-                        HasTemperatureSensor = true, HasHumiditySensor = true, HasPressureSensor = true,
+                        Mac = "aa:bb:cc:00:00:03", IpAddress = "192.168.1.61", HasSlave1CO2Sensor = true,
+                        HasSlave1TemperatureSensor = true, HasSlave1HumiditySensor = true, HasSlave1PressureSensor = true,
                         HasPins = true
                     }
                 };
@@ -83,6 +189,14 @@ namespace SmartHomeApi.Core.Services
                 };
 
             return new List<IItemConfig>();
+        }
+
+        private class ConfigContainer
+        {
+            public string FilePath { get; set; }
+            public IConfigurationBuilder Builder { get; set; }
+            public IConfigurationRoot Root { get; set; }
+            public IItemConfig ItemConfig { get; set; }
         }
     }
 }

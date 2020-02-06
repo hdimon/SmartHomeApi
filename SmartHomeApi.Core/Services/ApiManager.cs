@@ -29,11 +29,13 @@ namespace SmartHomeApi.Core.Services
             _stateContainerTransformer = _fabric.GetStateContainerTransformer();
         }
 
-        public bool IsInitialized { get; set; }
+        public bool IsInitialized { get; private set; }
 
         public async Task Initialize()
         {
             _logger.Info("Starting ApiManager initialization...");
+
+            await _fabric.GetItemsConfigsLocator().Initialize();
 
             var locators = await _fabric.GetItemsPluginsLocator().GetItemsLocators();
             var immediateItems = locators.Where(l => l.ImmediateInitialization).ToList();

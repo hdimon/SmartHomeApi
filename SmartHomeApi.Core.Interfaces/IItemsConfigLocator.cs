@@ -2,7 +2,7 @@
 
 namespace SmartHomeApi.Core.Interfaces
 {
-    public interface IItemsConfigLocator
+    public interface IItemsConfigLocator : IInitializable
     {
         List<IItemConfig> GetItemsConfigs(string itemType);
     }
