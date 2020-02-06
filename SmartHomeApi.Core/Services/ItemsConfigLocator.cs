@@ -105,32 +105,32 @@ namespace SmartHomeApi.Core.Services
         private void SetItemConfig(ConfigContainer container)
         {
             string itemType = container.Root.GetValue<string>("ItemType", null);
+            string itemId = container.Root.GetValue<string>("ItemId", null);
+            IItemConfig config = null;
+
+            if (string.IsNullOrWhiteSpace(itemType) || string.IsNullOrWhiteSpace(itemId))
+                return;
 
             switch (itemType)
             {
                 case "TerneoSx":
-                    //container.ItemConfig = container.Root.Get<TerneoSxConfig>();
+                    config = container.ItemConfig ?? new TerneoSxConfig(itemId, itemType);
                     break;
             }
+
+            if (config == null)
+                return;
+
+            container.Root.Bind(config);
+            container.ItemConfig = config;
         }
 
         public List<IItemConfig> GetItemsConfigs(string itemType)
         {
-            /*root.Reload();
-            var ip = root.GetValue<string>("IpAddress");*/
+            var configs = _configContainers.Values.Select(c => c.ItemConfig).Where(c => c != null).ToList();
 
-            if (itemType == "TerneoSx")
-                return new List<IItemConfig>
-                {
-                    new TerneoSxConfig("Kitchen_Floor", "TerneoSx")
-                        { IpAddress = "192.168.1.52", SerialNumber = "14000B000C43504735323620000159", Power = 1800},
-                    new TerneoSxConfig("Bedroom_Floor", "TerneoSx")
-                        { IpAddress = "192.168.1.48", SerialNumber = "2B0008000C43504735323620000159", Power = 300},
-                    new TerneoSxConfig("Bathroom_Floor", "TerneoSx")
-                        { IpAddress = "192.168.1.33", SerialNumber = "29000B000C43504735323620000159", Power = 150},
-                    new TerneoSxConfig("Toilet_Floor", "TerneoSx")
-                        { IpAddress = "192.168.1.46", SerialNumber = "13001B000143504735323620000159", Power = 150 }
-                };
+            if (configs.Any(c => c.ItemType == itemType))
+                return configs.Where(c => c.ItemType == itemType).ToList();
 
             if (itemType == "VirtualStateDevice")
                 return new List<IItemConfig>
