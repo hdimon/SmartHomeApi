@@ -25,5 +25,12 @@ namespace SmartHomeApi.DeviceUtils
 
             return averageValue;
         }
+
+        public double GetAverageValue()
+        {
+            var averageValue = _values.Average();
+
+            return averageValue;
+        }
     }
 }

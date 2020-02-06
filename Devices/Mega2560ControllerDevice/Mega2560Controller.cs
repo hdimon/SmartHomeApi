@@ -113,7 +113,7 @@ namespace Mega2560ControllerDevice
                 if (currentCO2 < 20000)
                     currentCO2 = _currentCO2AverageValues.GetAverageValue(currentCO2);
                 else
-                    currentCO2 = 0; //Emergency case
+                    currentCO2 = _currentCO2AverageValues.GetAverageValue(); //Emergency case
             }
 
             var roundedCurrentCO2 = (int)Math.Round(currentCO2, 0);
@@ -203,7 +203,7 @@ namespace Mega2560ControllerDevice
                 if (currentCO2 < 20000)
                     currentCO2 = _currentSlave1CO2AverageValues.GetAverageValue(currentCO2);
                 else
-                    currentCO2 = 0; //Emergency case
+                    currentCO2 = _currentSlave1CO2AverageValues.GetAverageValue(); //Emergency case
             }
 
             var roundedCurrentCO2 = (int)Math.Round(currentCO2, 0);
