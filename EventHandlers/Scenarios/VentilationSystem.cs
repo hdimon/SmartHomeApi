@@ -81,8 +81,13 @@ namespace Scenarios
                 CultureInfo.InvariantCulture, out var currentSetSpeed);
 
             if (!parseResult || recommendedSpeed != currentSetSpeed)
+            {
+                Logger.Info(
+                    $"Recommended ventilation speed has been changed from {currentSetSpeed} to {recommendedSpeed}");
+
                 await Manager.SetValue(Breezart, "SetSpeed", recommendedSpeed.ToString(CultureInfo.InvariantCulture))
                              .ConfigureAwait(false);
+            }
         }
 
         protected override async Task ProcessNotification(StateChangedEvent args)
