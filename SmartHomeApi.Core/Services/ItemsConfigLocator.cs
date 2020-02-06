@@ -106,17 +106,11 @@ namespace SmartHomeApi.Core.Services
         {
             string itemType = container.Root.GetValue<string>("ItemType", null);
             string itemId = container.Root.GetValue<string>("ItemId", null);
-            IItemConfig config = null;
 
             if (string.IsNullOrWhiteSpace(itemType) || string.IsNullOrWhiteSpace(itemId))
                 return;
 
-            switch (itemType)
-            {
-                case "TerneoSx":
-                    config = container.ItemConfig ?? new TerneoSxConfig(itemId, itemType);
-                    break;
-            }
+            IItemConfig config = GetItemConfig(itemType, itemId, container);
 
             if (config == null)
                 return;
@@ -125,68 +119,41 @@ namespace SmartHomeApi.Core.Services
             container.ItemConfig = config;
         }
 
+        private IItemConfig GetItemConfig(string itemType, string itemId, ConfigContainer container)
+        {
+            IItemConfig config = null;
+
+            switch (itemType)
+            {
+                case "TerneoSx":
+                    config = container.ItemConfig ?? new TerneoSxConfig(itemId, itemType);
+                    break;
+                case "VirtualStateDevice":
+                    config = container.ItemConfig ?? new VirtualStateConfig(itemId, itemType);
+                    break;
+                case "VirtualAlarmClockDevice":
+                    config = container.ItemConfig ?? new VirtualAlarmClockConfig(itemId, itemType);
+                    break;
+                case "BreezartLux550":
+                    config = container.ItemConfig ?? new BreezartLux550Config(itemId, itemType);
+                    break;
+                case "EventsPostgreSqlStorage":
+                    config = container.ItemConfig ?? new StorageConfig(itemId, itemType);
+                    break;
+                case "Mega2560Controller":
+                    config = container.ItemConfig ?? new Mega2560ControllerConfig(itemId, itemType);
+                    break;
+            }
+
+            return config;
+        }
+
         public List<IItemConfig> GetItemsConfigs(string itemType)
         {
             var configs = _configContainers.Values.Select(c => c.ItemConfig).Where(c => c != null).ToList();
 
             if (configs.Any(c => c.ItemType == itemType))
                 return configs.Where(c => c.ItemType == itemType).ToList();
-
-            if (itemType == "VirtualStateDevice")
-                return new List<IItemConfig>
-                {
-                    new VirtualStateConfig("Virtual_States", "VirtualStateDevice")
-                };
-
-            if (itemType == "VirtualAlarmClockDevice")
-                return new List<IItemConfig>
-                {
-                    new VirtualAlarmClockConfig("Virtual_MainAlarmClock", "VirtualAlarmClockDevice")
-                        { EveryDay = true },
-                    new VirtualAlarmClockConfig("Virtual_HeatingSystemMorningAlarmClock", "VirtualAlarmClockDevice")
-                        { EveryDay = false },
-                    new VirtualAlarmClockConfig("Virtual_HeatingSystemAfterMorningAlarmClock", "VirtualAlarmClockDevice")
-                        { EveryDay = false },
-                    new VirtualAlarmClockConfig("Virtual_TowelHeaterTurningOffAlarmClock", "VirtualAlarmClockDevice")
-                        { EveryDay = false }
-                };
-
-            if (itemType == "Mega2560Controller")
-                return new List<IItemConfig>
-                {
-                    new Mega2560ControllerConfig("Kitchen_Mega2560", "Mega2560Controller")
-                    {
-                        Mac = "aa:bb:cc:00:00:01", IpAddress = "192.168.1.58", HasCO2Sensor = true,
-                        HasTemperatureSensor = true, HasHumiditySensor = true, HasPressureSensor = true,
-                        HasPins = true
-                    },
-                    new Mega2560ControllerConfig("Toilet_Mega2560", "Mega2560Controller")
-                    {
-                        Mac = "aa:bb:cc:00:00:02", IpAddress = "192.168.1.60", HasPins = true
-                    },
-                    new Mega2560ControllerConfig("Bedroom_Mega2560", "Mega2560Controller")
-                    {
-                        Mac = "aa:bb:cc:00:00:03", IpAddress = "192.168.1.61", HasSlave1CO2Sensor = true,
-                        HasSlave1TemperatureSensor = true, HasSlave1HumiditySensor = true, HasSlave1PressureSensor = true,
-                        HasPins = true
-                    }
-                };
-
-            if (itemType == "BreezartLux550")
-                return new List<IItemConfig>
-                {
-                    new BreezartLux550Config("Breezart", "BreezartLux550") { IpAddress = "192.168.1.37" }
-                };
-
-            if (itemType == "EventsPostgreSqlStorage")
-                return new List<IItemConfig>
-                {
-                    new StorageConfig("MainPostgreStorage", "EventsPostgreSqlStorage")
-                    {
-                        ConnectionString =
-                            "User ID=postgres;Password=admin19;Host=localhost;Port=5432;Database=SmartHomeApi;Pooling=true;"
-                    }
-                };
 
             return new List<IItemConfig>();
         }
