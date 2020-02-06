@@ -126,9 +126,12 @@ namespace Scenarios
             EnsureOperationIsSuccessful(args, results, _failoverActionIntervalSeconds, async () =>
             {
                 var currentScenario = await Manager.GetState("Virtual_States", "Scenario").ConfigureAwait(false);
+                var currentOutdoorSubScenario =
+                    await Manager.GetState("Virtual_States", "OutdoorSubScenario").ConfigureAwait(false);
 
                 //If scenario has been already changed then stop
-                if (currentScenario?.ToString() != args.NewValue)
+                if (currentScenario?.ToString() != args.NewValue || currentScenario?.ToString() == _outdoorScenario &&
+                    currentOutdoorSubScenario?.ToString() == _outdoorSubScenarioGoingHome)
                     return;
 
                 await ProcessScenarioParameter(args).ConfigureAwait(false);
