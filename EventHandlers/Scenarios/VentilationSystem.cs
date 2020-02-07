@@ -9,6 +9,7 @@ namespace Scenarios
     public class VentilationSystem : StateChangedSubscriberAbstract
     {
         private readonly int _failoverActionIntervalSeconds = 30;
+        private readonly int _failoverMaxTries = 3;
         private readonly VentilationSpeedManager _ventilationSpeedManager;
         private Task _worker;
         private TimeSpan _measurementPeriod = new TimeSpan(0, 0, 5, 0);
@@ -98,7 +99,7 @@ namespace Scenarios
             if (args.EventType == StateChangedEventType.ValueSet)
                 return;
 
-            switch (args.DeviceId)
+            switch (args.ItemId)
             {
                 case "Virtual_States":
                     await ProcessVirtualStateEvents(args).ConfigureAwait(false);
@@ -127,39 +128,23 @@ namespace Scenarios
 
         private async Task ProcessScenarioParameter(StateChangedEvent args)
         {
-            ISetValueResult[] results = null;
-
-            IList<Task<ISetValueResult>> commands;
+            IList<Task<ISetValueResult>> commands = null;
 
             switch (args.NewValue)
             {
                 case "Outdoor":
                     commands = await GetOutdoorScenarioCommands().ConfigureAwait(false);
-
-                    results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
                 case "Indoor":
                     commands = await GetIndoorScenarioCommands().ConfigureAwait(false);
-
-                    results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
                 case "Sleep":
                     commands = await GetSleepScenarioCommands().ConfigureAwait(false);
-
-                    results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
             }
 
-            EnsureOperationIsSuccessful(args, results, _failoverActionIntervalSeconds, async () =>
-            {
-                var currentScenario = await Manager.GetState("Virtual_States", "Scenario").ConfigureAwait(false);
-
-                //If scenario has been already changed then stop
-                if (currentScenario?.ToString() != args.NewValue)
-                    return;
-
-                await ProcessScenarioParameter(args).ConfigureAwait(false);
-            });
+            await ExecuteCommands(nameof(VentilationSystem), commands, args, _failoverMaxTries,
+                _failoverActionIntervalSeconds, "Some Scenario commands were failed").ConfigureAwait(false);
         }
 
         private async Task<IList<Task<ISetValueResult>>> GetOutdoorScenarioCommands()

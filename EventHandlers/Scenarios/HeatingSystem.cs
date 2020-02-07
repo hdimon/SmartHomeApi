@@ -11,6 +11,7 @@ namespace Scenarios
         private readonly int _heatingSystemMorningDurationMinutes = 60;
         private readonly int _towelHeaterDurationMinutes = 60;
         private readonly int _failoverActionIntervalSeconds = 30;
+        private readonly int _failoverMaxTries = 3;
         private const string _indoorScenario = "Indoor";
         private const string _outdoorSubScenarioGoingHome = "GoingHome";
         private const string _outdoorSubScenarioNone = "None";
@@ -31,7 +32,7 @@ namespace Scenarios
             if (args.EventType == StateChangedEventType.ValueSet)
                 return;
 
-            switch (args.DeviceId)
+            switch (args.ItemId)
             {
                 case "Virtual_States":
                     await ProcessVirtualStateEvents(args).ConfigureAwait(false);
@@ -69,12 +70,10 @@ namespace Scenarios
 
         private async Task ProcessScenarioParameter(StateChangedEvent args)
         {
-            ISetValueResult[] results = null;
-
             DateTime towelHeaterAlarm;
             string towelHeaterAlarmStr;
 
-            List<Task<ISetValueResult>> commands;
+            List<Task<ISetValueResult>> commands = null;
             switch (args.NewValue)
             {
                 case _outdoorScenario:
@@ -89,8 +88,6 @@ namespace Scenarios
                     commands.AddRange(GetOutdoorScenarioTemperatureCommands());
                     commands.Add(Manager.SetValue("Virtual_TowelHeaterTurningOffAlarmClock", "Time",
                         towelHeaterAlarmStr));
-
-                    results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
                 case _indoorScenario:
                     commands = new List<Task<ISetValueResult>>
@@ -103,8 +100,6 @@ namespace Scenarios
                         commands.AddRange(GetIndoorScenarioTemperatureCommands());
 
                     commands.Add(Manager.SetValue("Toilet_Mega2560", "pin3", "low"));
-
-                    results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
                 case _sleepScenario:
                     towelHeaterAlarm = DateTime.Now.AddMinutes(_towelHeaterDurationMinutes);
@@ -118,24 +113,11 @@ namespace Scenarios
                     commands.AddRange(GetSleepScenarioTemperatureCommands());
                     commands.Add(Manager.SetValue("Virtual_TowelHeaterTurningOffAlarmClock", "Time",
                         towelHeaterAlarmStr));
-
-                    results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
             }
 
-            EnsureOperationIsSuccessful(args, results, _failoverActionIntervalSeconds, async () =>
-            {
-                var currentScenario = await Manager.GetState("Virtual_States", "Scenario").ConfigureAwait(false);
-                var currentOutdoorSubScenario =
-                    await Manager.GetState("Virtual_States", "OutdoorSubScenario").ConfigureAwait(false);
-
-                //If scenario has been already changed then stop
-                if (currentScenario?.ToString() != args.NewValue || currentScenario?.ToString() == _outdoorScenario &&
-                    currentOutdoorSubScenario?.ToString() == _outdoorSubScenarioGoingHome)
-                    return;
-
-                await ProcessScenarioParameter(args).ConfigureAwait(false);
-            });
+            await ExecuteCommands(nameof(HeatingSystem), commands, args, _failoverMaxTries,
+                _failoverActionIntervalSeconds, "Some Scenario commands were failed").ConfigureAwait(false);
         }
 
         private IList<Task<ISetValueResult>> GetOutdoorScenarioTemperatureCommands()
@@ -192,9 +174,7 @@ namespace Scenarios
 
         private async Task ProcessOutdoorSubScenarioParameter(StateChangedEvent args)
         {
-            ISetValueResult[] results = null;
-
-            IList<Task<ISetValueResult>> commands;
+            IList<Task<ISetValueResult>> commands = null;
 
             var currentScenario = await Manager.GetState("Virtual_States", "Scenario").ConfigureAwait(false);
 
@@ -206,7 +186,6 @@ namespace Scenarios
 
                     commands = GetIndoorScenarioTemperatureCommands();
                     commands.Add(Manager.SetValue("Toilet_Mega2560", "pin3", "low"));
-                    results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
                 case _outdoorSubScenarioNone:
                     if (currentScenario?.ToString() != _outdoorScenario)
@@ -214,27 +193,16 @@ namespace Scenarios
 
                     commands = GetOutdoorScenarioTemperatureCommands();
                     commands.Add(Manager.SetValue("Toilet_Mega2560", "pin3", "high"));
-                    results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
             }
 
-            EnsureOperationIsSuccessful(args, results, _failoverActionIntervalSeconds, async () =>
-            {
-                currentScenario = await Manager.GetState("Virtual_States", "Scenario").ConfigureAwait(false);
-
-                //If scenario not outdoor then stop
-                if (currentScenario?.ToString() != _outdoorScenario)
-                    return;
-
-                await ProcessOutdoorSubScenarioParameter(args).ConfigureAwait(false);
-            });
+            await ExecuteCommands(nameof(HeatingSystem), commands, args, _failoverMaxTries,
+                _failoverActionIntervalSeconds, "Some Outdoor SubScenario commands were failed").ConfigureAwait(false);
         }
 
         private async Task ProcessIndoorSubScenarioParameter(StateChangedEvent args)
         {
-            ISetValueResult[] results = null;
-
-            IList<Task<ISetValueResult>> commands;
+            IList<Task<ISetValueResult>> commands = null;
 
             var currentScenario = await Manager.GetState("Virtual_States", "Scenario").ConfigureAwait(false);
 
@@ -246,7 +214,6 @@ namespace Scenarios
 
                     commands = GetIndoorHeatingFlatSubScenarioTemperatureCommands();
                     //commands.Add(Manager.SetValue("Toilet_Mega2560", "pin3", "low"));
-                    results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
                 case _indoorSubScenarioNone:
                     if (currentScenario?.ToString() != _indoorScenario && currentScenario?.ToString() != _sleepScenario)
@@ -260,24 +227,11 @@ namespace Scenarios
                     {
                         commands = new List<Task<ISetValueResult>>();
                     }
-
-                    results = await Task.WhenAll(commands).ConfigureAwait(false);
                     break;
             }
 
-            EnsureOperationIsSuccessful(args, results, _failoverActionIntervalSeconds, async () =>
-            {
-               var currentSc = await Manager.GetState("Virtual_States", "Scenario").ConfigureAwait(false);
-                var indoorSubScenario =
-                    await Manager.GetState("Virtual_States", "IndoorSubScenario").ConfigureAwait(false);
-
-                //If scenario not indoor or sleep or if subScenario was changed then stop
-                if (currentSc?.ToString() != _indoorScenario && currentSc?.ToString() != _sleepScenario ||
-                    indoorSubScenario?.ToString() != args.NewValue)
-                    return;
-
-                await ProcessIndoorSubScenarioParameter(args).ConfigureAwait(false);
-            });
+            await ExecuteCommands(nameof(HeatingSystem), commands, args, _failoverMaxTries,
+                _failoverActionIntervalSeconds, "Some Indoor SubScenario commands were failed").ConfigureAwait(false);
         }
 
         private async Task ProcessVirtualMainAlarmClockEvents(StateChangedEvent args)
@@ -380,23 +334,11 @@ namespace Scenarios
                         return;
 
                     //Turn off TowelHeater
-                    var results = await Task.WhenAll(Manager.SetValue("Toilet_Mega2560", "pin3", "high"))
-                                            .ConfigureAwait(false);
+                    IList<Task<ISetValueResult>> commands = new List<Task<ISetValueResult>>
+                        { Manager.SetValue("Toilet_Mega2560", "pin3", "high") };
 
-                    EnsureOperationIsSuccessful(args, results, _failoverActionIntervalSeconds, async () =>
-                    {
-                        currentScenario = await Manager.GetState("Virtual_States", "Scenario").ConfigureAwait(false);
-                        currentOutdoorSubScenario =
-                            await Manager.GetState("Virtual_States", "OutdoorSubScenario").ConfigureAwait(false);
-
-                        //If scenario is Indoor or Outdoor but already going home then no need to turn off
-                        if (currentScenario?.ToString() == _indoorScenario ||
-                            currentScenario?.ToString() == _outdoorScenario &&
-                            currentOutdoorSubScenario?.ToString() == _outdoorSubScenarioGoingHome)
-                            return;
-
-                        await ProcessVirtualTowelHeaterTurningOffAlarmClockEvents(args).ConfigureAwait(false);
-                    });
+                    await ExecuteCommands(nameof(HeatingSystem), commands, args, _failoverMaxTries,
+                        _failoverActionIntervalSeconds, "Towel Heater Turning Off command was failed").ConfigureAwait(false);
                     break;
             }
         }

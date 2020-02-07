@@ -6,8 +6,8 @@ namespace SmartHomeApi.Core.Interfaces
     {
         public DateTimeOffset EventDate { get; set; }
         public StateChangedEventType EventType { get; }
-        public string DeviceType { get; }
-        public string DeviceId { get; }
+        public string ItemType { get; }
+        public string ItemId { get; }
         public string Parameter { get; }
         public string OldValue { get; }
         public string NewValue { get; }
@@ -20,12 +20,26 @@ namespace SmartHomeApi.Core.Interfaces
             string oldValue, string newValue)
         {
             EventType = eventType;
-            DeviceType = deviceType;
-            DeviceId = deviceId;
+            ItemType = deviceType;
+            ItemId = deviceId;
             Parameter = parameter;
             OldValue = oldValue;
             NewValue = newValue;
             EventDate = DateTimeOffset.Now;
+        }
+
+        public override string ToString()
+        {
+            return "StateChangedEvent [" +
+                   $"{nameof(EventDate)}: {EventDate}, " +
+                   $"{nameof(EventType)}: {EventType}, " +
+                   $"{nameof(ItemType)}: {ItemType}, " +
+                   $"{nameof(ItemId)}: {ItemId}, " +
+                   $"{nameof(ItemId)}: {ItemId}, " +
+                   $"{nameof(Parameter)}: {Parameter}, " +
+                   $"{nameof(OldValue)}: {OldValue}, " +
+                   $"{nameof(NewValue)}: {NewValue}" +
+                   "]";
         }
     }
 }

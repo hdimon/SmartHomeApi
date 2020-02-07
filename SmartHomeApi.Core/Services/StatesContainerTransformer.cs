@@ -31,16 +31,16 @@ namespace SmartHomeApi.Core.Services
         {
             //RemoveEventsByTimeout();
 
-            var parameterGroups = _events.GroupBy(e => new { e.Value.DeviceId, e.Value.Parameter });
+            var parameterGroups = _events.GroupBy(e => new { DeviceId = e.Value.ItemId, e.Value.Parameter });
             var parameters = parameterGroups.Select(g => g.OrderBy(e => e.Value.EventDate).First().Value).ToList();
 
             foreach (var ev in parameters)
             {
-                if (state.States.ContainsKey(ev.DeviceId) && state.States[ev.DeviceId].States.ContainsKey(ev.Parameter))
+                if (state.States.ContainsKey(ev.ItemId) && state.States[ev.ItemId].States.ContainsKey(ev.Parameter))
                 {
-                    var transformer = transformables.FirstOrDefault(t => t.ItemId == ev.DeviceId);
+                    var transformer = transformables.FirstOrDefault(t => t.ItemId == ev.ItemId);
 
-                    var parameterValueObject = state.States[ev.DeviceId].States[ev.Parameter];
+                    var parameterValueObject = state.States[ev.ItemId].States[ev.Parameter];
 
                     object newValue;
                     TransformationResult result = null;
@@ -69,7 +69,7 @@ namespace SmartHomeApi.Core.Services
                             newValue = parameterValueObject; 
                     }
 
-                    state.States[ev.DeviceId].States[ev.Parameter] = newValue;
+                    state.States[ev.ItemId].States[ev.Parameter] = newValue;
                 }
             }
         }
@@ -147,7 +147,7 @@ namespace SmartHomeApi.Core.Services
 
         private string GetEventKey(StateChangedEvent ev)
         {
-            return $"{ev.DeviceId}_{ev.Parameter}_{ev.EventDate.UtcTicks}";
+            return $"{ev.ItemId}_{ev.Parameter}_{ev.EventDate.UtcTicks}";
         }
     }
 }

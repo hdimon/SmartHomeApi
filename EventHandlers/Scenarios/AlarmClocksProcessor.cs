@@ -20,7 +20,7 @@ namespace Scenarios
             if (args.EventType == StateChangedEventType.ValueSet)
                 return;
 
-            switch (args.DeviceId)
+            switch (args.ItemId)
             {
                 case "Virtual_States":
                     await ProcessVirtualStateEvents(args).ConfigureAwait(false);

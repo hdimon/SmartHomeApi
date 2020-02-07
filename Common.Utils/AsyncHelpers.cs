@@ -22,7 +22,7 @@ namespace Common.Utils
             return default(T);
         }
 
-        public static async Task RetryOnFault(Func<Task> function, int maxTries, Func<Task> retryWhen)
+        public static async Task RetryOnFault(Func<Task> function, int maxTries, Func<Task> onFault)
         {
             for (int i = 0; i < maxTries; i++)
             {
@@ -36,11 +36,11 @@ namespace Common.Utils
                     if (i == maxTries - 1) throw;
                 }
 
-                await retryWhen().ConfigureAwait(false);
+                await onFault().ConfigureAwait(false);
             }
         }
 
-        public static async Task<T> RetryOnFault<T>(Func<Task<T>> function, int maxTries, Func<Task> retryWhen)
+        public static async Task<T> RetryOnFault<T>(Func<Task<T>> function, int maxTries, Func<Task> onFault)
         {
             for (int i = 0; i < maxTries; i++)
             {
@@ -53,7 +53,7 @@ namespace Common.Utils
                     if (i == maxTries - 1) throw;
                 }
 
-                await retryWhen().ConfigureAwait(false);
+                await onFault().ConfigureAwait(false);
             }
 
             return default(T);

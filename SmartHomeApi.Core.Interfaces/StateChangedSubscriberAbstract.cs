@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Common.Utils;
 
 namespace SmartHomeApi.Core.Interfaces
 {
@@ -26,23 +28,34 @@ namespace SmartHomeApi.Core.Interfaces
 
         protected abstract Task ProcessNotification(StateChangedEvent args);
 
-        protected void EnsureOperationIsSuccessful(StateChangedEvent args, ISetValueResult[] results,
-            int failoverActionIntervalSeconds, Func<Task> failoverAction)
+        protected async Task ExecuteCommands(string itemType, IList<Task<ISetValueResult>> commands,
+            StateChangedEvent args, int maxTries, int failoverActionIntervalSeconds, string errorMessage)
         {
-            if (results == null || results.All(r => r.Success))
+            if (commands == null)
                 return;
 
-            Logger.Info(
-                $"Operation was not fully successful so try to execute it again in {failoverActionIntervalSeconds} seconds.");
-
-            _ = Task.Run(async () =>
+            try
+            {
+                await AsyncHelpers.RetryOnFault(async () =>
                     {
-                        //Wait before trying to execute actions again
-                        await Task.Delay(failoverActionIntervalSeconds * 1000).ConfigureAwait(false);
+                        var results = await Task.WhenAll(commands).ConfigureAwait(false);
 
-                        await failoverAction();
-                    })
-                    .ContinueWith(t => { Logger.Error(t.Exception); }, TaskContinuationOptions.OnlyOnFaulted);
+                        if (results == null || results.All(r => r.Success))
+                            return;
+
+                        Logger.Warning(
+                            $"{itemType}. Operation was not fully successful so try to execute it again in " +
+                            $"{failoverActionIntervalSeconds} seconds. Event: {args}.");
+
+                        throw new Exception(
+                            $"{itemType}. {errorMessage}. Event: {args}.");
+                    }, maxTries,
+                    () => Task.Delay(failoverActionIntervalSeconds * 1000)).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e.Message);
+            }
         }
     }
 }

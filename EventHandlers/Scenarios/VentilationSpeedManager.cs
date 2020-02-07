@@ -23,11 +23,11 @@ namespace Scenarios
 
         public void AddEvent(StateChangedEvent args)
         {
-            if (!_sensorsManagers.ContainsKey(args.DeviceId))
-                _sensorsManagers.AddOrUpdate(args.DeviceId, new SensorVentilationSpeedManager(_measurementPeriod),
+            if (!_sensorsManagers.ContainsKey(args.ItemId))
+                _sensorsManagers.AddOrUpdate(args.ItemId, new SensorVentilationSpeedManager(_measurementPeriod),
                     (s, list) => new SensorVentilationSpeedManager(_measurementPeriod));
 
-            _sensorsManagers[args.DeviceId].AddEvent(args);
+            _sensorsManagers[args.ItemId].AddEvent(args);
         }
 
         public int GetRecommendedSpeed()

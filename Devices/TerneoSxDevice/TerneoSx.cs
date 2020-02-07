@@ -54,7 +54,7 @@ namespace TerneoSxDevice
                 "application/json");
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-            string responseString = await PostContent(content, 15);
+            string responseString = await PostContent(content, 3);
 
             if (string.IsNullOrWhiteSpace(responseString) || responseString.Trim() != "{\"success\":\"true\"}")
             {

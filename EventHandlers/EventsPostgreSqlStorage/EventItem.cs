@@ -21,8 +21,8 @@ namespace EventsPostgreSqlStorage
         public EventItem(StateChangedEvent evt)
         {
             EventType = evt.EventType.ToString();
-            DeviceType = evt.DeviceType;
-            DeviceId = evt.DeviceId;
+            DeviceType = evt.ItemType;
+            DeviceId = evt.ItemId;
             Parameter = evt.Parameter;
             OldValue = evt.OldValue;
             NewValue = evt.NewValue;
