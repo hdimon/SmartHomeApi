@@ -22,8 +22,7 @@ namespace SmartHomeApi.Core.Services
         private Task _worker;
         private string _configDirectory;
 
-        private ConcurrentDictionary<string, ConfigContainer> _configContainers =
-            new ConcurrentDictionary<string, ConfigContainer>();
+        private Dictionary<string, ConfigContainer> _configContainers = new Dictionary<string, ConfigContainer>();
 
         public bool IsInitialized { get; private set; }
 
@@ -75,26 +74,28 @@ namespace SmartHomeApi.Core.Services
         {
             try
             {
+                var configContainers = new Dictionary<string, ConfigContainer>();
+
                 var ext = new List<string> { ".json" };
                 var files = Directory.EnumerateFiles(_configDirectory, "*.*", SearchOption.AllDirectories)
                                      .Where(s => ext.Contains(Path.GetExtension(s).ToLowerInvariant())).ToList();
 
-                var newFiles = files.Except(_configContainers.Keys.ToList()).ToList();
-
-                foreach (var newFile in newFiles)
+                foreach (var file in files)
                 {
                     var container = new ConfigContainer();
-                    container.FilePath = newFile;
-                    container.Builder = new ConfigurationBuilder().AddJsonFile(newFile, optional: true);
+                    container.FilePath = file;
+                    container.Builder = new ConfigurationBuilder().AddJsonFile(file, optional: true);
                     container.Root = container.Builder.Build();
 
-                    _configContainers.AddOrUpdate(newFile, s => container, (s, configContainer) => container);
+                    configContainers.Add(file, container);
                 }
 
-                foreach (var configContainer in _configContainers)
+                foreach (var configContainer in configContainers)
                 {
                     SetItemConfig(configContainer.Value);
                 }
+
+                _configContainers = configContainers;
             }
             catch (Exception e)
             {
