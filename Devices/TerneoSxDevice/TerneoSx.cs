@@ -40,7 +40,7 @@ namespace TerneoSxDevice
 
         public override async Task<ISetValueResult> SetValue(string parameter, string value)
         {
-            var result = new SetValueResult();
+            var result = new SetValueResult(ItemId, ItemType);
 
             if (!_settableParametersList.Contains(parameter))
             {

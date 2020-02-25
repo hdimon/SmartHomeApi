@@ -131,7 +131,7 @@ namespace BreezartLux550Device
 
         private async Task CreateAndSendCommand()
         {
-            var result = new SetValueResult();
+            var result = new SetValueResult(ItemId, ItemType);
 
             var command = _setCommandsQueue.Dequeue();
             var commandText = "";

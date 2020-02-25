@@ -55,7 +55,7 @@ namespace VirtualStateDevice
 
             await _deviceStateStorage.SaveState(_states, ItemId);
 
-            return new SetValueResult();
+            return new SetValueResult(ItemId, ItemType);
         }
     }
 }

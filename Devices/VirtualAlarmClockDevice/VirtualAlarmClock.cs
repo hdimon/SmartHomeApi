@@ -84,7 +84,7 @@ namespace VirtualAlarmClockDevice
 
             await _deviceStateStorage.SaveState(_states, ItemId);
 
-            return new SetValueResult();
+            return new SetValueResult(ItemId, ItemType);
         }
 
         private async Task SetTime(string parameter, string value)
