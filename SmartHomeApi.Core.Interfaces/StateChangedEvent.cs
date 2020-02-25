@@ -35,7 +35,6 @@ namespace SmartHomeApi.Core.Interfaces
                    $"{nameof(EventType)}: {EventType}, " +
                    $"{nameof(ItemType)}: {ItemType}, " +
                    $"{nameof(ItemId)}: {ItemId}, " +
-                   $"{nameof(ItemId)}: {ItemId}, " +
                    $"{nameof(Parameter)}: {Parameter}, " +
                    $"{nameof(OldValue)}: {OldValue}, " +
                    $"{nameof(NewValue)}: {NewValue}" +

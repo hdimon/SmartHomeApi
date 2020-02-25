@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading;
 using System.Threading.Tasks;
 using SmartHomeApi.Core.Interfaces;
 
@@ -9,7 +10,7 @@ namespace Scenarios
     public class VentilationSystem : StateChangedSubscriberAbstract
     {
         private readonly int _failoverActionIntervalSeconds = 30;
-        private readonly int _failoverMaxTries = 3;
+        private readonly int _failoverMaxTries = 6;
         private readonly VentilationSpeedManager _ventilationSpeedManager;
         private Task _worker;
         private TimeSpan _measurementPeriod = new TimeSpan(0, 0, 5, 0);
@@ -21,6 +22,8 @@ namespace Scenarios
         private const string KitchenMega2560 = "Kitchen_Mega2560";
         private const string LivingRoomMega2560 = "LivingRoom_Mega2560";
         private const string Breezart = "Breezart";
+        private const string CO2ppmParameter = "CO2ppm";
+        private const string Slave1CO2ppmParameter = "Slave1CO2ppm";
 
         public VentilationSystem(IApiManager manager, IItemHelpersFabric helpersFabric) : base(manager, helpersFabric)
         {
@@ -128,7 +131,7 @@ namespace Scenarios
 
         private async Task ProcessScenarioParameter(StateChangedEvent args)
         {
-            IList<Task<ISetValueResult>> commands = null;
+            IList<SetValueCommand> commands = null;
 
             switch (args.NewValue)
             {
@@ -144,56 +147,57 @@ namespace Scenarios
             }
 
             await ExecuteCommands(nameof(VentilationSystem), commands, args, _failoverMaxTries,
-                _failoverActionIntervalSeconds, "Some Scenario commands were failed").ConfigureAwait(false);
+                    _failoverActionIntervalSeconds, "Some Scenario commands were failed", CancellationToken.None)
+                .ConfigureAwait(false);
         }
 
-        private async Task<IList<Task<ISetValueResult>>> GetOutdoorScenarioCommands()
+        private async Task<IList<SetValueCommand>> GetOutdoorScenarioCommands()
         {
-            var commands = new List<Task<ISetValueResult>> { Manager.SetValue("Breezart", "UnitState", "Off") };
+            var commands = new List<SetValueCommand> { CreateCommand("Breezart", "UnitState", "Off") };
 
             var currentToiletVentStatus = await Manager.GetState(ToiletMega2560, "pin2").ConfigureAwait(false);
 
             //Turn off toilet ventilator
             if (currentToiletVentStatus?.ToString().ToLowerInvariant() == "true")
-                commands.Add(Manager.SetValue(ToiletMega2560, "pin2", "pimp"));
+                commands.Add(CreateCommand(ToiletMega2560, "pin2", "pimp"));
 
             var currentKitchenVentStatus = await Manager.GetState(KitchenMega2560, "pin3").ConfigureAwait(false);
 
             //Turn off kitchen ventilator
             if (currentKitchenVentStatus?.ToString().ToLowerInvariant() == "true")
-                commands.Add(Manager.SetValue(KitchenMega2560, "pin3", "pimp"));
+                commands.Add(CreateCommand(KitchenMega2560, "pin3", "pimp"));
 
             return commands;
         }
 
-        private async Task<IList<Task<ISetValueResult>>> GetIndoorScenarioCommands()
+        private async Task<IList<SetValueCommand>> GetIndoorScenarioCommands()
         {
-            var commands = new List<Task<ISetValueResult>> { Manager.SetValue("Breezart", "UnitState", "On") };
+            var commands = new List<SetValueCommand> { CreateCommand("Breezart", "UnitState", "On") };
 
             var currentToiletVentStatus = await Manager.GetState(ToiletMega2560, "pin2").ConfigureAwait(false);
 
             //Turn on toilet ventilator
             if (currentToiletVentStatus?.ToString().ToLowerInvariant() == "false")
-                commands.Add(Manager.SetValue(ToiletMega2560, "pin2", "pimp"));
+                commands.Add(CreateCommand(ToiletMega2560, "pin2", "pimp"));
 
             return commands;
         }
 
-        private async Task<IList<Task<ISetValueResult>>> GetSleepScenarioCommands()
+        private async Task<IList<SetValueCommand>> GetSleepScenarioCommands()
         {
-            var commands = new List<Task<ISetValueResult>> { Manager.SetValue("Breezart", "UnitState", "On") };
+            var commands = new List<SetValueCommand> { CreateCommand("Breezart", "UnitState", "On") };
 
             var currentToiletVentStatus = await Manager.GetState(ToiletMega2560, "pin2").ConfigureAwait(false);
 
             //Turn off toilet ventilator
             if (currentToiletVentStatus?.ToString().ToLowerInvariant() == "true")
-                commands.Add(Manager.SetValue(ToiletMega2560, "pin2", "pimp"));
+                commands.Add(CreateCommand(ToiletMega2560, "pin2", "pimp"));
 
             var currentKitchenVentStatus = await Manager.GetState(KitchenMega2560, "pin3").ConfigureAwait(false);
 
             //Turn off kitchen ventilator
             if (currentKitchenVentStatus?.ToString().ToLowerInvariant() == "true")
-                commands.Add(Manager.SetValue(KitchenMega2560, "pin3", "pimp"));
+                commands.Add(CreateCommand(KitchenMega2560, "pin3", "pimp"));
 
             return commands;
         }
@@ -202,7 +206,7 @@ namespace Scenarios
         {
             switch (args.Parameter)
             {
-                case "CO2ppm":
+                case Slave1CO2ppmParameter:
                     await ProcessCO2Parameter(args).ConfigureAwait(false);
                     break;
             }
@@ -212,7 +216,7 @@ namespace Scenarios
         {
             switch (args.Parameter)
             {
-                case "CO2ppm":
+                case CO2ppmParameter:
                     await ProcessCO2Parameter(args).ConfigureAwait(false);
                     break;
             }
@@ -222,7 +226,7 @@ namespace Scenarios
         {
             switch (args.Parameter)
             {
-                case "CO2ppm":
+                case CO2ppmParameter:
                     await ProcessCO2Parameter(args).ConfigureAwait(false);
                     break;
             }

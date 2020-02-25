@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using SmartHomeApi.Core.Interfaces;
 
@@ -7,7 +8,7 @@ namespace Scenarios
     public class LightingSystem : StateChangedSubscriberAbstract
     {
         private readonly int _failoverActionIntervalSeconds = 30;
-        private readonly int _failoverMaxTries = 3;
+        private readonly int _failoverMaxTries = 6;
 
         private const string TrueValue = "true";
         private const string FalseValue = "false";
@@ -63,7 +64,7 @@ namespace Scenarios
 
         private async Task ProcessScenarioParameter(StateChangedEvent args)
         {
-            IList<Task<ISetValueResult>> commands = null;
+            IList<SetValueCommand> commands = null;
 
             switch (args.NewValue)
             {
@@ -79,21 +80,22 @@ namespace Scenarios
             }
 
             await ExecuteCommands(nameof(LightingSystem), commands, args, _failoverMaxTries,
-                _failoverActionIntervalSeconds, "Some Scenario commands were failed").ConfigureAwait(false);
+                    _failoverActionIntervalSeconds, "Some Scenario commands were failed", CancellationToken.None)
+                .ConfigureAwait(false);
         }
 
-        private async Task<IList<Task<ISetValueResult>>> GetOutdoorScenarioCommands()
+        private async Task<IList<SetValueCommand>> GetOutdoorScenarioCommands()
         {
-            var commands = new List<Task<ISetValueResult>>();
+            var commands = new List<SetValueCommand>();
 
             await TurnOffAllLighting(commands).ConfigureAwait(false);
 
             return commands;
         }
 
-        private async Task<IList<Task<ISetValueResult>>> GetIndoorScenarioCommands(StateChangedEvent args)
+        private async Task<IList<SetValueCommand>> GetIndoorScenarioCommands(StateChangedEvent args)
         {
-            var commands = new List<Task<ISetValueResult>>();
+            var commands = new List<SetValueCommand>();
 
             if (args.OldValue == "Outdoor")
             {
@@ -114,25 +116,25 @@ namespace Scenarios
             return commands;
         }
 
-        private async Task<IList<Task<ISetValueResult>>> GetSleepScenarioCommands()
+        private async Task<IList<SetValueCommand>> GetSleepScenarioCommands()
         {
-            var commands = new List<Task<ISetValueResult>>();
+            var commands = new List<SetValueCommand>();
 
             await TurnOffAllLighting(commands).ConfigureAwait(false);
 
             return commands;
         }
 
-        private async Task AddPositiveImpulseCommandWithStateCheck(IList<Task<ISetValueResult>> commands,
+        private async Task AddPositiveImpulseCommandWithStateCheck(IList<SetValueCommand> commands,
             string deviceId, string pin, string currentCheckValue)
         {
             var currentValue = await Manager.GetState(deviceId, pin).ConfigureAwait(false);
 
             if (currentValue?.ToString().ToLowerInvariant() == currentCheckValue)
-                commands.Add(Manager.SetValue(deviceId, pin, "pimp"));
+                commands.Add(CreateCommand(deviceId, pin, "pimp"));
         }
 
-        private async Task TurnOffAllLighting(IList<Task<ISetValueResult>> commands)
+        private async Task TurnOffAllLighting(IList<SetValueCommand> commands)
         {
             await AddPositiveImpulseCommandWithStateCheck(commands, ToiletMega2560, BathroomLightPin, TrueValue);
             await AddPositiveImpulseCommandWithStateCheck(commands, ToiletMega2560, BathroomSinkLightPin, TrueValue);

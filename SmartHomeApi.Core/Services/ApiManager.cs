@@ -101,12 +101,12 @@ namespace SmartHomeApi.Core.Services
 
         public async Task<ISetValueResult> Increase(string deviceId, string parameter)
         {
-            return new SetValueResult();
+            return new SetValueResult(false);
         }
 
         public async Task<ISetValueResult> Decrease(string deviceId, string parameter)
         {
-            return new SetValueResult();
+            return new SetValueResult(false);
         }
 
         public async Task<IStatesContainer> GetState(bool transform = false)
