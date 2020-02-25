@@ -10,7 +10,7 @@ namespace Scenarios
     {
         private readonly TimeSpan _measurementPeriod;
         private readonly TimeSpan _halfMeasurementPeriod;
-        private int _minSpeed = 1;
+        private int _minSpeed = 2;
         private int _firstLevelDefaultSpeed = 4;
         private int _secondLevelDefaultSpeed = 7;
         private int _maxSpeed = 10;
@@ -146,17 +146,17 @@ namespace Scenarios
 
         private int GetInitialRecommendedSpeed(int co2ppm)
         {
-            if (co2ppm <= 600)
+            if (co2ppm <= 800)
             {
                 return _minSpeed;
             }
 
-            if (co2ppm > 600 && co2ppm <= 800)
+            if (co2ppm > 800 && co2ppm <= 1000)
             {
                 return _firstLevelDefaultSpeed;
             }
 
-            if (co2ppm > 800 && co2ppm <= 1000)
+            if (co2ppm > 1000 && co2ppm <= 1200)
             {
                 return _secondLevelDefaultSpeed;
             }
@@ -236,6 +236,8 @@ namespace Scenarios
 
             if (recommendedSpeed > _maxSpeed)
                 recommendedSpeed = _maxSpeed;
+
+            _recommendedSpeed = recommendedSpeed;
 
             return recommendedSpeed;
         }

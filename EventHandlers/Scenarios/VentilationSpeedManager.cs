@@ -9,7 +9,7 @@ namespace Scenarios
     class VentilationSpeedManager
     {
         private readonly TimeSpan _measurementPeriod;
-        private int _minSpeed = 1;
+        private int _minSpeed = 2;
         private int _recommendedSpeed;
 
         private readonly ConcurrentDictionary<string, SensorVentilationSpeedManager> _sensorsManagers =
