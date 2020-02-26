@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -12,6 +12,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Common.Utils\Common.Utils.csproj" />
     <ProjectReference Include="..\..\SmartHomeApi.Core.Interfaces\SmartHomeApi.Core.Interfaces.csproj" />
+    <ProjectReference Include="..\..\SmartHomeApi.DeviceUtils\SmartHomeApi.DeviceUtils.csproj" />
   </ItemGroup>
 
 </Project>

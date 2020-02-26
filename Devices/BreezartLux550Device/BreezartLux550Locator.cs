@@ -1,42 +1,21 @@
-﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using SmartHomeApi.Core.Interfaces;
+﻿using SmartHomeApi.Core.Interfaces;
+using SmartHomeApi.DeviceUtils;
 
 namespace BreezartLux550Device
 {
-    public class BreezartLux550Locator : IItemsLocator
+    public class BreezartLux550Locator : AutoRefreshItemsLocatorAbstract
     {
-        public string ItemType => "BreezartLux550";
-        public bool ImmediateInitialization => false;
+        public override string ItemType => "BreezartLux550";
 
-        private readonly ISmartHomeApiFabric _fabric;
-
-        private readonly ConcurrentDictionary<string, IItem> _devices = new ConcurrentDictionary<string, IItem>();
-
-        public BreezartLux550Locator(ISmartHomeApiFabric fabric)
+        public BreezartLux550Locator(ISmartHomeApiFabric fabric) : base(fabric)
         {
-            _fabric = fabric;
         }
 
-        public async Task<IEnumerable<IItem>> GetItems()
+        protected override IItem ItemFactory(IItemConfig config)
         {
-            var configLocator = _fabric.GetItemsConfigsLocator();
-            var helpersFabric = _fabric.GetItemHelpersFabric();
+            var helpersFabric = Fabric.GetItemHelpersFabric();
 
-            var configs = configLocator.GetItemsConfigs(ItemType);
-
-            foreach (var config in configs)
-            {
-                if (_devices.ContainsKey(config.ItemId))
-                    continue; //Update config
-
-                _devices.TryAdd(config.ItemId, new BreezartLux550(helpersFabric, config));
-            }
-
-            //Remove configs
-
-            return _devices.Values;
+            return new BreezartLux550(helpersFabric, config);
         }
     }
 }

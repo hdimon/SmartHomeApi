@@ -7,7 +7,7 @@ using SmartHomeApi.Core.Interfaces;
 
 namespace EventsPostgreSqlStorage
 {
-    class Storage : IStateChangedSubscriber, IConfigurable, IInitializable
+    class Storage : IStateChangedSubscriber, IConfigurable, IInitializable, IDisposable
     {
         public string ItemType => "EventsPostgreSqlStorage";
         private readonly IApiManager _manager;
@@ -87,6 +87,11 @@ namespace EventsPostgreSqlStorage
             var eventItem = new EventItem(args);
 
             await SaveEventWithRetryOnFault(eventItem);
+        }
+
+        public void Dispose()
+        {
+            _manager.UnregisterSubscriber(this);
         }
     }
 }

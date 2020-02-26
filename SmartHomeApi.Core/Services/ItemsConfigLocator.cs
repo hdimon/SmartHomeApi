@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,6 +23,7 @@ namespace SmartHomeApi.Core.Services
         private string _configDirectory;
 
         private Dictionary<string, ConfigContainer> _configContainers = new Dictionary<string, ConfigContainer>();
+        private ConcurrentDictionary<string, string> _knownDuplicateItems = new ConcurrentDictionary<string, string>();
 
         public bool IsInitialized { get; private set; }
 
@@ -94,7 +96,21 @@ namespace SmartHomeApi.Core.Services
                     SetItemConfig(configContainer.Value);
                 }
 
-                _configContainers = configContainers;
+                var duplicates = configContainers.Where(c => c.Value.ItemConfig != null)
+                                                 .GroupBy(c => c.Value.ItemConfig.ItemId)
+                                                 .Where(g => g.Count() > 1)
+                                                 .Select(g =>
+                                                     new KeyValuePair<string, List<string>>(g.Key,
+                                                         g.Select(c => c.Key).ToList())).ToList();
+
+                LogDuplicateConfigs(duplicates);
+
+                var duplicateItemIds = duplicates.Select(d => d.Key).ToList();
+
+                _configContainers = new Dictionary<string, ConfigContainer>(configContainers
+                                                                            .Where(c => c.Value.ItemConfig != null)
+                                                                            .Where(c => !duplicateItemIds.Contains(
+                                                                                c.Value.ItemConfig.ItemId)));
             }
             catch (Exception e)
             {
@@ -146,6 +162,27 @@ namespace SmartHomeApi.Core.Services
             }
 
             return config;
+        }
+
+        private void LogDuplicateConfigs(List<KeyValuePair<string, List<string>>> duplicates)
+        {
+            var notRelevantDuplicates = _knownDuplicateItems.Keys.Except(duplicates.Select(d => d.Key)).ToList();
+
+            foreach (var notRelevantDuplicate in notRelevantDuplicates)
+            {
+                _knownDuplicateItems.TryRemove(notRelevantDuplicate, out var test);
+            }
+
+            foreach (var duplicate in duplicates)
+            {
+                if (!_knownDuplicateItems.ContainsKey(duplicate.Key))
+                {
+                    _logger.Error(
+                        $"Next config files have the same ItemId [{duplicate.Key}] so were ignored: {string.Join(", ", duplicate.Value)}.");
+
+                    _knownDuplicateItems.TryAdd(duplicate.Key, duplicate.Key);
+                }
+            }
         }
 
         public List<IItemConfig> GetItemsConfigs(string itemType)

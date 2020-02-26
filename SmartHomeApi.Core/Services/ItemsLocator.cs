@@ -27,9 +27,6 @@ namespace SmartHomeApi.Core.Services
 
             foreach (var locator in locators)
             {
-                /*var deviceConfigs = configs.Where(c => string.Equals(c.DeviceType, locator.DeviceType,
-                    StringComparison.InvariantCultureIgnoreCase)).ToList();*/
-
                 try
                 {
                     items.AddRange(await locator.GetItems());

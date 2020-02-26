@@ -1,42 +1,21 @@
-﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using SmartHomeApi.Core.Interfaces;
+﻿using SmartHomeApi.Core.Interfaces;
+using SmartHomeApi.DeviceUtils;
 
 namespace Mega2560ControllerDevice
 {
-    public class Mega2560ControllerLocator : IItemsLocator
+    public class Mega2560ControllerLocator : AutoRefreshItemsLocatorAbstract
     {
-        public string ItemType => "Mega2560Controller";
-        public bool ImmediateInitialization => false;
+        public override string ItemType => "Mega2560Controller";
 
-        private readonly ISmartHomeApiFabric _fabric;
-
-        private readonly ConcurrentDictionary<string, IItem> _devices = new ConcurrentDictionary<string, IItem>();
-
-        public Mega2560ControllerLocator(ISmartHomeApiFabric fabric)
+        public Mega2560ControllerLocator(ISmartHomeApiFabric fabric) : base(fabric)
         {
-            _fabric = fabric;
         }
 
-        public async Task<IEnumerable<IItem>> GetItems()
+        protected override IItem ItemFactory(IItemConfig config)
         {
-            var configLocator = _fabric.GetItemsConfigsLocator();
-            var helpersFabric = _fabric.GetItemHelpersFabric();
+            var helpersFabric = Fabric.GetItemHelpersFabric();
 
-            var configs = configLocator.GetItemsConfigs(ItemType);
-
-            foreach (var config in configs)
-            {
-                if (_devices.ContainsKey(config.ItemId))
-                    continue; //Update config
-
-                _devices.TryAdd(config.ItemId, new Mega2560Controller(helpersFabric, config));
-            }
-
-            //Remove configs
-
-            return _devices.Values;
+            return new Mega2560Controller(helpersFabric, config);
         }
     }
 }
