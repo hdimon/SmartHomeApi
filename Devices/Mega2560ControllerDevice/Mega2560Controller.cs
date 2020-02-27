@@ -411,5 +411,22 @@ namespace Mega2560ControllerDevice
 
             return result;
         }
+
+        public override void Dispose()
+        {
+            if (_client != null)
+            {
+                try
+                {
+                    _client.Dispose();
+                }
+                catch (Exception e)
+                {
+                    Logger.Error(e);
+                }
+            }
+
+            base.Dispose();
+        }
     }
 }

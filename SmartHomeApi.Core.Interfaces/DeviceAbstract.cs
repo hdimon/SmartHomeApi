@@ -4,7 +4,7 @@ using Common.Utils;
 
 namespace SmartHomeApi.Core.Interfaces
 {
-    public abstract class DeviceAbstract : IItem, IStateSettable, IStateGettable, IConfigurable, IInitializable
+    public abstract class DeviceAbstract : IItem, IStateSettable, IStateGettable, IConfigurable, IInitializable, IDisposable
     {
         protected readonly IItemHelpersFabric HelpersFabric;
         protected readonly IApiLogger Logger;
@@ -53,6 +53,10 @@ namespace SmartHomeApi.Core.Interfaces
         }
 
         protected virtual async Task InitializeDevice()
+        {
+        }
+
+        public virtual void Dispose()
         {
         }
     }

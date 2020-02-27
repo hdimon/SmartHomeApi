@@ -43,6 +43,18 @@ namespace BreezartLux550Device
         {
             if (_client == null || !_client.Connected)
             {
+                if (_client != null)
+                {
+                    try
+                    {
+                        _client.Dispose();
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Error(e);
+                    }
+                }
+
                 var config = (BreezartLux550Config)Config;
                 _client = new TcpClient(config.IpAddress, 1560);
                 _client.ReceiveTimeout = 5000;
@@ -346,6 +358,23 @@ namespace BreezartLux550Device
             RwLock.ReleaseReaderLock();
 
             return state;
+        }
+
+        public override void Dispose()
+        {
+            if (_client != null)
+            {
+                try
+                {
+                    _client.Dispose();
+                }
+                catch (Exception e)
+                {
+                    Logger.Error(e);
+                }
+            }
+
+            base.Dispose();
         }
     }
 }
