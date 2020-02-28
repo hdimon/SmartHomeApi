@@ -40,10 +40,7 @@ namespace SmartHomeApi.Core.Services
             var locators = await _fabric.GetItemsPluginsLocator().GetItemsLocators();
             var immediateItems = locators.Where(l => l.ImmediateInitialization).ToList();
 
-            foreach (var immediateItem in immediateItems)
-            {
-                await GetItems(immediateItem);
-            }
+            await Task.WhenAll(immediateItems.Select(GetItems));
 
             RunStatesCollectorWorker();
 
@@ -57,11 +54,9 @@ namespace SmartHomeApi.Core.Services
             var items = await locator.GetItems();
             var itemsList = items.ToList();
 
-            foreach (var item in itemsList)
-            {
-                if (item is IInitializable initializable && !initializable.IsInitialized)
-                    await initializable.Initialize();
-            }
+            await Task.WhenAll(itemsList
+                               .Where(item => item is IInitializable initializable && !initializable.IsInitialized)
+                               .Select(item => ((IInitializable)item).Initialize()));
 
             return itemsList;
         }
