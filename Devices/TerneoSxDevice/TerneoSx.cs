@@ -125,9 +125,7 @@ namespace TerneoSxDevice
             }
             catch (Exception e)
             {
-                /*Logger.Error(e);
-                Logger.Error($"String failed on deserializing was: {responseString}");*/
-                Logger.Error("Response failed on deserializing");
+                Logger.Error(e, "Response failed on deserializing");
             }
 
             if (telemetry == null)
@@ -190,6 +188,8 @@ namespace TerneoSxDevice
 
         public override void Dispose()
         {
+            base.Dispose();
+
             if (_client != null)
             {
                 try
@@ -201,8 +201,6 @@ namespace TerneoSxDevice
                     Logger.Error(e);
                 }
             }
-
-            base.Dispose();
         }
     }
 }
