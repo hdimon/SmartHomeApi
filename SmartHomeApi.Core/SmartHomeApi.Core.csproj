@@ -12,9 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EventHandlers\EventsPostgreSqlStorage\EventsPostgreSqlStorage.csproj" />
     <ProjectReference Include="..\EventHandlers\Scenarios\Scenarios.csproj" />
     <ProjectReference Include="..\SmartHomeApi.Core.Interfaces\SmartHomeApi.Core.Interfaces.csproj" />
+    <ProjectReference Include="..\SmartHomeApi.DeviceUtils\SmartHomeApi.DeviceUtils.csproj" />
   </ItemGroup>
 
   <ItemGroup>

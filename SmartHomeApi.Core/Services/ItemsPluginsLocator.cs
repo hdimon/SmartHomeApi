@@ -3,11 +3,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using EventsPostgreSqlStorage;
 using Scenarios;
 using SmartHomeApi.Core.Interfaces;
+using SmartHomeApi.DeviceUtils;
 
 namespace SmartHomeApi.Core.Services
 {
@@ -21,7 +22,6 @@ namespace SmartHomeApi.Core.Services
         private volatile bool _isFirstRun = true;
 
         ScenariosLocator scenarios;
-        StorageLocator eventsStorage;
 
         private Dictionary<string, IItemsLocator> _locators = new Dictionary<string, IItemsLocator>();
         private readonly ConcurrentDictionary<string, PluginContainer> _knownPlugins =
@@ -36,7 +36,8 @@ namespace SmartHomeApi.Core.Services
             RunPluginsCollectorWorker();
 
             scenarios = new ScenariosLocator(_fabric);
-            eventsStorage = new StorageLocator(_fabric);
+
+            var test = typeof(AverageValuesHelper);
         }
 
         private void RunPluginsCollectorWorker()
@@ -94,10 +95,6 @@ namespace SmartHomeApi.Core.Services
                 locs.Add(scenarios.ItemType, scenarios);
             else
                 locs.Add(scenarios.ItemType, _locators[scenarios.ItemType]);
-            if (!_locators.ContainsKey(eventsStorage.ItemType))
-                locs.Add(eventsStorage.ItemType, eventsStorage);
-            else
-                locs.Add(eventsStorage.ItemType, _locators[eventsStorage.ItemType]);
 
             //Make sure that ref is not cached
             Interlocked.Exchange(ref _locators, locs);
@@ -121,34 +118,29 @@ namespace SmartHomeApi.Core.Services
                 return;
             }
 
-            var context = new CollectibleAssemblyContext();
-            var assemblyPath = Path.Combine(pluginFile);
+            var context = new CollectibleAssemblyContext(pluginFile);
 
-            using (var fs = new FileStream(assemblyPath, FileMode.Open, FileAccess.Read))
+            var assembly = context.LoadFromAssemblyName(new AssemblyName(Path.GetFileNameWithoutExtension(pluginFile)));
+
+            var locatorType = typeof(IItemsLocator);
+
+            var locatorTypes = assembly.GetTypes().Where(p => locatorType.IsAssignableFrom(p)).ToList();
+
+            List<IItemsLocator> locs = new List<IItemsLocator>();
+
+            foreach (var type in locatorTypes)
             {
-                var assembly = context.LoadFromStream(fs);
+                var instance = (IItemsLocator)Activator.CreateInstance(type, _fabric);
 
-                var locatorType = typeof(IItemsLocator);
+                locators.Add(instance.ItemType, instance);
+                locs.Add(instance);
 
-                var locatorTypes = assembly.GetTypes().Where(p => locatorType.IsAssignableFrom(p)).ToList();
-
-                List<IItemsLocator> locs = new List<IItemsLocator>();
-
-                foreach (var type in locatorTypes)
-                {
-                    var instance = (IItemsLocator)Activator.CreateInstance(type, _fabric);
-
-                    locators.Add(instance.ItemType, instance);
-                    locs.Add(instance);
-
-                    _logger.Info($"ItemLocator {instance.ItemType} has been created");
-                }
-
-                _knownPlugins.TryAdd(pluginFile, new PluginContainer { FilePath = pluginFile, AssemblyContext = context, Locators = locs });
-
-                _logger.Info($"Plugin {pluginFile} has been processed");
-                //context.Unload();
+                _logger.Info($"ItemLocator {instance.ItemType} has been created");
             }
+
+            _knownPlugins.TryAdd(pluginFile, new PluginContainer { FilePath = pluginFile, AssemblyContext = context, Locators = locs });
+
+            _logger.Info($"Plugin {pluginFile} has been processed");
         }
 
         public async Task<IEnumerable<IItemsLocator>> GetItemsLocators()
