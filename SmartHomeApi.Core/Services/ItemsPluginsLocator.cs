@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EventsPostgreSqlStorage;
-using Mega2560ControllerDevice;
 using Scenarios;
 using SmartHomeApi.Core.Interfaces;
 using TerneoSxDevice;
@@ -28,7 +27,6 @@ namespace SmartHomeApi.Core.Services
         VirtualStateLocator virtualState;
         VirtualAlarmClockLocator virtualAlarmClock;
         ScenariosLocator scenarios;
-        Mega2560ControllerLocator mega2560Controller;
         StorageLocator eventsStorage;
 
         private Dictionary<string, IItemsLocator> _locators = new Dictionary<string, IItemsLocator>();
@@ -47,7 +45,6 @@ namespace SmartHomeApi.Core.Services
             virtualState = new VirtualStateLocator(_fabric);
             virtualAlarmClock = new VirtualAlarmClockLocator(_fabric);
             scenarios = new ScenariosLocator(_fabric);
-            mega2560Controller = new Mega2560ControllerLocator(_fabric);
             eventsStorage = new StorageLocator(_fabric);
         }
 
@@ -118,10 +115,6 @@ namespace SmartHomeApi.Core.Services
                 locs.Add(scenarios.ItemType, scenarios);
             else
                 locs.Add(scenarios.ItemType, _locators[scenarios.ItemType]);
-            if (!_locators.ContainsKey(mega2560Controller.ItemType))
-                locs.Add(mega2560Controller.ItemType, mega2560Controller);
-            else
-                locs.Add(mega2560Controller.ItemType, _locators[mega2560Controller.ItemType]);
             if (!_locators.ContainsKey(eventsStorage.ItemType))
                 locs.Add(eventsStorage.ItemType, eventsStorage);
             else

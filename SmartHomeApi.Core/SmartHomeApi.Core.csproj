@@ -12,7 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Devices\Mega2560ControllerDevice\Mega2560ControllerDevice.csproj" />
     <ProjectReference Include="..\Devices\TerneoSxDevice\TerneoSxDevice.csproj" />
     <ProjectReference Include="..\Devices\VirtualAlarmClockDevice\VirtualAlarmClockDevice.csproj" />
     <ProjectReference Include="..\Devices\VirtualStateDevice\VirtualStateDevice.csproj" />
