@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Scenarios;
 using SmartHomeApi.Core.Interfaces;
 using SmartHomeApi.DeviceUtils;
 
@@ -21,8 +20,6 @@ namespace SmartHomeApi.Core.Services
         private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
         private volatile bool _isFirstRun = true;
 
-        ScenariosLocator scenarios;
-
         private Dictionary<string, IItemsLocator> _locators = new Dictionary<string, IItemsLocator>();
         private readonly ConcurrentDictionary<string, PluginContainer> _knownPlugins =
             new ConcurrentDictionary<string, PluginContainer>();
@@ -34,8 +31,6 @@ namespace SmartHomeApi.Core.Services
             _logger = fabric.GetApiLogger();
 
             RunPluginsCollectorWorker();
-
-            scenarios = new ScenariosLocator(_fabric);
 
             var test = typeof(AverageValuesHelper);
         }
@@ -90,11 +85,6 @@ namespace SmartHomeApi.Core.Services
                     _logger.Error(e);
                 }
             }
-
-            if (!_locators.ContainsKey(scenarios.ItemType))
-                locs.Add(scenarios.ItemType, scenarios);
-            else
-                locs.Add(scenarios.ItemType, _locators[scenarios.ItemType]);
 
             //Make sure that ref is not cached
             Interlocked.Exchange(ref _locators, locs);
