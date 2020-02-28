@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using EventsPostgreSqlStorage;
 using Scenarios;
 using SmartHomeApi.Core.Interfaces;
-using TerneoSxDevice;
 using VirtualAlarmClockDevice;
 using VirtualStateDevice;
 
@@ -23,7 +22,6 @@ namespace SmartHomeApi.Core.Services
         private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
         private volatile bool _isFirstRun = true;
 
-        TerneoSxLocator terneo;
         VirtualStateLocator virtualState;
         VirtualAlarmClockLocator virtualAlarmClock;
         ScenariosLocator scenarios;
@@ -41,7 +39,6 @@ namespace SmartHomeApi.Core.Services
 
             RunPluginsCollectorWorker();
 
-            terneo = new TerneoSxLocator(_fabric);
             virtualState = new VirtualStateLocator(_fabric);
             virtualAlarmClock = new VirtualAlarmClockLocator(_fabric);
             scenarios = new ScenariosLocator(_fabric);
@@ -99,10 +96,6 @@ namespace SmartHomeApi.Core.Services
                 }
             }
 
-            if (!_locators.ContainsKey(terneo.ItemType))
-                locs.Add(terneo.ItemType, terneo);
-            else
-                locs.Add(terneo.ItemType, _locators[terneo.ItemType]);
             if (!_locators.ContainsKey(virtualState.ItemType))
                 locs.Add(virtualState.ItemType, virtualState);
             else
