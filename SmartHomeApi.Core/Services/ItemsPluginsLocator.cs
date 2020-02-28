@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using EventsPostgreSqlStorage;
 using Scenarios;
 using SmartHomeApi.Core.Interfaces;
-using VirtualAlarmClockDevice;
 using VirtualStateDevice;
 
 namespace SmartHomeApi.Core.Services
@@ -23,7 +22,6 @@ namespace SmartHomeApi.Core.Services
         private volatile bool _isFirstRun = true;
 
         VirtualStateLocator virtualState;
-        VirtualAlarmClockLocator virtualAlarmClock;
         ScenariosLocator scenarios;
         StorageLocator eventsStorage;
 
@@ -40,7 +38,6 @@ namespace SmartHomeApi.Core.Services
             RunPluginsCollectorWorker();
 
             virtualState = new VirtualStateLocator(_fabric);
-            virtualAlarmClock = new VirtualAlarmClockLocator(_fabric);
             scenarios = new ScenariosLocator(_fabric);
             eventsStorage = new StorageLocator(_fabric);
         }
@@ -100,10 +97,6 @@ namespace SmartHomeApi.Core.Services
                 locs.Add(virtualState.ItemType, virtualState);
             else
                 locs.Add(virtualState.ItemType, _locators[virtualState.ItemType]);
-            if (!_locators.ContainsKey(virtualAlarmClock.ItemType))
-                locs.Add(virtualAlarmClock.ItemType, virtualAlarmClock);
-            else
-                locs.Add(virtualAlarmClock.ItemType, _locators[virtualAlarmClock.ItemType]);
             if (!_locators.ContainsKey(scenarios.ItemType))
                 locs.Add(scenarios.ItemType, scenarios);
             else

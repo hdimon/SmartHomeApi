@@ -13,7 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Devices\VirtualAlarmClockDevice\VirtualAlarmClockDevice.csproj" />
     <ProjectReference Include="..\..\SmartHomeApi.DeviceUtils\SmartHomeApi.DeviceUtils.csproj" />
   </ItemGroup>
 

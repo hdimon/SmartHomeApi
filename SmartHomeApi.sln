@@ -23,8 +23,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scenarios", "EventHandlers\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Utils", "Common.Utils\Common.Utils.csproj", "{2787CD55-0240-4489-AAEC-BA87F82664C4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VirtualAlarmClockDevice", "Devices\VirtualAlarmClockDevice\VirtualAlarmClockDevice.csproj", "{FE56A55C-F898-4A68-88EC-D500EB4D89B1}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventsPostgreSqlStorage", "EventHandlers\EventsPostgreSqlStorage\EventsPostgreSqlStorage.csproj", "{51CF9CDB-86C1-426A-B7A4-93FCEC92CAEF}"
 EndProject
 Global
@@ -65,10 +63,6 @@ Global
 		{2787CD55-0240-4489-AAEC-BA87F82664C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2787CD55-0240-4489-AAEC-BA87F82664C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2787CD55-0240-4489-AAEC-BA87F82664C4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FE56A55C-F898-4A68-88EC-D500EB4D89B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FE56A55C-F898-4A68-88EC-D500EB4D89B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FE56A55C-F898-4A68-88EC-D500EB4D89B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FE56A55C-F898-4A68-88EC-D500EB4D89B1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{51CF9CDB-86C1-426A-B7A4-93FCEC92CAEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{51CF9CDB-86C1-426A-B7A4-93FCEC92CAEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{51CF9CDB-86C1-426A-B7A4-93FCEC92CAEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -80,7 +74,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{EF6D90D5-0372-4C02-9682-4D886BC99AF2} = {800CE9B9-BA14-4BAC-8927-55ED48BC8E8F}
 		{B900D922-E3A6-4187-9545-B29F858095F2} = {02F4D3F1-961E-48A8-AA47-AFB23F5CD655}
-		{FE56A55C-F898-4A68-88EC-D500EB4D89B1} = {800CE9B9-BA14-4BAC-8927-55ED48BC8E8F}
 		{51CF9CDB-86C1-426A-B7A4-93FCEC92CAEF} = {02F4D3F1-961E-48A8-AA47-AFB23F5CD655}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

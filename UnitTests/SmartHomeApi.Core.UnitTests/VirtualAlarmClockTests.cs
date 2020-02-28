@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using NUnit.Framework;
 using SmartHomeApi.Core.UnitTests.Stubs;
+/*
 using VirtualAlarmClockDevice;
 
 namespace SmartHomeApi.Core.UnitTests
@@ -135,3 +136,4 @@ namespace SmartHomeApi.Core.UnitTests
         }
     }
 }
+*/
