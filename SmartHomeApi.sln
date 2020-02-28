@@ -7,13 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartHomeApi.WebApi", "Smar
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartHomeApi.Core", "SmartHomeApi.Core\SmartHomeApi.Core.csproj", "{C1D41726-A1E1-496C-986F-B8C1DA22F171}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Devices", "Devices", "{800CE9B9-BA14-4BAC-8927-55ED48BC8E8F}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartHomeApi.Core.Interfaces", "SmartHomeApi.Core.Interfaces\SmartHomeApi.Core.Interfaces.csproj", "{318BE483-BCB9-4CE7-BF13-7DBD5D7029A2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartHomeApi.Core.UnitTests", "UnitTests\SmartHomeApi.Core.UnitTests\SmartHomeApi.Core.UnitTests.csproj", "{53A99F54-3144-4D30-AB57-F362BABDA065}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VirtualStateDevice", "Devices\VirtualStateDevice\VirtualStateDevice.csproj", "{EF6D90D5-0372-4C02-9682-4D886BC99AF2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartHomeApi.DeviceUtils", "SmartHomeApi.DeviceUtils\SmartHomeApi.DeviceUtils.csproj", "{22F1B451-67F7-47BC-A498-FD8FD008B446}"
 EndProject
@@ -47,10 +43,6 @@ Global
 		{53A99F54-3144-4D30-AB57-F362BABDA065}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53A99F54-3144-4D30-AB57-F362BABDA065}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53A99F54-3144-4D30-AB57-F362BABDA065}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EF6D90D5-0372-4C02-9682-4D886BC99AF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EF6D90D5-0372-4C02-9682-4D886BC99AF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EF6D90D5-0372-4C02-9682-4D886BC99AF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EF6D90D5-0372-4C02-9682-4D886BC99AF2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{22F1B451-67F7-47BC-A498-FD8FD008B446}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{22F1B451-67F7-47BC-A498-FD8FD008B446}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{22F1B451-67F7-47BC-A498-FD8FD008B446}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -72,7 +64,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{EF6D90D5-0372-4C02-9682-4D886BC99AF2} = {800CE9B9-BA14-4BAC-8927-55ED48BC8E8F}
 		{B900D922-E3A6-4187-9545-B29F858095F2} = {02F4D3F1-961E-48A8-AA47-AFB23F5CD655}
 		{51CF9CDB-86C1-426A-B7A4-93FCEC92CAEF} = {02F4D3F1-961E-48A8-AA47-AFB23F5CD655}
 	EndGlobalSection

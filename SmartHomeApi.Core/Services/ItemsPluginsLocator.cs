@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using EventsPostgreSqlStorage;
 using Scenarios;
 using SmartHomeApi.Core.Interfaces;
-using VirtualStateDevice;
 
 namespace SmartHomeApi.Core.Services
 {
@@ -21,7 +20,6 @@ namespace SmartHomeApi.Core.Services
         private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
         private volatile bool _isFirstRun = true;
 
-        VirtualStateLocator virtualState;
         ScenariosLocator scenarios;
         StorageLocator eventsStorage;
 
@@ -37,7 +35,6 @@ namespace SmartHomeApi.Core.Services
 
             RunPluginsCollectorWorker();
 
-            virtualState = new VirtualStateLocator(_fabric);
             scenarios = new ScenariosLocator(_fabric);
             eventsStorage = new StorageLocator(_fabric);
         }
@@ -93,10 +90,6 @@ namespace SmartHomeApi.Core.Services
                 }
             }
 
-            if (!_locators.ContainsKey(virtualState.ItemType))
-                locs.Add(virtualState.ItemType, virtualState);
-            else
-                locs.Add(virtualState.ItemType, _locators[virtualState.ItemType]);
             if (!_locators.ContainsKey(scenarios.ItemType))
                 locs.Add(scenarios.ItemType, scenarios);
             else
