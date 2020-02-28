@@ -19,8 +19,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scenarios", "EventHandlers\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Utils", "Common.Utils\Common.Utils.csproj", "{2787CD55-0240-4489-AAEC-BA87F82664C4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventsPostgreSqlStorage", "EventHandlers\EventsPostgreSqlStorage\EventsPostgreSqlStorage.csproj", "{51CF9CDB-86C1-426A-B7A4-93FCEC92CAEF}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,17 +53,12 @@ Global
 		{2787CD55-0240-4489-AAEC-BA87F82664C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2787CD55-0240-4489-AAEC-BA87F82664C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2787CD55-0240-4489-AAEC-BA87F82664C4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{51CF9CDB-86C1-426A-B7A4-93FCEC92CAEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{51CF9CDB-86C1-426A-B7A4-93FCEC92CAEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{51CF9CDB-86C1-426A-B7A4-93FCEC92CAEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{51CF9CDB-86C1-426A-B7A4-93FCEC92CAEF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{B900D922-E3A6-4187-9545-B29F858095F2} = {02F4D3F1-961E-48A8-AA47-AFB23F5CD655}
-		{51CF9CDB-86C1-426A-B7A4-93FCEC92CAEF} = {02F4D3F1-961E-48A8-AA47-AFB23F5CD655}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B0813504-E85A-4020-873B-D4DC655694B7}
