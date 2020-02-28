@@ -77,9 +77,9 @@ namespace BreezartLux550Device
 
         private async Task AutoDataRefreshWorkerWrapper()
         {
-            while (true)
+            while (!DisposingCancellationTokenSource.IsCancellationRequested)
             {
-                await Task.Delay(500);
+                await Task.Delay(500, DisposingCancellationTokenSource.Token);
 
                 try
                 {
