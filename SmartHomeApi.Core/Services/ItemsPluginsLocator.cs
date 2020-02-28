@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using BreezartLux550Device;
 using EventsPostgreSqlStorage;
 using Mega2560ControllerDevice;
 using Scenarios;
@@ -30,7 +29,6 @@ namespace SmartHomeApi.Core.Services
         VirtualAlarmClockLocator virtualAlarmClock;
         ScenariosLocator scenarios;
         Mega2560ControllerLocator mega2560Controller;
-        BreezartLux550Locator breezart;
         StorageLocator eventsStorage;
 
         private Dictionary<string, IItemsLocator> _locators = new Dictionary<string, IItemsLocator>();
@@ -50,7 +48,6 @@ namespace SmartHomeApi.Core.Services
             virtualAlarmClock = new VirtualAlarmClockLocator(_fabric);
             scenarios = new ScenariosLocator(_fabric);
             mega2560Controller = new Mega2560ControllerLocator(_fabric);
-            breezart = new BreezartLux550Locator(_fabric);
             eventsStorage = new StorageLocator(_fabric);
         }
 
@@ -125,10 +122,6 @@ namespace SmartHomeApi.Core.Services
                 locs.Add(mega2560Controller.ItemType, mega2560Controller);
             else
                 locs.Add(mega2560Controller.ItemType, _locators[mega2560Controller.ItemType]);
-            if (!_locators.ContainsKey(breezart.ItemType))
-                locs.Add(breezart.ItemType, breezart);
-            else
-                locs.Add(breezart.ItemType, _locators[breezart.ItemType]);
             if (!_locators.ContainsKey(eventsStorage.ItemType))
                 locs.Add(eventsStorage.ItemType, eventsStorage);
             else

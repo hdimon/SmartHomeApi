@@ -4,14 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using BreezartLux550Device;
-using EventsPostgreSqlStorage;
-using Mega2560ControllerDevice;
 using Microsoft.Extensions.Configuration;
 using SmartHomeApi.Core.Interfaces;
-using TerneoSxDevice;
-using VirtualAlarmClockDevice;
-using VirtualStateDevice;
 
 namespace SmartHomeApi.Core.Services
 {
