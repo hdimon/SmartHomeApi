@@ -30,4 +30,49 @@
     <ProjectReference Include="..\SmartHomeApi.Core\SmartHomeApi.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="Configs\BreezartLux550_Breezart.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Configs\EventsPostgreSqlStorage_MainPostgreStorage.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Configs\Mega2560Controller_Bedroom_Mega2560.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Configs\Mega2560Controller_Kitchen_Mega2560.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Configs\Mega2560Controller_Toilet_Mega2560.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Configs\TerneoSx_Bathroom_Floor.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Configs\TerneoSx_Bedroom_Floor.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Configs\TerneoSx_Kitchen_Floor.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Configs\TerneoSx_Toilet_Floor.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Configs\VirtualAlarmClockDevice_Virtual_HeatingSystemAfterMorningAlarmClock.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Configs\VirtualAlarmClockDevice_Virtual_HeatingSystemMorningAlarmClock.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Configs\VirtualAlarmClockDevice_Virtual_MainAlarmClock.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Configs\VirtualAlarmClockDevice_Virtual_TowelHeaterTurningOffAlarmClock.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Configs\VirtualStateDevice_Virtual_States.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
