@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using SmartHomeApi.Core.Interfaces;
 
@@ -15,8 +16,10 @@ namespace SmartHomeApi.DeviceUtils
         protected readonly ISmartHomeApiFabric Fabric;
         protected readonly IApiLogger Logger;
         protected Dictionary<string, IItem> Items = new Dictionary<string, IItem>();
+        protected CancellationTokenSource DisposingCancellationTokenSource = new CancellationTokenSource();
 
         public abstract string ItemType { get; }
+        public abstract Type ConfigType { get; }
         public virtual bool ImmediateInitialization => false;
 
         protected AutoRefreshItemsLocatorAbstract(ISmartHomeApiFabric fabric)
@@ -39,10 +42,10 @@ namespace SmartHomeApi.DeviceUtils
 
         private async Task ItemsLocatorWorkerWrapper()
         {
-            while (true)
+            while (!DisposingCancellationTokenSource.IsCancellationRequested)
             {
                 if (!_isFirstRun)
-                    await Task.Delay(1000);
+                    await Task.Delay(1000, DisposingCancellationTokenSource.Token);
 
                 try
                 {

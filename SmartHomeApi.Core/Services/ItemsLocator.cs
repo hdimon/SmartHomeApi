@@ -11,6 +11,7 @@ namespace SmartHomeApi.Core.Services
         private readonly IApiLogger _logger;
 
         public string ItemType => null;
+        public Type ConfigType => null;
         public bool ImmediateInitialization => false;
 
         public ItemsLocator(ISmartHomeApiFabric fabric)

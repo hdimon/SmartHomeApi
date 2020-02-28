@@ -1,4 +1,5 @@
-﻿using SmartHomeApi.Core.Interfaces;
+﻿using System;
+using SmartHomeApi.Core.Interfaces;
 using SmartHomeApi.DeviceUtils;
 
 namespace EventsPostgreSqlStorage
@@ -6,7 +7,7 @@ namespace EventsPostgreSqlStorage
     public class StorageLocator : AutoRefreshItemsLocatorAbstract
     {
         public override string ItemType => "EventsPostgreSqlStorage";
-
+        public override Type ConfigType => typeof(StorageConfig);
         public override bool ImmediateInitialization => true;
 
         public StorageLocator(ISmartHomeApiFabric fabric) : base(fabric)

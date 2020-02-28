@@ -1,4 +1,5 @@
-﻿using SmartHomeApi.Core.Interfaces;
+﻿using System;
+using SmartHomeApi.Core.Interfaces;
 using SmartHomeApi.DeviceUtils;
 
 namespace VirtualAlarmClockDevice
@@ -6,7 +7,7 @@ namespace VirtualAlarmClockDevice
     public class VirtualAlarmClockLocator : AutoRefreshItemsLocatorAbstract
     {
         public override string ItemType => "VirtualAlarmClockDevice";
-
+        public override Type ConfigType => typeof(VirtualAlarmClockConfig);
         public override bool ImmediateInitialization => true;
 
         public VirtualAlarmClockLocator(ISmartHomeApiFabric fabric) : base(fabric)

@@ -1,4 +1,5 @@
-﻿using SmartHomeApi.Core.Interfaces;
+﻿using System;
+using SmartHomeApi.Core.Interfaces;
 using SmartHomeApi.DeviceUtils;
 
 namespace BreezartLux550Device
@@ -6,6 +7,7 @@ namespace BreezartLux550Device
     public class BreezartLux550Locator : AutoRefreshItemsLocatorAbstract
     {
         public override string ItemType => "BreezartLux550";
+        public override Type ConfigType => typeof(BreezartLux550Config);
 
         public BreezartLux550Locator(ISmartHomeApiFabric fabric) : base(fabric)
         {

@@ -44,9 +44,9 @@ namespace SmartHomeApi.DeviceUtils
 
         private async Task AutoDataRefreshWorker()
         {
-            while (true)
+            while (!DisposingCancellationTokenSource.IsCancellationRequested)
             {
-                await Task.Delay(RefreshIntervalMS);
+                await Task.Delay(RefreshIntervalMS, DisposingCancellationTokenSource.Token);
 
                 bool failed = false;
 

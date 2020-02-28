@@ -1,4 +1,5 @@
-﻿using SmartHomeApi.Core.Interfaces;
+﻿using System;
+using SmartHomeApi.Core.Interfaces;
 using SmartHomeApi.DeviceUtils;
 
 namespace VirtualStateDevice
@@ -6,7 +7,7 @@ namespace VirtualStateDevice
     public class VirtualStateLocator : AutoRefreshItemsLocatorAbstract
     {
         public override string ItemType => "VirtualStateDevice";
-
+        public override Type ConfigType => typeof(VirtualStateConfig);
         public override bool ImmediateInitialization => true;
 
         public VirtualStateLocator(ISmartHomeApiFabric fabric) : base(fabric)

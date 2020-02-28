@@ -1,4 +1,5 @@
-﻿using SmartHomeApi.Core.Interfaces;
+﻿using System;
+using SmartHomeApi.Core.Interfaces;
 using SmartHomeApi.DeviceUtils;
 
 namespace TerneoSxDevice
@@ -6,6 +7,7 @@ namespace TerneoSxDevice
     public class TerneoSxLocator : AutoRefreshItemsLocatorAbstract
     {
         public override string ItemType => "TerneoSx";
+        public override Type ConfigType => typeof(TerneoSxConfig);
 
         public TerneoSxLocator(ISmartHomeApiFabric fabric) : base(fabric)
         {

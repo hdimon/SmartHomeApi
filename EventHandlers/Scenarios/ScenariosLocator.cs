@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using SmartHomeApi.Core.Interfaces;
 
@@ -7,6 +8,7 @@ namespace Scenarios
     public class ScenariosLocator : IItemsLocator
     {
         public string ItemType => "Scenario";
+        public Type ConfigType => null;
         public bool ImmediateInitialization => true;
 
         private readonly ISmartHomeApiFabric _fabric;

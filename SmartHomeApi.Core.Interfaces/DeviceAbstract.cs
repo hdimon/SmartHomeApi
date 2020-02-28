@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Common.Utils;
 
@@ -6,9 +7,12 @@ namespace SmartHomeApi.Core.Interfaces
 {
     public abstract class DeviceAbstract : IItem, IStateSettable, IStateGettable, IConfigurable, IInitializable, IDisposable
     {
+        private readonly AsyncLazy _initializeTask;
+
         protected readonly IItemHelpersFabric HelpersFabric;
         protected readonly IApiLogger Logger;
-        private readonly AsyncLazy _initializeTask;
+        protected CancellationTokenSource DisposingCancellationTokenSource = new CancellationTokenSource();
+        
         public string ItemId { get; }
         public string ItemType { get; }
         public IItemConfig Config { get; }
@@ -58,6 +62,15 @@ namespace SmartHomeApi.Core.Interfaces
 
         public virtual void Dispose()
         {
+            try
+            {
+                DisposingCancellationTokenSource.Cancel();
+                Logger.Info($"Item {ItemId} has been disposed.");
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e);
+            }
         }
     }
 }

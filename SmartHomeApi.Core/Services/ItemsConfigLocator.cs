@@ -93,7 +93,7 @@ namespace SmartHomeApi.Core.Services
 
                 foreach (var configContainer in configContainers)
                 {
-                    SetItemConfig(configContainer.Value);
+                    await SetItemConfig(configContainer.Value);
                 }
 
                 var duplicates = configContainers.Where(c => c.Value.ItemConfig != null)
@@ -118,7 +118,7 @@ namespace SmartHomeApi.Core.Services
             }
         }
 
-        private void SetItemConfig(ConfigContainer container)
+        private async Task SetItemConfig(ConfigContainer container)
         {
             string itemType = container.Root.GetValue<string>("ItemType", null);
             string itemId = container.Root.GetValue<string>("ItemId", null);
@@ -126,7 +126,7 @@ namespace SmartHomeApi.Core.Services
             if (string.IsNullOrWhiteSpace(itemType) || string.IsNullOrWhiteSpace(itemId))
                 return;
 
-            IItemConfig config = GetItemConfig(itemType, itemId, container);
+            IItemConfig config = await GetItemConfig(itemType, itemId, container);
 
             if (config == null)
                 return;
@@ -135,31 +135,17 @@ namespace SmartHomeApi.Core.Services
             container.ItemConfig = config;
         }
 
-        private IItemConfig GetItemConfig(string itemType, string itemId, ConfigContainer container)
+        private async Task<IItemConfig> GetItemConfig(string itemType, string itemId, ConfigContainer container)
         {
-            IItemConfig config = null;
+            var locators = await _fabric.GetItemsPluginsLocator().GetItemsLocators();
 
-            switch (itemType)
-            {
-                case "TerneoSx":
-                    config = container.ItemConfig ?? new TerneoSxConfig(itemId, itemType);
-                    break;
-                case "VirtualStateDevice":
-                    config = container.ItemConfig ?? new VirtualStateConfig(itemId, itemType);
-                    break;
-                case "VirtualAlarmClockDevice":
-                    config = container.ItemConfig ?? new VirtualAlarmClockConfig(itemId, itemType);
-                    break;
-                case "BreezartLux550":
-                    config = container.ItemConfig ?? new BreezartLux550Config(itemId, itemType);
-                    break;
-                case "EventsPostgreSqlStorage":
-                    config = container.ItemConfig ?? new StorageConfig(itemId, itemType);
-                    break;
-                case "Mega2560Controller":
-                    config = container.ItemConfig ?? new Mega2560ControllerConfig(itemId, itemType);
-                    break;
-            }
+            var locator = locators.FirstOrDefault(l => l.ItemType == itemType);
+
+            if (locator == null) 
+                return null;
+
+            var config = container.ItemConfig ??
+                         (IItemConfig)Activator.CreateInstance(locator.ConfigType, itemId, itemType);
 
             return config;
         }
