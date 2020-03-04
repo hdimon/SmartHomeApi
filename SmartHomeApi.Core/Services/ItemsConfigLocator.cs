@@ -15,6 +15,8 @@ namespace SmartHomeApi.Core.Services
         private readonly IApiLogger _logger;
         private Task _worker;
         private string _configDirectory;
+        private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
+        private volatile bool _isFirstRun = true;
 
         private Dictionary<string, ConfigContainer> _configContainers = new Dictionary<string, ConfigContainer>();
         private ConcurrentDictionary<string, string> _knownDuplicateItems = new ConcurrentDictionary<string, string>();
@@ -52,7 +54,8 @@ namespace SmartHomeApi.Core.Services
         {
             while (true)
             {
-                await Task.Delay(1000);
+                if (!_isFirstRun)
+                    await Task.Delay(1000);
 
                 try
                 {
@@ -105,6 +108,12 @@ namespace SmartHomeApi.Core.Services
                                                                             .Where(c => c.Value.ItemConfig != null)
                                                                             .Where(c => !duplicateItemIds.Contains(
                                                                                 c.Value.ItemConfig.ItemId)));
+
+                if (_isFirstRun)
+                {
+                    _taskCompletionSource.SetResult(true);
+                    _isFirstRun = false;
+                }
             }
             catch (Exception e)
             {
@@ -165,8 +174,11 @@ namespace SmartHomeApi.Core.Services
             }
         }
 
-        public List<IItemConfig> GetItemsConfigs(string itemType)
+        public async Task<List<IItemConfig>> GetItemsConfigs(string itemType)
         {
+            if (_isFirstRun)
+                await _taskCompletionSource.Task;
+
             var configs = _configContainers.Values.Select(c => c.ItemConfig).Where(c => c != null).ToList();
 
             if (configs.Any(c => c.ItemType == itemType))

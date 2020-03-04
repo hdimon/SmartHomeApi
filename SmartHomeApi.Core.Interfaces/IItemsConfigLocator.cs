@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SmartHomeApi.Core.Interfaces
 {
     public interface IItemsConfigLocator : IInitializable
     {
-        List<IItemConfig> GetItemsConfigs(string itemType);
+        Task<List<IItemConfig>> GetItemsConfigs(string itemType);
     }
 }
