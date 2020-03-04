@@ -62,7 +62,7 @@ namespace SmartHomeApi.DeviceUtils
         {
             var configLocator = Fabric.GetItemsConfigsLocator();
 
-            var configs = configLocator.GetItemsConfigs(ItemType);
+            var configs = await configLocator.GetItemsConfigs(ItemType);
 
             var items = await UpdateItemsList(configs);
 
