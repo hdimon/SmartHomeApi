@@ -128,5 +128,18 @@ namespace SmartHomeApi.DeviceUtils
 
             return Items.Values;
         }
+
+        public virtual void Dispose()
+        {
+            try
+            {
+                DisposingCancellationTokenSource.Cancel();
+                //Logger.Info($"ItemsLocator {ItemType} has been disposed.");
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e);
+            }
+        }
     }
 }

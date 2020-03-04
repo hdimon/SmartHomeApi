@@ -40,5 +40,9 @@ namespace SmartHomeApi.Core.Services
 
             return items;
         }
+
+        public void Dispose()
+        {
+        }
     }
 }

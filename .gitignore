@@ -336,3 +336,4 @@ ASALocalRun/
 /SmartHomeApi.WebApi/Virtual_TowelHeaterTurningOffAlarmClock.txt
 /SmartHomeApi.WebApi/Configs
 /SmartHomeApi.WebApi/Plugins/*
+/SmartHomeApi.WebApi/TempPlugins

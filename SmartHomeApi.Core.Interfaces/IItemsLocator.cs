@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace SmartHomeApi.Core.Interfaces
 {
-    public interface IItemsLocator
+    public interface IItemsLocator : IDisposable
     {
         string ItemType { get; }
         Type ConfigType { get; }
