@@ -170,6 +170,8 @@ namespace SmartHomeApi.DeviceUtils
             try
             {
                 DisposingCancellationTokenSource.Cancel();
+
+                DeleteItems(new List<IItemConfig>());
             }
             catch (Exception e)
             {
