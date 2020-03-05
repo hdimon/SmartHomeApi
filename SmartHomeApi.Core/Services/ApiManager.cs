@@ -40,7 +40,11 @@ namespace SmartHomeApi.Core.Services
             var locators = await _fabric.GetItemsPluginsLocator().GetItemsLocators();
             var immediateItems = locators.Where(l => l.ImmediateInitialization).ToList();
 
+            _logger.Info("Running items with immediate initialization...");
+
             await Task.WhenAll(immediateItems.Select(GetItems));
+
+            _logger.Info("Items with immediate initialization have been run.");
 
             RunStatesCollectorWorker();
 
