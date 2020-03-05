@@ -87,8 +87,12 @@ namespace SmartHomeApi.DeviceUtils
             {
                 if (Items.ContainsKey(config.ItemId))
                 {
-                    items.Add(config.ItemId, Items[config.ItemId]);
-                    continue; //Update config
+                    var item = Items[config.ItemId];
+
+                    item = await UpdateItemConfig(item, config);
+
+                    items.Add(config.ItemId, item);
+                    continue;
                 }
 
                 items.Add(config.ItemId, ItemFactory(config));
@@ -121,6 +125,38 @@ namespace SmartHomeApi.DeviceUtils
             }
         }
 
+        private async Task<IItem> UpdateItemConfig(IItem item, IItemConfig config)
+        {
+            var configurableItem = item as IConfigurable;
+
+            if (configurableItem == null)
+                return item;
+
+            if (configurableItem.Config == null)
+            {
+                configurableItem.OnConfigChange(config);
+                return item;
+            }
+
+            var existingConfig = configurableItem.Config;
+
+            var comparer = new ObjectsComparer.Comparer();
+
+            var isEqual = comparer.Compare(ConfigType, existingConfig, config, out var differences);
+
+            if (isEqual) 
+                return item;
+
+            Logger.Info($"Config for item {config.ItemId} was changed.");
+
+            IEnumerable<ItemConfigChangedField> changedFields =
+                differences?.Select(d => new ItemConfigChangedField { Field = d.MemberPath });
+
+            configurableItem.OnConfigChange(config, changedFields);
+
+            return item;
+        }
+
         public async Task<IEnumerable<IItem>> GetItems()
         {
             if (_isFirstRun)
@@ -134,7 +170,6 @@ namespace SmartHomeApi.DeviceUtils
             try
             {
                 DisposingCancellationTokenSource.Cancel();
-                //Logger.Info($"ItemsLocator {ItemType} has been disposed.");
             }
             catch (Exception e)
             {

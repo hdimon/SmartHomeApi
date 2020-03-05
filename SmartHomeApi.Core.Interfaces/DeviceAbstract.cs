@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Common.Utils;
@@ -15,7 +16,12 @@ namespace SmartHomeApi.Core.Interfaces
         
         public string ItemId { get; }
         public string ItemType { get; }
-        public IItemConfig Config { get; }
+        public IItemConfig Config { get; private set; }
+
+        public virtual void OnConfigChange(IItemConfig newConfig, IEnumerable<ItemConfigChangedField> changedFields)
+        {
+            Config = newConfig;
+        }
 
         protected DeviceAbstract(IItemHelpersFabric helpersFabric, IItemConfig config)
         {
