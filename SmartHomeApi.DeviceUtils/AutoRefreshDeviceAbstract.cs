@@ -10,6 +10,7 @@ namespace SmartHomeApi.DeviceUtils
     {
         private Task _worker;
         private int _requestFailureCount;
+        private volatile bool _isFirstRun = true;
 
         protected int RequestFailureMinThreshold = 5;
         protected int RequestFailureMaxThreshold = 30;
@@ -46,7 +47,11 @@ namespace SmartHomeApi.DeviceUtils
         {
             while (!DisposingCancellationTokenSource.IsCancellationRequested)
             {
-                await Task.Delay(RefreshIntervalMS, DisposingCancellationTokenSource.Token);
+                if (!_isFirstRun)
+                    await Task.Delay(RefreshIntervalMS, DisposingCancellationTokenSource.Token);
+
+                if (_isFirstRun)
+                    _isFirstRun = false;
 
                 bool failed = false;
 
