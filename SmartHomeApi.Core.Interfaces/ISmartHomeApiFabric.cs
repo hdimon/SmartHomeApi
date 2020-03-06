@@ -6,7 +6,7 @@
         IItemsLocator GetItemsLocator();
         IItemsConfigLocator GetItemsConfigsLocator();
         IApiManager GetApiManager();
-        IItemHelpersFabric GetItemHelpersFabric();
+        IItemHelpersFabric GetItemHelpersFabric(string itemId);
         IApiLogger GetApiLogger();
         IStatesContainerTransformer GetStateContainerTransformer();
     }

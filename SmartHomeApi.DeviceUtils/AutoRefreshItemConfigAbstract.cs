@@ -1,6 +1,4 @@
-﻿using SmartHomeApi.Core.Interfaces;
-
-namespace SmartHomeApi.DeviceUtils
+﻿namespace SmartHomeApi.DeviceUtils
 {
     public class AutoRefreshItemConfigAbstract : ItemConfigAbstract
     {

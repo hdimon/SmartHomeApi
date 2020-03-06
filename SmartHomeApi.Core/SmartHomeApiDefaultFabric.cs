@@ -33,9 +33,10 @@ namespace SmartHomeApi.Core
             return _provider.GetService<IApiManager>();
         }
 
-        public IItemHelpersFabric GetItemHelpersFabric()
+        public IItemHelpersFabric GetItemHelpersFabric(string itemId)
         {
-            return _provider.GetService<IItemHelpersFabric>();
+            return new ItemHelpersDefaultFabric(_provider, itemId);
+            //return _provider.GetService<IItemHelpersFabric>();
         }
 
         public IApiLogger GetApiLogger()

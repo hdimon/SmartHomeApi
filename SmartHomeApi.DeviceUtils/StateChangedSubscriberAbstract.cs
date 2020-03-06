@@ -41,7 +41,7 @@ namespace SmartHomeApi.DeviceUtils
                 {
                     if (emergencyCounter > 1000)
                     {
-                        Logger.Error($"{itemType}. Emergency exit on cancelling tasks.");
+                        Logger.Error("Emergency exit on cancelling tasks.");
                         return;
                     }
 
@@ -64,7 +64,7 @@ namespace SmartHomeApi.DeviceUtils
             var isCancellationRequested = cancellationToken.IsCancellationRequested;
 
             if (isCancellationRequested)
-                Logger.Warning($"{itemType}. Commands execution has been aborted. Event: {args}.");
+                Logger.Warning($"Commands execution has been aborted. Event: {args}.");
 
             return isCancellationRequested;
         }
@@ -125,14 +125,13 @@ namespace SmartHomeApi.DeviceUtils
 
                     commandsToRun = commandsToRun.Where(t => failed.Contains(t.ItemId)).ToList();
 
-                    Logger.Warning(
-                        $"{itemType}. Commands execution was not fully successful so try to execute it again in " +
-                        $"{failoverActionIntervalSeconds} seconds. Event: {args}.");
+                    Logger.Warning("Commands execution was not fully successful so try to execute it again in " +
+                                   $"{failoverActionIntervalSeconds} seconds. Event: {args}.");
 
                     if (IsCancellationRequested(itemType, cancellationToken, args))
                         return;
 
-                    throw new Exception($"{itemType}. {errorMessage}. Event: {args}.");
+                    throw new Exception($"{errorMessage}. Event: {args}.");
                 }
 
                 await AsyncHelpers.RetryOnFault(ExecuteCommandsAction, maxTries,
@@ -141,7 +140,7 @@ namespace SmartHomeApi.DeviceUtils
             }
             catch (TaskCanceledException)
             {
-                Logger.Warning($"{itemType}. Commands execution has been aborted. Event: {args}.");
+                Logger.Warning($"Commands execution has been aborted. Event: {args}.");
             }
             catch (Exception e)
             {
