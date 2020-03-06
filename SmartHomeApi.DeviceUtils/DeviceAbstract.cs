@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Common.Utils;
+using SmartHomeApi.Core.Interfaces;
 
-namespace SmartHomeApi.Core.Interfaces
+namespace SmartHomeApi.DeviceUtils
 {
     public abstract class DeviceAbstract : IItem, IStateSettable, IStateGettable, IConfigurable, IInitializable, IDisposable
     {

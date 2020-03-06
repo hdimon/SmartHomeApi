@@ -5,10 +5,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Common.Utils;
+using SmartHomeApi.Core.Interfaces;
 
-namespace SmartHomeApi.Core.Interfaces
+namespace SmartHomeApi.DeviceUtils
 {
-    public abstract class StateChangedSubscriberAbstract : IStateChangedSubscriber
+    public abstract class StateChangedSubscriberAbstract : IStateChangedSubscriber, IDisposable
     {
         protected readonly IApiManager Manager;
         protected readonly IItemHelpersFabric HelpersFabric;
@@ -138,7 +139,7 @@ namespace SmartHomeApi.Core.Interfaces
                                       () => Task.Delay(failoverActionIntervalSeconds * 1000, cancellationToken))
                                   .ConfigureAwait(false);
             }
-            catch (TaskCanceledException e)
+            catch (TaskCanceledException)
             {
                 Logger.Warning($"{itemType}. Commands execution has been aborted. Event: {args}.");
             }
@@ -156,6 +157,11 @@ namespace SmartHomeApi.Core.Interfaces
             command.Value = value;
 
             return command;
+        }
+
+        public void Dispose()
+        {
+            Manager.UnregisterSubscriber(this);
         }
     }
 }

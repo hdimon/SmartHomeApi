@@ -1,4 +1,6 @@
-﻿namespace SmartHomeApi.Core.Interfaces
+﻿using SmartHomeApi.Core.Interfaces;
+
+namespace SmartHomeApi.DeviceUtils
 {
     public class ItemConfigAbstract : IItemConfig
     {
