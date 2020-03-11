@@ -72,6 +72,9 @@ namespace SmartHomeApi.Core.Services
         {
             try
             {
+                if (!Directory.Exists(_configDirectory))
+                    return;
+
                 var configContainers = new Dictionary<string, ConfigContainer>();
 
                 var ext = new List<string> { ".json" };

@@ -15,13 +15,15 @@ namespace SmartHomeApi.Core.Services
 {
     public class ItemsPluginsLocator : IItemsPluginsLocator
     {
-        private string _pluginsDirectory;
-        private string _tempPluginsDirectory;
+        private readonly string _pluginsDirectory;
+        private readonly string _tempPluginsDirectory;
         private Task _worker;
         private readonly ISmartHomeApiFabric _fabric;
         private readonly IApiLogger _logger;
         private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
         private volatile bool _isFirstRun = true;
+        private readonly List<string> _librariesExtensions = new List<string> { ".dll" };
+        private bool _softPluginsLoading = true;
 
         private ConcurrentDictionary<string, IItemsLocator> _locators = new ConcurrentDictionary<string, IItemsLocator>();
 
@@ -33,7 +35,9 @@ namespace SmartHomeApi.Core.Services
             _pluginsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Plugins");
             _tempPluginsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "TempPlugins");
 
-            Directory.Delete(_tempPluginsDirectory, true);
+            if (Directory.Exists(_tempPluginsDirectory))
+                Directory.Delete(_tempPluginsDirectory, true);
+
             Directory.CreateDirectory(_tempPluginsDirectory);
 
             _fabric = fabric;
@@ -41,7 +45,7 @@ namespace SmartHomeApi.Core.Services
 
             RunPluginsCollectorWorker();
 
-            var test = typeof(AverageValuesHelper);
+            var unused = typeof(AverageValuesHelper); //Workaround to load dll
         }
 
         private void RunPluginsCollectorWorker()
@@ -93,23 +97,14 @@ namespace SmartHomeApi.Core.Services
 
         private async Task ProcessPlugins(ConcurrentDictionary<string, IItemsLocator> locators)
         {
-            var pluginFileContainers = await CollectPluginContainers(_pluginsDirectory);
-            var tempPluginFileContainers = await CollectPluginContainers(_tempPluginsDirectory);
+            var plugins = await CollectPluginContainers(_pluginsDirectory);
+            var existingPlugins = await CollectPluginContainers(_tempPluginsDirectory);
 
-            var deletedDirectories = tempPluginFileContainers
-                                     .Select(c => c.PluginDirectoryName)
-                                     .Except(pluginFileContainers.Select(c => c.PluginDirectoryName)).ToList();
-            var addedDirectories = pluginFileContainers
-                                   .Select(c => c.PluginDirectoryName)
-                                   .Except(tempPluginFileContainers.Select(c => c.PluginDirectoryName)).ToList();
+            var deletedPlugins = FindDeletedPlugins(plugins, existingPlugins);
+            var addedPlugins = FindAddedPlugins(plugins, existingPlugins);
+            var updatedPlugins = FindUpdatedPlugins(plugins, existingPlugins);
 
-            var deletedPlugins = tempPluginFileContainers
-                                 .Where(p => deletedDirectories.Contains(p.PluginDirectoryName)).ToList();
-            var addedPlugins = pluginFileContainers
-                               .Where(p => addedDirectories.Contains(p.PluginDirectoryName)).ToList();
-            var existingPlugins = tempPluginFileContainers.Except(deletedPlugins).ToList();
-
-            await UpdatePlugins(existingPlugins, locators);
+            await UpdatePlugins(updatedPlugins, locators);
             await AddPlugins(addedPlugins, locators);
 
             var deleteContainers = await DeletePlugins(deletedPlugins);
@@ -117,32 +112,79 @@ namespace SmartHomeApi.Core.Services
             await UnloadPlugins(deleteContainers);
         }
 
+        private List<PluginContainer> FindDeletedPlugins(List<PluginContainer> plugins,
+            List<PluginContainer> existingPlugins)
+        {
+            var deletedPluginNames = existingPlugins
+                                     .Select(c => c.PluginName)
+                                     .Except(plugins.Select(c => c.PluginName)).ToList();
+
+            var deletedPlugins = existingPlugins.Where(p => deletedPluginNames.Contains(p.PluginName)).ToList();
+
+            return deletedPlugins;
+        }
+
+        private List<PluginContainer> FindAddedPlugins(List<PluginContainer> plugins,
+            List<PluginContainer> existingPlugins)
+        {
+            var addedPluginNames = plugins.Select(p => p.PluginName).Except(_knownPluginContainers.Keys).ToList();
+
+            var addedPlugins = plugins.Where(p => addedPluginNames.Contains(p.PluginName)).ToList();
+
+            //Even if there are plugins which were unloaded but not physically deleted from disk then anyway try to load them
+            if (_softPluginsLoading)
+                return addedPlugins;
+
+            //If some plugins were unloaded but not (fully) deleted from disk then don't take them
+            var added = addedPluginNames.Except(existingPlugins.Select(p => p.PluginName)).ToList();
+
+            addedPlugins = plugins.Where(p => added.Contains(p.PluginName)).ToList();
+
+            return addedPlugins;
+        }
+
+        private List<PluginContainer> FindUpdatedPlugins(List<PluginContainer> plugins,
+            List<PluginContainer> existingPlugins)
+        {
+            //Take only plugins which are known
+            var updatedPluginNames = plugins.Select(p => p.PluginName).Intersect(_knownPluginContainers.Keys).ToList();
+
+            var updatedPlugins = plugins.Where(p => updatedPluginNames.Contains(p.PluginName)).ToList();
+
+            return updatedPlugins;
+        }
+
         private async Task<List<PluginContainer>> CollectPluginContainers(string directory)
         {
-            var ext = new List<string> { ".dll" };
+            var pluginContainers = new List<PluginContainer>();
 
-            var pluginFileContainers = Directory.EnumerateFiles(directory, "*.*", SearchOption.AllDirectories)
-                                                .Where(s => ext.Contains(Path.GetExtension(s).ToLowerInvariant()))
-                                                .Select(p => new PluginContainer { FilePath = p }).ToList();
+            if (!Directory.Exists(directory))
+                return pluginContainers;
 
-            foreach (var container in pluginFileContainers)
+            var pluginDirectories = Directory.EnumerateDirectories(directory).ToList();
+
+            foreach (var pluginDirectoryPath in pluginDirectories)
             {
-                var file = new FileInfo(container.FilePath);
-                container.PluginDirectoryName = file.Directory?.Name;
-                container.PluginDirectoryPath = file.Directory?.FullName;
+                var files = Directory.EnumerateFiles(pluginDirectoryPath, "*.*", SearchOption.AllDirectories)
+                                     .Select(f => new FileInfo(f)).ToList();
+
+                if (!files.Any())
+                    continue;
+
+                var directoryInfo = new DirectoryInfo(pluginDirectoryPath);
+
+                var pluginContainer = new PluginContainer();
+                pluginContainer.PluginName = directoryInfo.Name;
+                pluginContainer.PluginDirectoryInfo = directoryInfo;
+                pluginContainer.Files = files;
+                pluginContainer.DllFiles =
+                    files.Where(f => _librariesExtensions.Contains(Path.GetExtension(f.Name).ToLowerInvariant()))
+                         .ToList();
+
+                pluginContainers.Add(pluginContainer);
             }
 
-            pluginFileContainers = pluginFileContainers
-                                   .Where(p => p.PluginDirectoryName != null)
-                                   .GroupBy(p => p.PluginDirectoryName)
-                                   .Select(g => new PluginContainer
-                                   {
-                                       FilePathes = g.Select(p => p.FilePath).ToList(),
-                                       PluginDirectoryName = g.First().PluginDirectoryName,
-                                       PluginDirectoryPath = g.First().PluginDirectoryPath
-                                   }).ToList();
-
-            return pluginFileContainers;
+            return pluginContainers;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -150,8 +192,30 @@ namespace SmartHomeApi.Core.Services
         {
             foreach (var pluginContainer in plugins)
             {
-                await LoadPlugin(pluginContainer, locators);
+                try
+                {
+                    await LoadPlugin(pluginContainer, locators);
+                }
+                catch (Exception e)
+                {
+                    DeleteTempPlugin(pluginContainer);
+
+                    _logger.Error(e);
+                }
             }
+        }
+
+        private void DeleteTempPlugin(PluginContainer plugin)
+        {
+            var tempPluginDirectoryPath = GetPluginPath(plugin);
+
+            if (Directory.Exists(tempPluginDirectoryPath))
+                Directory.Delete(tempPluginDirectoryPath, true);
+        }
+
+        private string GetPluginPath(PluginContainer plugin)
+        {
+            return Path.Combine(_tempPluginsDirectory, plugin.PluginName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -159,10 +223,12 @@ namespace SmartHomeApi.Core.Services
         {
             foreach (var plugin in plugins)
             {
-                if (!_knownPluginContainers.ContainsKey(plugin.PluginDirectoryName)) 
+                if (!_knownPluginContainers.ContainsKey(plugin.PluginName))
                     continue;
 
-                var existingPlugin = _knownPluginContainers[plugin.PluginDirectoryName];
+                var existingPlugin = _knownPluginContainers[plugin.PluginName];
+                existingPlugin.Files = plugin.Files;
+                existingPlugin.DllFiles = plugin.DllFiles;
 
                 if (!await PluginWasChanged(existingPlugin))
                 {
@@ -173,46 +239,52 @@ namespace SmartHomeApi.Core.Services
                 }
                 else
                 {
-                    _logger.Info($"Plugin {existingPlugin.PluginDirectoryName} was changed, try to reload it...");
+                    try
+                    {
+                        _logger.Info($"Plugin {existingPlugin.PluginName} was changed, try to reload it...");
 
-                    var deletedPlugin = await DeletePlugin(existingPlugin);
-                    await UnloadPlugins(new List<DeletingPluginContainer> { deletedPlugin });
-                    await LoadPlugin(existingPlugin, locators);
+                        var deletedPlugin = await DeletePlugin(existingPlugin);
+                        await UnloadPlugins(new List<DeletingPluginContainer> { deletedPlugin });
+                        await LoadPlugin(existingPlugin, locators);
 
-                    _logger.Info($"Plugin {existingPlugin.PluginDirectoryName} successfully reloaded.");
+                        _logger.Info($"Plugin {existingPlugin.PluginName} successfully reloaded.");
+                    }
+                    catch (Exception e)
+                    {
+                        DeleteTempPlugin(existingPlugin);
+
+                        _logger.Error(e);
+                    }
                 }
             }
         }
 
         private async Task<bool> PluginWasChanged(PluginContainer plugin)
         {
-            var existingDllPathes = plugin.TempFilePathes;
-            var newDllPathes = plugin.FilePathes;
+            var existingFiles = plugin.Files;
+            var newFiles = plugin.TempFiles;
 
-            if (existingDllPathes.Count != newDllPathes.Count)
+            if (existingFiles.Count != newFiles.Count)
                 return true;
 
-            var newDllsPathesByNames =
-                newDllPathes.Where(p => Path.GetFileName(p) != null).ToDictionary(Path.GetFileName, s => s);
+            var newFilesByNames = newFiles.ToDictionary(f => f.Name, f => f);
 
-            foreach (var existingDllPath in existingDllPathes)
+            foreach (var existingFile in existingFiles)
             {
-                var existingDllName = Path.GetFileName(existingDllPath);
-
-                if (!newDllsPathesByNames.ContainsKey(existingDllName))
+                if (!newFilesByNames.ContainsKey(existingFile.Name))
                     return true;
 
-                var newDllPath = newDllsPathesByNames[existingDllName];
+                var newFile = newFilesByNames[existingFile.Name];
 
-                if (new FileInfo(existingDllPath).Length != new FileInfo(newDllPath).Length)
+                if (!newFile.Exists || existingFile.Length != newFile.Length)
                     return true;
 
-                var existingDllBytes = await File.ReadAllBytesAsync(existingDllPath);
-                var newDllBytes = await File.ReadAllBytesAsync(newDllPath);
+                var existingBytes = await File.ReadAllBytesAsync(existingFile.FullName);
+                var newBytes = await File.ReadAllBytesAsync(newFile.FullName);
 
-                for (long i = 0; i < existingDllBytes.LongLength; i++)
+                for (long i = 0; i < existingBytes.LongLength; i++)
                 {
-                    if (existingDllBytes[i] != newDllBytes[i])
+                    if (existingBytes[i] != newBytes[i])
                         return true;
                 }
             }
@@ -225,8 +297,10 @@ namespace SmartHomeApi.Core.Services
         {
             var tempPlugin = await CopyPluginToTempDirectory(plugin);
 
-            foreach (var dllPath in tempPlugin.TempFilePathes)
+            foreach (var dll in tempPlugin.TempDllFiles)
             {
+                var dllPath = dll.FullName;
+
                 var checkPluginResult = LoadDllIfPlugin(dllPath);
 
                 if (!checkPluginResult.Success)
@@ -259,9 +333,9 @@ namespace SmartHomeApi.Core.Services
                 tempPlugin.AssemblyContext = context;
             }
 
-            _knownPluginContainers.TryAdd(tempPlugin.PluginDirectoryName, tempPlugin);
+            _knownPluginContainers.TryAdd(tempPlugin.PluginName, tempPlugin);
 
-            _logger.Info($"Plugin {tempPlugin.PluginDirectoryName} has been processed");
+            _logger.Info($"Plugin {tempPlugin.PluginName} has been processed");
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -281,7 +355,7 @@ namespace SmartHomeApi.Core.Services
                         //Remove locator from existing dictionary in order to get rid of references to being deleted objects
                         foreach (var itemsLocator in deleteContainer.Plugin.Locators)
                         {
-                            if (!_locators.TryRemove(itemsLocator.ItemType, out var itemsLoc))
+                            if (!_locators.TryRemove(itemsLocator.ItemType, out _))
                                 removingFailed = true;
                         }
 
@@ -290,13 +364,13 @@ namespace SmartHomeApi.Core.Services
 
                         await Task.Delay(1000);
 
-                        if (!CollectGarbage(deleteContainer.Reference, deleteContainer.Plugin.PluginDirectoryName))
+                        if (!CollectGarbage(deleteContainer.Reference, deleteContainer.Plugin.PluginName))
                             throw new Exception("Could not unload dll. It's recommended to restart service.");
 
                         try
                         {
                             await AsyncHelpers.RetryOnFault(
-                                async () => Directory.Delete(deleteContainer.Plugin.TempPluginDirectoryPath, true), 5,
+                                async () => Directory.Delete(deleteContainer.Plugin.PluginDirectoryInfo.FullName, true), 5,
                                 () => Task.Delay(1000));
                         }
                         catch (Exception e)
@@ -304,12 +378,29 @@ namespace SmartHomeApi.Core.Services
                             _logger.Error(e);
                         }
 
-                        _logger.Info($"{deleteContainer.Plugin.PluginDirectoryName} has been unloaded.");
-                    }, 5, () => Task.Delay(1000));
+                        _logger.Info($"{deleteContainer.Plugin.PluginName} has been unloaded.");
+                    }, 5, () => Task.Delay(500));
                 }
                 catch (Exception e)
                 {
-                    _logger.Error(e);
+                    if (_softPluginsLoading)
+                    {
+                        _logger.Info("Could not unload dll but SoftPluginsLoading is True so continue working.");
+                        //Try to clean as much as we can
+                        try
+                        {
+                            DeleteTempPlugin(deleteContainer.Plugin);
+                        }
+                        catch (Exception exception)
+                        {
+                            //Since it's SoftLoading then just suppress exception
+                            //_logger.Error(exception);
+                        }
+                    }
+                    else
+                    {
+                        _logger.Error(e);
+                    }
                 }
             }
 
@@ -375,10 +466,10 @@ namespace SmartHomeApi.Core.Services
         [MethodImpl(MethodImplOptions.NoInlining)]
         private async Task<DeletingPluginContainer> DeletePlugin(PluginContainer plugin)
         {
-            if (!_knownPluginContainers.TryGetValue(plugin.PluginDirectoryName, out var deletedContainer))
+            if (!_knownPluginContainers.TryGetValue(plugin.PluginName, out var deletedContainer))
                 return null;
 
-            _logger.Info($"Plugin {plugin.PluginDirectoryName} has been deleted.");
+            _logger.Info($"Plugin {plugin.PluginName} has been deleted.");
 
             foreach (var itemsLocator in deletedContainer.Locators)
             {
@@ -397,9 +488,9 @@ namespace SmartHomeApi.Core.Services
                 { Reference = weakReference, Plugin = deletedContainer };
             container.Plugin.AssemblyContext = null; //Delete reference to allow GC to make its work
 
-            _logger.Info($"Assemblies from {plugin.PluginDirectoryPath} are being unloaded.");
+            _logger.Info($"Assemblies from {plugin.PluginDirectoryInfo.FullName} are being unloaded.");
 
-            _knownPluginContainers.TryRemove(plugin.PluginDirectoryName, out var t);
+            _knownPluginContainers.TryRemove(plugin.PluginName, out var t);
 
             return container;
         }
@@ -433,16 +524,41 @@ namespace SmartHomeApi.Core.Services
 
         private async Task<PluginContainer> CopyPluginToTempDirectory(PluginContainer plugin)
         {
-            var ext = new List<string> { ".dll" };
+            var tempPluginDirectoryPath = GetPluginPath(plugin);
 
-            var tempPluginDirectoryPath = Path.Combine(_tempPluginsDirectory, plugin.PluginDirectoryName);
+            var tempFiles = new List<FileInfo>();
 
-            FileHelper.Copy(plugin.PluginDirectoryPath, tempPluginDirectoryPath);
+            Directory.CreateDirectory(tempPluginDirectoryPath);
 
-            plugin.TempPluginDirectoryPath = tempPluginDirectoryPath;
-            plugin.TempFilePathes = Directory
-                                    .EnumerateFiles(tempPluginDirectoryPath, "*.*", SearchOption.AllDirectories)
-                                    .Where(s => ext.Contains(Path.GetExtension(s).ToLowerInvariant())).ToList();
+            foreach (var file in plugin.Files)
+            {
+                //TODO refactor this to get rid of working with strings in path
+                var relativePath = file.DirectoryName.Replace(plugin.PluginDirectoryInfo.FullName, "");
+
+                if (relativePath.StartsWith(Path.DirectorySeparatorChar))
+                    relativePath = relativePath.Remove(0, 1);
+
+                var tempDirectoryPath = Path.Combine(tempPluginDirectoryPath, relativePath);
+                Directory.CreateDirectory(tempDirectoryPath);
+                var tempFilePath = Path.Combine(tempPluginDirectoryPath, relativePath, file.Name);
+
+                try
+                {
+                    File.Copy(file.FullName, tempFilePath, true);
+                }
+                catch (Exception e)
+                {
+                    if (!_softPluginsLoading)
+                        throw;
+                }
+
+                tempFiles.Add(new FileInfo(tempFilePath));
+            }
+
+            plugin.TempFiles = tempFiles;
+            plugin.TempDllFiles = tempFiles
+                                  .Where(f => _librariesExtensions.Contains(
+                                      Path.GetExtension(f.Name).ToLowerInvariant())).ToList();
 
             return plugin;
         }
@@ -457,16 +573,21 @@ namespace SmartHomeApi.Core.Services
 
         private class PluginContainer
         {
-            public string FilePath { get; set; }
-            public List<string> FilePathes { get; set; }
-            public string PluginDirectoryName { get; set; }
-            public string PluginDirectoryPath { get; set; }
+            public string PluginName { get; set; }
+            public DirectoryInfo PluginDirectoryInfo { get; set; }
+            public List<FileInfo> Files { get; set; }
+            public List<FileInfo> DllFiles { get; set; }
 
-            public List<string> TempFilePathes { get; set; }
-            public string TempPluginDirectoryPath { get; set; }
+            public List<FileInfo> TempFiles { get; set; }
+            public List<FileInfo> TempDllFiles { get; set; }
 
             public CollectibleAssemblyContext AssemblyContext { get; set; }
-            public List<IItemsLocator> Locators { get; set; }
+            public List<IItemsLocator> Locators { get; set; } = new List<IItemsLocator>();
+
+            public override string ToString()
+            {
+                return PluginName;
+            }
         }
 
         private class LoadingPluginResult
