@@ -34,7 +34,7 @@ namespace SmartHomeApi.DeviceUtils
         {
             if (_worker == null || _worker.IsCompleted)
             {
-                _worker = Task.Factory.StartNew(AutoDataRefreshWorker).Unwrap().ContinueWith(
+                _worker = Task.Factory.StartNew(DataCollectorWorkerWrapper).Unwrap().ContinueWith(
                     t =>
                     {
                         Logger.Error(t.Exception);
@@ -43,7 +43,7 @@ namespace SmartHomeApi.DeviceUtils
             }
         }
 
-        private async Task AutoDataRefreshWorker()
+        private async Task DataCollectorWorkerWrapper()
         {
             while (!DisposingCancellationTokenSource.IsCancellationRequested)
             {
@@ -53,53 +53,65 @@ namespace SmartHomeApi.DeviceUtils
                 if (_isFirstRun)
                     _isFirstRun = false;
 
-                bool failed = false;
+                try
+                {
+                    await AutoDataRefreshWorker();
+                }
+                catch (Exception e)
+                {
+                    Logger.Error(e);
+                }
+            }
+        }
 
-                var state = await RequestData();
-                ExtendItemStates(state);
+        private async Task AutoDataRefreshWorker()
+        {
+            bool failed = false;
 
-                if (!CurrentState.States.Any() && !state.States.Any())
+            var state = await RequestData();
+            ExtendItemStates(state);
+
+            if (!CurrentState.States.Any() && !state.States.Any())
+                failed = true;
+
+            foreach (var telemetryPair in CurrentState.States)
+            {
+                if (!state.States.ContainsKey(telemetryPair.Key))
+                {
                     failed = true;
 
-                foreach (var telemetryPair in CurrentState.States)
-                {
-                    if (!state.States.ContainsKey(telemetryPair.Key))
+                    if (_requestFailureCount < RequestFailureMaxThreshold)
                     {
-                        failed = true;
-
-                        if (_requestFailureCount < RequestFailureMaxThreshold)
-                        {
-                            //Take previous value
-                            state.States.Add(telemetryPair.Key, telemetryPair.Value);
-                        }
+                        //Take previous value
+                        state.States.Add(telemetryPair.Key, telemetryPair.Value);
                     }
                 }
+            }
 
-                if (failed)
-                {
-                    _requestFailureCount++;
+            if (failed)
+            {
+                _requestFailureCount++;
 
-                    if (_requestFailureCount < RequestFailureMinThreshold)
-                    {
-                        state.ConnectionStatus = ConnectionStatus.Stable;
-                    }
-                    else if (_requestFailureCount < RequestFailureMaxThreshold)
-                    {
-                        state.ConnectionStatus = ConnectionStatus.Unstable;
-                    }
-                    else if (_requestFailureCount >= RequestFailureMaxThreshold)
-                    {
-                        state.ConnectionStatus = ConnectionStatus.Lost;
-                    }
-                }
-                else
+                if (_requestFailureCount < RequestFailureMinThreshold)
                 {
-                    _requestFailureCount = 0;
                     state.ConnectionStatus = ConnectionStatus.Stable;
                 }
-
-                SetStateSafely(state);
+                else if (_requestFailureCount < RequestFailureMaxThreshold)
+                {
+                    state.ConnectionStatus = ConnectionStatus.Unstable;
+                }
+                else if (_requestFailureCount >= RequestFailureMaxThreshold)
+                {
+                    state.ConnectionStatus = ConnectionStatus.Lost;
+                }
             }
+            else
+            {
+                _requestFailureCount = 0;
+                state.ConnectionStatus = ConnectionStatus.Stable;
+            }
+
+            SetStateSafely(state);
         }
 
         protected void SetStateSafely(IItemState state)
