@@ -1,9 +1,9 @@
 ﻿using System;
 using SmartHomeApi.Core.Interfaces;
 
-namespace SmartHomeApi.Core.UnitTests.Stubs
+namespace SmartHomeApi.UnitTestsBase.Stubs
 {
-    class ApiStubLogger : IApiLogger
+    public class ApiStubLogger : IApiLogger
     {
         public void Prompt(string message)
         {

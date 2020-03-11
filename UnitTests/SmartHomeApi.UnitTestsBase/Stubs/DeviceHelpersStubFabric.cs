@@ -1,8 +1,8 @@
 ﻿using SmartHomeApi.Core.Interfaces;
 
-namespace SmartHomeApi.Core.UnitTests.Stubs
+namespace SmartHomeApi.UnitTestsBase.Stubs
 {
-    class DeviceHelpersStubFabric : IItemHelpersFabric
+    public class DeviceHelpersStubFabric : IItemHelpersFabric
     {
         public IItemStateStorageHelper GetDeviceStateStorageHelper()
         {

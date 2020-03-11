@@ -15,6 +15,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartHomeApi.DeviceUtils", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Utils", "Common.Utils\Common.Utils.csproj", "{2787CD55-0240-4489-AAEC-BA87F82664C4}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{6B46741C-184D-490B-9A5E-F75057E84E11}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartHomeApi.UnitTestsBase", "UnitTests\SmartHomeApi.UnitTestsBase\SmartHomeApi.UnitTestsBase.csproj", "{CC67EAC1-A2F0-4C85-A6CC-BA5A27091C16}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,9 +49,16 @@ Global
 		{2787CD55-0240-4489-AAEC-BA87F82664C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2787CD55-0240-4489-AAEC-BA87F82664C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2787CD55-0240-4489-AAEC-BA87F82664C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC67EAC1-A2F0-4C85-A6CC-BA5A27091C16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC67EAC1-A2F0-4C85-A6CC-BA5A27091C16}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC67EAC1-A2F0-4C85-A6CC-BA5A27091C16}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC67EAC1-A2F0-4C85-A6CC-BA5A27091C16}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CC67EAC1-A2F0-4C85-A6CC-BA5A27091C16} = {6B46741C-184D-490B-9A5E-F75057E84E11}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B0813504-E85A-4020-873B-D4DC655694B7}
