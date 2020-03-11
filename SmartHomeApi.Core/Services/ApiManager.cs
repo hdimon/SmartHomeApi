@@ -17,6 +17,7 @@ namespace SmartHomeApi.Core.Services
         private readonly List<IStateChangedSubscriber> _stateChangedSubscribers = new List<IStateChangedSubscriber>();
         private readonly IApiLogger _logger;
         private readonly IStatesContainerTransformer _stateContainerTransformer;
+        private readonly CancellationTokenSource _disposingCancellationTokenSource = new CancellationTokenSource();
 
         public string ItemType => null;
         public string ItemId => null;
@@ -67,7 +68,18 @@ namespace SmartHomeApi.Core.Services
 
         public void Dispose()
         {
+            _logger.Info("Disposing ApiManager...");
 
+            _disposingCancellationTokenSource.Cancel();
+
+            var pluginsLocator = _fabric.GetItemsPluginsLocator();
+            var configLocator = _fabric.GetItemsConfigsLocator();
+
+            pluginsLocator.Dispose();
+
+            configLocator.Dispose();
+
+            _logger.Info("ApiManager has been disposed.");
         }
 
         public async Task<ISetValueResult> SetValue(string deviceId, string parameter, string value)
@@ -185,9 +197,9 @@ namespace SmartHomeApi.Core.Services
 
         private async Task CollectItemsStates()
         {
-            while (true)
+            while (!_disposingCancellationTokenSource.IsCancellationRequested)
             {
-                await Task.Delay(250);
+                await Task.Delay(250, _disposingCancellationTokenSource.Token);
 
                 try
                 {

@@ -24,6 +24,7 @@ namespace SmartHomeApi.Core.Services
         private volatile bool _isFirstRun = true;
         private readonly List<string> _librariesExtensions = new List<string> { ".dll" };
         private bool _softPluginsLoading = true;
+        private readonly CancellationTokenSource _disposingCancellationTokenSource = new CancellationTokenSource();
 
         private ConcurrentDictionary<string, IItemsLocator> _locators = new ConcurrentDictionary<string, IItemsLocator>();
 
@@ -63,10 +64,10 @@ namespace SmartHomeApi.Core.Services
 
         private async Task PluginsCollectorWorkerWrapper()
         {
-            while (true)
+            while (!_disposingCancellationTokenSource.IsCancellationRequested)
             {
                 if (!_isFirstRun)
-                    await Task.Delay(1000);
+                    await Task.Delay(1000, _disposingCancellationTokenSource.Token);
 
                 try
                 {
@@ -602,6 +603,17 @@ namespace SmartHomeApi.Core.Services
         {
             public WeakReference Reference { get; set; }
             public PluginContainer Plugin { get; set; }
+        }
+
+        public void Dispose()
+        {
+            _disposingCancellationTokenSource.Cancel();
+
+            _logger.Info("Disposing ItemsPluginsLocator...");
+
+            DeletePlugins(_knownPluginContainers.Values.ToList()).Wait();
+
+            _logger.Info("ItemsPluginsLocator has been disposed.");
         }
     }
 }

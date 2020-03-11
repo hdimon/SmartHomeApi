@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using SmartHomeApi.Core.Interfaces;
@@ -17,6 +18,7 @@ namespace SmartHomeApi.Core.Services
         private string _configDirectory;
         private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
         private volatile bool _isFirstRun = true;
+        private readonly CancellationTokenSource _disposingCancellationTokenSource = new CancellationTokenSource();
 
         private Dictionary<string, ConfigContainer> _configContainers = new Dictionary<string, ConfigContainer>();
         private ConcurrentDictionary<string, string> _knownDuplicateItems = new ConcurrentDictionary<string, string>();
@@ -52,10 +54,10 @@ namespace SmartHomeApi.Core.Services
 
         private async Task ConfigsCollectorWorkerWrapper()
         {
-            while (true)
+            while (!_disposingCancellationTokenSource.IsCancellationRequested)
             {
                 if (!_isFirstRun)
-                    await Task.Delay(1000);
+                    await Task.Delay(1000, _disposingCancellationTokenSource.Token);
 
                 try
                 {
@@ -196,6 +198,11 @@ namespace SmartHomeApi.Core.Services
             public IConfigurationBuilder Builder { get; set; }
             public IConfigurationRoot Root { get; set; }
             public IItemConfig ItemConfig { get; set; }
+        }
+
+        public void Dispose()
+        {
+            _disposingCancellationTokenSource.Cancel();
         }
     }
 }
