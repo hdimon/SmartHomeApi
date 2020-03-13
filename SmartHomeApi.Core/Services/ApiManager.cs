@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using SmartHomeApi.Core.Interfaces;
 using SmartHomeApi.Core.Models;
 
@@ -227,7 +229,7 @@ namespace SmartHomeApi.Core.Services
                     var oldState = await GetState();
                     SetStateSafely(state);
 
-                    NotifySubscribersAboutChanges(oldState);
+                    NotifySubscribersAboutChanges(oldState, gettableItems);
                 }
                 catch (Exception e)
                 {
@@ -280,7 +282,7 @@ namespace SmartHomeApi.Core.Services
             return state;
         }
 
-        private void NotifySubscribersAboutChanges(IStatesContainer oldState)
+        private void NotifySubscribersAboutChanges(IStatesContainer oldState, List<IStateGettable> gettableItems)
         {
             var newStates = _state.States;
             var oldStates = oldState.States;
@@ -289,103 +291,196 @@ namespace SmartHomeApi.Core.Services
             var removedDevices = oldStates.Keys.Except(newStates.Keys).ToList();
             var updatedDevices = newStates.Keys.Except(addedDevices).ToList();
 
-            NotifySubscribersAboutRemovedDevices(removedDevices, oldStates);
-            NotifySubscribersAboutAddedDevices(addedDevices, newStates);
-            NotifySubscribersAboutUpdatedDevices(updatedDevices, newStates, oldStates);
+            NotifySubscribersAboutRemovedDevices(gettableItems, removedDevices, oldStates);
+            NotifySubscribersAboutAddedDevices(gettableItems, addedDevices, newStates);
+            NotifySubscribersAboutUpdatedDevices(gettableItems, updatedDevices, newStates, oldStates);
         }
 
-        private void NotifySubscribersAboutRemovedDevices(List<string> removedDevices,
-            Dictionary<string, IItemState> oldStates)
+        private void NotifySubscribersAboutRemovedDevices(List<IStateGettable> gettableItems,
+            List<string> removedDevices, Dictionary<string, IItemState> oldStates)
         {
             foreach (var removedDevice in removedDevices)
             {
-                var device = oldStates[removedDevice];
+                var itemState = oldStates[removedDevice];
+                var item = gettableItems.FirstOrDefault(i => i.ItemId == itemState.ItemId);
 
-                foreach (var telemetryPair in device.States)
+                var trackedStates = GetOnlyTrackedStates(item, itemState.States);
+
+                foreach (var telemetryPair in trackedStates)
                 {
-                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueRemoved, device.ItemType,
-                        device.ItemId, telemetryPair.Key, telemetryPair.Value?.ToString(), null));
+                    var valueString = GetValueString(telemetryPair.Value);
+
+                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueRemoved, itemState.ItemType,
+                        itemState.ItemId, telemetryPair.Key, valueString, null));
                 }
             }
         }
 
-        private void NotifySubscribersAboutAddedDevices(List<string> addedDevices,
+        private void NotifySubscribersAboutAddedDevices(List<IStateGettable> gettableItems, List<string> addedDevices,
             Dictionary<string, IItemState> newStates)
         {
             foreach (var addedDevice in addedDevices)
             {
-                var device = newStates[addedDevice];
+                var itemState = newStates[addedDevice];
+                var item = gettableItems.FirstOrDefault(i => i.ItemId == itemState.ItemId);
 
-                foreach (var telemetryPair in device.States)
+                var trackedStates = GetOnlyTrackedStates(item, itemState.States);
+
+                foreach (var telemetryPair in trackedStates)
                 {
-                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueAdded, device.ItemType,
-                        device.ItemId, telemetryPair.Key, null, telemetryPair.Value?.ToString()));
+                    var valueString = GetValueString(telemetryPair.Value);
+
+                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueAdded, itemState.ItemType,
+                        itemState.ItemId, telemetryPair.Key, null, valueString));
                 }
             }
         }
 
-        private void NotifySubscribersAboutUpdatedDevices(List<string> updatedDevices,
-            Dictionary<string, IItemState> newStates, Dictionary<string, IItemState> oldStates)
+        private void NotifySubscribersAboutUpdatedDevices(List<IStateGettable> gettableItems,
+            List<string> updatedDevices, Dictionary<string, IItemState> newStates,
+            Dictionary<string, IItemState> oldStates)
         {
             foreach (var updatedDevice in updatedDevices)
             {
-                var newDevice = newStates[updatedDevice];
-                var oldDevice = oldStates[updatedDevice];
+                var newItemState = newStates[updatedDevice];
+                var oldItemState = oldStates[updatedDevice];
 
-                var newTelemetry = newDevice.States;
-                var oldTelemetry = oldDevice.States;
+                var item = gettableItems.FirstOrDefault(i => i.ItemId == oldItemState.ItemId);
+
+                var newTelemetry = GetOnlyTrackedStates(item, newItemState.States);
+                var oldTelemetry = GetOnlyTrackedStates(item, oldItemState.States);
 
                 var addedParameters = newTelemetry.Keys.Except(oldTelemetry.Keys).ToList();
                 var removedParameters = oldTelemetry.Keys.Except(newTelemetry.Keys).ToList();
                 var updatedParameters = newTelemetry.Keys.Except(addedParameters).ToList();
 
-                if (oldDevice.ConnectionStatus != newDevice.ConnectionStatus)
-                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueUpdated, newDevice.ItemType,
-                        newDevice.ItemId, nameof(newDevice.ConnectionStatus), oldDevice.ConnectionStatus.ToString(),
-                        newDevice.ConnectionStatus.ToString()));
+                if (oldItemState.ConnectionStatus != newItemState.ConnectionStatus)
+                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueUpdated, newItemState.ItemType,
+                        newItemState.ItemId, nameof(newItemState.ConnectionStatus), oldItemState.ConnectionStatus.ToString(),
+                        newItemState.ConnectionStatus.ToString()));
 
                 foreach (var removedParameter in removedParameters)
                 {
-                    var oldValue = oldTelemetry[removedParameter];
+                    var oldValueString = GetValueString(oldTelemetry[removedParameter]);
 
-                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueRemoved, newDevice.ItemType,
-                        newDevice.ItemId, removedParameter, oldValue?.ToString(), null));
+                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueRemoved, newItemState.ItemType,
+                        newItemState.ItemId, removedParameter, oldValueString, null));
                 }
 
                 foreach (var addedParameter in addedParameters)
                 {
-                    var newValue = newTelemetry[addedParameter];
+                    var newValueString = GetValueString(newTelemetry[addedParameter]);
 
-                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueAdded, newDevice.ItemType,
-                        newDevice.ItemId, addedParameter, null, newValue?.ToString()));
+                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueAdded, newItemState.ItemType,
+                        newItemState.ItemId, addedParameter, null, newValueString));
                 }
 
                 foreach (var updatedParameter in updatedParameters)
                 {
-                    Type type;
+                    var areEqual = ObjectsAreEqual(oldTelemetry[updatedParameter], newTelemetry[updatedParameter]);
 
-                    if (oldTelemetry[updatedParameter] != null)
-                        type = oldTelemetry[updatedParameter].GetType();
-                    else if (newTelemetry[updatedParameter] != null)
-                        type = newTelemetry[updatedParameter].GetType();
-                    else //Both are null => no changes
-                        continue;
-
-                    var comparer = new ObjectsComparer.Comparer();
-
-                    var isEqual = comparer.Compare(type, oldTelemetry[updatedParameter], newTelemetry[updatedParameter]);
-
-                    var oldValue = oldTelemetry[updatedParameter]?.ToString();
-                    var newValue = newTelemetry[updatedParameter]?.ToString();
-
-                    if (!isEqual)
+                    if (!areEqual)
                     {
+                        var oldValueString = GetValueString(oldTelemetry[updatedParameter]);
+                        var newValueString = GetValueString(newTelemetry[updatedParameter]);
+
                         if (!_stateContainerTransformer.ParameterIsTransformed(updatedDevice, updatedParameter))
                             NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueUpdated,
-                                newDevice.ItemType, newDevice.ItemId, updatedParameter, oldValue, newValue));
+                                newItemState.ItemType, newItemState.ItemId, updatedParameter, oldValueString,
+                                newValueString));
                     }
                 }
             }
+        }
+
+        private Dictionary<string, object> GetOnlyTrackedStates(IStateGettable item, Dictionary<string, object> states)
+        {
+            if (item == null || item.UntrackedFields == null || !item.UntrackedFields.Any())
+                return states;
+
+            return states.Where(p => !item.UntrackedFields.Contains(p.Key))
+                         .ToDictionary(pair => pair.Key, pair => pair.Value);
+        }
+
+        private bool ObjectsAreEqual(object obj1, object obj2)
+        {
+            //TODO test this method. Maybe it's faster just to serialize objects.
+            Type type;
+
+            if (obj1 != null)
+                type = obj1.GetType();
+            else if (obj2 != null)
+                type = obj2.GetType();
+            else //Both are null => no changes
+                return true;
+
+            var obj1IsDict = IsDictionary(obj1);
+            var obj2IsDict = IsDictionary(obj2);
+
+            if (obj1IsDict && obj2IsDict)
+            {
+                var obj1String = JsonConvert.SerializeObject(obj1);
+                var obj2String = JsonConvert.SerializeObject(obj2);
+
+                return obj1String == obj2String;
+            }
+            
+            if (obj1IsDict || obj2IsDict)
+                return false;
+
+            var comparer = new ObjectsComparer.Comparer();
+
+            var isEqual = comparer.Compare(type, obj1, obj2);
+
+            return isEqual;
+        }
+
+        private bool IsDictionary(object obj)
+        {
+            if (obj == null) 
+                return false;
+
+            return obj is IDictionary &&
+                   obj.GetType().IsGenericType &&
+                   obj.GetType().GetGenericTypeDefinition().IsAssignableFrom(typeof(Dictionary<,>));
+        }
+
+        private string GetValueString(object value)
+        {
+            if (value == null)
+                return null;
+
+            if (IsSimpleType(value.GetType()))
+                return value.ToString();
+
+            try
+            {
+                var serialized = JsonConvert.SerializeObject(value);
+
+                return serialized;
+            }
+            catch (Exception e)
+            {
+                _logger.Error(e);
+            }
+
+            return null;
+        }
+
+        public bool IsSimpleType(Type type)
+        {
+            return
+                type.IsPrimitive ||
+                type == typeof(string) ||
+                type == typeof(decimal) ||
+                type == typeof(DateTime) ||
+                type == typeof(DateTimeOffset) ||
+                type == typeof(TimeSpan) ||
+                type == typeof(Guid) ||
+                type.IsEnum ||
+                Convert.GetTypeCode(type) != TypeCode.Object ||
+                (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>) &&
+                 IsSimpleType(type.GetGenericArguments()[0]));
         }
 
         public void RegisterSubscriber(IStateChangedSubscriber subscriber)
