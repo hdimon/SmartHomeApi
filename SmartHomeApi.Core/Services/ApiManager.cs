@@ -362,10 +362,23 @@ namespace SmartHomeApi.Core.Services
 
                 foreach (var updatedParameter in updatedParameters)
                 {
+                    Type type;
+
+                    if (oldTelemetry[updatedParameter] != null)
+                        type = oldTelemetry[updatedParameter].GetType();
+                    else if (newTelemetry[updatedParameter] != null)
+                        type = newTelemetry[updatedParameter].GetType();
+                    else //Both are null => no changes
+                        continue;
+
+                    var comparer = new ObjectsComparer.Comparer();
+
+                    var isEqual = comparer.Compare(type, oldTelemetry[updatedParameter], newTelemetry[updatedParameter]);
+
                     var oldValue = oldTelemetry[updatedParameter]?.ToString();
                     var newValue = newTelemetry[updatedParameter]?.ToString();
 
-                    if (oldValue != newValue)
+                    if (!isEqual)
                     {
                         if (!_stateContainerTransformer.ParameterIsTransformed(updatedDevice, updatedParameter))
                             NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueUpdated,
