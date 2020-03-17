@@ -13,7 +13,7 @@ namespace SmartHomeApi.Core.Services
     public class ApiManager : IApiManager
     {
         private readonly ISmartHomeApiFabric _fabric;
-        private IStatesContainer _state;
+        private ApiManagerStateContainer _stateContainer;
         private Task _worker;
         private readonly ReaderWriterLock _readerWriterLock = new ReaderWriterLock();
         private readonly List<IStateChangedSubscriber> _stateChangedSubscribers = new List<IStateChangedSubscriber>();
@@ -28,7 +28,10 @@ namespace SmartHomeApi.Core.Services
         {
             _fabric = fabric;
             _logger = _fabric.GetApiLogger();
-            _state = CreateStatesContainer();
+
+            var state = CreateStatesContainer();
+            _stateContainer = new ApiManagerStateContainer(state);
+
             _stateContainerTransformer = _fabric.GetStateContainerTransformer();
         }
 
@@ -124,30 +127,48 @@ namespace SmartHomeApi.Core.Services
 
         public async Task<IStatesContainer> GetState(bool transform = false)
         {
-            var state = GetStateSafely();
+            var stateContainer = GetStateSafely();
 
-            state = await TransformStateIfRequired(state, transform);
+            var state = await TransformStateIfRequired(stateContainer.State, transform);
+
+            state = (IStatesContainer)state.Clone();
+
+            var trState = new Dictionary<string, IItemState>();
+
+            foreach (var itemStatePair in state.States)
+            {
+                var st = await FilterOutUntrackableStates(itemStatePair.Value);
+                trState.Add(itemStatePair.Key, st);
+            }
+
+            state.States = trState;
 
             return state;
         }
 
-        public async Task<IItemState> GetState(string deviceId, bool transform = false)
+        public async Task<IItemState> GetState(string itemId, bool transform = false)
         {
-            var state = GetStateSafely();
+            var stateContainer = GetStateSafely();
 
-            state = await TransformStateIfRequired(state, transform);
+            var state = await TransformStateIfRequired(stateContainer.State, transform);
 
-            if (state.States.ContainsKey(deviceId))
-                return state.States[deviceId];
+            if (state.States.ContainsKey(itemId))
+            {
+                var itemState = state.States[itemId];
 
-            return new ItemState(deviceId, string.Empty);
+                itemState = await FilterOutUntrackableStates(itemState);
+
+                return itemState;
+            }
+
+            return new ItemState(itemId, string.Empty);
         }
 
         public async Task<object> GetState(string deviceId, string parameter, bool transform = false)
         {
-            var state = GetStateSafely();
+            var stateContainer = GetStateSafely();
 
-            state = await TransformStateIfRequired(state, transform);
+            var state = await TransformStateIfRequired(stateContainer.State, transform);
 
             if (state.States.ContainsKey(deviceId))
             {
@@ -158,6 +179,21 @@ namespace SmartHomeApi.Core.Services
             }
 
             return string.Empty;
+        }
+
+        private async Task<IItemState> FilterOutUntrackableStates(IItemState itemState)
+        {
+            var gettableItems = await GetGettableItems();
+            var gettableItem = gettableItems.FirstOrDefault(i => i.ItemId == itemState.ItemId);
+
+            if (gettableItem == null)
+                return itemState;
+
+            var state = (IItemState)itemState.Clone();
+            var trackedStates = GetOnlyTrackedStates(gettableItem, state.States);
+            state.States = trackedStates;
+
+            return state;
         }
 
         public async Task<IList<IItem>> GetItems()
@@ -173,15 +209,15 @@ namespace SmartHomeApi.Core.Services
             return new DeviceStatesContainer();
         }
 
-        private IStatesContainer GetStateSafely()
+        private ApiManagerStateContainer GetStateSafely()
         {
             _readerWriterLock.AcquireReaderLock(Timeout.Infinite);
 
-            IStatesContainer state = _state;
+            ApiManagerStateContainer stateContainer = _stateContainer;
 
             _readerWriterLock.ReleaseReaderLock();
 
-            return state;
+            return stateContainer;
         }
 
         private void RunStatesCollectorWorker()
@@ -205,12 +241,10 @@ namespace SmartHomeApi.Core.Services
 
                 try
                 {
-                    var itemsLocator = _fabric.GetItemsLocator();
-                    var items = await GetItems(itemsLocator);
                     var state = CreateStatesContainer();
+                    var stateContainer = new ApiManagerStateContainer(state);
 
-                    var gettableItems = items.Where(d => d is IStateGettable).Cast<IStateGettable>()
-                                             .OrderBy(i => i.ItemType).ThenBy(i => i.ItemId).ToList();
+                    var gettableItems = await GetGettableItems();
 
                     foreach (var item in gettableItems)
                     {
@@ -219,6 +253,12 @@ namespace SmartHomeApi.Core.Services
                             var deviceState = item.GetState();
 
                             state.States.Add(deviceState.ItemId, deviceState);
+
+                            if (item.UntrackedFields != null && item.UntrackedFields.Any())
+                                stateContainer.UntrackedStates.Add(item.ItemId, item.UntrackedFields);
+
+                            if (item.UncachedFields != null && item.UncachedFields.Any())
+                                stateContainer.UncachedStates.Add(item.ItemId, item.UncachedFields);
                         }
                         catch (Exception e)
                         {
@@ -227,9 +267,11 @@ namespace SmartHomeApi.Core.Services
                     }
 
                     var oldState = await GetState();
-                    SetStateSafely(state);
+                    var oldStateContainer = GetStateSafely();
+                    oldStateContainer.State = oldState;
+                    SetStateSafely(stateContainer);
 
-                    NotifySubscribersAboutChanges(oldState, gettableItems);
+                    NotifySubscribersAboutChanges(oldStateContainer, gettableItems);
                 }
                 catch (Exception e)
                 {
@@ -238,13 +280,13 @@ namespace SmartHomeApi.Core.Services
             }
         }
 
-        private void SetStateSafely(IStatesContainer state)
+        private void SetStateSafely(ApiManagerStateContainer stateContainer)
         {
             try
             {
                 _readerWriterLock.AcquireWriterLock(Timeout.Infinite);
 
-                _state = state;
+                _stateContainer = stateContainer;
             }
             catch (Exception e)
             {
@@ -266,6 +308,17 @@ namespace SmartHomeApi.Core.Services
             return transformableItems;
         }
 
+        private async Task<List<IStateGettable>> GetGettableItems()
+        {
+            var itemsLocator = _fabric.GetItemsLocator();
+            var items = await GetItems(itemsLocator);
+
+            var gettableItems = items.Where(d => d is IStateGettable).Cast<IStateGettable>()
+                                     .OrderBy(i => i.ItemType).ThenBy(i => i.ItemId).ToList();
+
+            return gettableItems;
+        }
+
         private async Task<IStatesContainer> TransformStateIfRequired(IStatesContainer state, bool transform)
         {
             if (!transform)
@@ -282,29 +335,28 @@ namespace SmartHomeApi.Core.Services
             return state;
         }
 
-        private void NotifySubscribersAboutChanges(IStatesContainer oldState, List<IStateGettable> gettableItems)
+        private void NotifySubscribersAboutChanges(ApiManagerStateContainer oldStateContainer, List<IStateGettable> gettableItems)
         {
-            var newStates = _state.States;
-            var oldStates = oldState.States;
+            var newStates = _stateContainer.State.States;
+            var oldStates = oldStateContainer.State.States;
 
             var addedDevices = newStates.Keys.Except(oldStates.Keys).ToList();
             var removedDevices = oldStates.Keys.Except(newStates.Keys).ToList();
             var updatedDevices = newStates.Keys.Except(addedDevices).ToList();
 
-            NotifySubscribersAboutRemovedDevices(gettableItems, removedDevices, oldStates);
-            NotifySubscribersAboutAddedDevices(gettableItems, addedDevices, newStates);
-            NotifySubscribersAboutUpdatedDevices(gettableItems, updatedDevices, newStates, oldStates);
+            NotifySubscribersAboutRemovedDevices(removedDevices, oldStateContainer);
+            NotifySubscribersAboutAddedDevices(addedDevices, _stateContainer);
+            NotifySubscribersAboutUpdatedDevices(updatedDevices, oldStateContainer, _stateContainer);
         }
 
-        private void NotifySubscribersAboutRemovedDevices(List<IStateGettable> gettableItems,
-            List<string> removedDevices, Dictionary<string, IItemState> oldStates)
+        private void NotifySubscribersAboutRemovedDevices(List<string> removedDevices,
+            ApiManagerStateContainer oldStateContainer)
         {
             foreach (var removedDevice in removedDevices)
             {
-                var itemState = oldStates[removedDevice];
-                var item = gettableItems.FirstOrDefault(i => i.ItemId == itemState.ItemId);
+                var itemState = oldStateContainer.State.States[removedDevice];
 
-                var trackedStates = GetOnlyTrackedStates(item, itemState.States);
+                var trackedStates = GetOnlyTrackedStates(oldStateContainer.UntrackedStates, itemState);
 
                 foreach (var telemetryPair in trackedStates)
                 {
@@ -316,15 +368,14 @@ namespace SmartHomeApi.Core.Services
             }
         }
 
-        private void NotifySubscribersAboutAddedDevices(List<IStateGettable> gettableItems, List<string> addedDevices,
-            Dictionary<string, IItemState> newStates)
+        private void NotifySubscribersAboutAddedDevices(List<string> addedDevices,
+            ApiManagerStateContainer newStateContainer)
         {
             foreach (var addedDevice in addedDevices)
             {
-                var itemState = newStates[addedDevice];
-                var item = gettableItems.FirstOrDefault(i => i.ItemId == itemState.ItemId);
+                var itemState = newStateContainer.State.States[addedDevice];
 
-                var trackedStates = GetOnlyTrackedStates(item, itemState.States);
+                var trackedStates = GetOnlyTrackedStates(newStateContainer.UntrackedStates, itemState);
 
                 foreach (var telemetryPair in trackedStates)
                 {
@@ -336,19 +387,16 @@ namespace SmartHomeApi.Core.Services
             }
         }
 
-        private void NotifySubscribersAboutUpdatedDevices(List<IStateGettable> gettableItems,
-            List<string> updatedDevices, Dictionary<string, IItemState> newStates,
-            Dictionary<string, IItemState> oldStates)
+        private void NotifySubscribersAboutUpdatedDevices(List<string> updatedDevices,
+            ApiManagerStateContainer oldStateContainer, ApiManagerStateContainer newStateContainer)
         {
             foreach (var updatedDevice in updatedDevices)
             {
-                var newItemState = newStates[updatedDevice];
-                var oldItemState = oldStates[updatedDevice];
+                var newItemState = newStateContainer.State.States[updatedDevice];
+                var oldItemState = oldStateContainer.State.States[updatedDevice];
 
-                var item = gettableItems.FirstOrDefault(i => i.ItemId == oldItemState.ItemId);
-
-                var newTelemetry = GetOnlyTrackedStates(item, newItemState.States);
-                var oldTelemetry = GetOnlyTrackedStates(item, oldItemState.States);
+                var newTelemetry = GetOnlyTrackedStates(newStateContainer.UntrackedStates, newItemState);
+                var oldTelemetry = GetOnlyTrackedStates(oldStateContainer.UntrackedStates, oldItemState);
 
                 var addedParameters = newTelemetry.Keys.Except(oldTelemetry.Keys).ToList();
                 var removedParameters = oldTelemetry.Keys.Except(newTelemetry.Keys).ToList();
@@ -356,7 +404,8 @@ namespace SmartHomeApi.Core.Services
 
                 if (oldItemState.ConnectionStatus != newItemState.ConnectionStatus)
                     NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueUpdated, newItemState.ItemType,
-                        newItemState.ItemId, nameof(newItemState.ConnectionStatus), oldItemState.ConnectionStatus.ToString(),
+                        newItemState.ItemId, nameof(newItemState.ConnectionStatus),
+                        oldItemState.ConnectionStatus.ToString(),
                         newItemState.ConnectionStatus.ToString()));
 
                 foreach (var removedParameter in removedParameters)
@@ -400,6 +449,20 @@ namespace SmartHomeApi.Core.Services
 
             return states.Where(p => !item.UntrackedFields.Contains(p.Key))
                          .ToDictionary(pair => pair.Key, pair => pair.Value);
+        }
+
+        private Dictionary<string, object> GetOnlyTrackedStates(Dictionary<string, IList<string>> untrackedStates,
+            IItemState itemState)
+        {
+            var untrackedFields = untrackedStates.ContainsKey(itemState.ItemId)
+                ? untrackedStates[itemState.ItemId]
+                : null;
+
+            if (untrackedFields == null || !untrackedFields.Any())
+                return itemState.States;
+
+            return itemState.States.Where(p => !untrackedFields.Contains(p.Key))
+                            .ToDictionary(pair => pair.Key, pair => pair.Value);
         }
 
         private bool ObjectsAreEqual(object obj1, object obj2)
@@ -502,6 +565,21 @@ namespace SmartHomeApi.Core.Services
                     {
                         _logger.Error(t.Exception);
                     }, TaskContinuationOptions.OnlyOnFaulted);
+            }
+        }
+
+        private class ApiManagerStateContainer
+        {
+            public IStatesContainer State { get; set; }
+
+            public Dictionary<string, IList<string>> UntrackedStates { get; set; } =
+                new Dictionary<string, IList<string>>();
+            public Dictionary<string, IList<string>> UncachedStates { get; set; } =
+                new Dictionary<string, IList<string>>();
+
+            public ApiManagerStateContainer(IStatesContainer state)
+            {
+                State = state;
             }
         }
     }
