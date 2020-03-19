@@ -108,11 +108,20 @@ namespace SmartHomeApi.Core.Services
 
             NotifySubscribers(ev);
 
-            var result = await not.SetValue(parameter, value);
+            ISetValueResult result = null;
+
+            try
+            {
+                result = await not.SetValue(parameter, value);
+            }
+            catch (Exception e)
+            {
+                _logger.Error(e);
+            }
 
             _stateContainerTransformer.RemoveStateChangedEvent(ev);
 
-            return result;
+            return result ?? new SetValueResult(false);
         }
 
         public async Task<ISetValueResult> Increase(string deviceId, string parameter)
