@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using SmartHomeApi.Core.Interfaces;
 
 namespace SmartHomeApi.Core
@@ -11,6 +12,11 @@ namespace SmartHomeApi.Core
         public SmartHomeApiDefaultFabric(IServiceProvider provider)
         {
             _provider = provider;
+        }
+
+        public AppSettings GetConfiguration()
+        {
+            return _provider.GetService<IOptionsMonitor<AppSettings>>().CurrentValue;
         }
 
         public IItemsPluginsLocator GetItemsPluginsLocator()

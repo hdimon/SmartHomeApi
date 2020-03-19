@@ -2,6 +2,7 @@
 {
     public interface ISmartHomeApiFabric
     {
+        AppSettings GetConfiguration();
         IItemsPluginsLocator GetItemsPluginsLocator();
         IItemsLocator GetItemsLocator();
         IItemsConfigLocator GetItemsConfigsLocator();

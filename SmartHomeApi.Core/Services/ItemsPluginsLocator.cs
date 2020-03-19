@@ -40,6 +40,11 @@ namespace SmartHomeApi.Core.Services
                 Directory.Delete(_tempPluginsDirectory, true);
 
             Directory.CreateDirectory(_tempPluginsDirectory);
+            
+            var config = fabric.GetConfiguration();
+
+            _softPluginsLoading = config.SoftPluginsLoading;
+            //_logger.Info($"SoftPluginsLoading = {config.SoftPluginsLoading}");
 
             _fabric = fabric;
             _logger = fabric.GetApiLogger();
