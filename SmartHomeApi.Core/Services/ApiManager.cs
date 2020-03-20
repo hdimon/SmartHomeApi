@@ -18,6 +18,7 @@ namespace SmartHomeApi.Core.Services
         private readonly IApiLogger _logger;
         private readonly IStatesContainerTransformer _stateContainerTransformer;
         private readonly INotificationsProcessor _notificationsProcessor;
+        private readonly IUntrackedStatesProcessor _untrackedStatesProcessor;
         private readonly CancellationTokenSource _disposingCancellationTokenSource = new CancellationTokenSource();
 
         public string ItemType => null;
@@ -27,12 +28,14 @@ namespace SmartHomeApi.Core.Services
         {
             _fabric = fabric;
             _logger = _fabric.GetApiLogger();
+            _stateContainerTransformer = _fabric.GetStateContainerTransformer();
             _notificationsProcessor = _fabric.GetNotificationsProcessor();
+            _untrackedStatesProcessor = _fabric.GetUntrackedStatesProcessor();
 
             var state = CreateStatesContainer();
             _stateContainer = new ApiManagerStateContainer(state);
 
-            _stateContainerTransformer = _fabric.GetStateContainerTransformer();
+            
         }
 
         public bool IsInitialized { get; private set; }
@@ -269,7 +272,7 @@ namespace SmartHomeApi.Core.Services
                     var stateContainer = new ApiManagerStateContainer(state);
 
                     var gettableItems = await GetGettableItems();
-                    AddUntrackedItemsFromConfig(stateContainer);
+                    _untrackedStatesProcessor.AddUntrackedItemsFromConfig(stateContainer);
                     AddUncachedItemsFromConfig(stateContainer);
 
                     foreach (var item in gettableItems)
@@ -299,42 +302,13 @@ namespace SmartHomeApi.Core.Services
 
                 state.States.Add(deviceState.ItemId, deviceState);
 
-                AddUntrackedStatesFromItem(item, stateContainer);
+                _untrackedStatesProcessor.AddUntrackedStatesFromItem(item, stateContainer);
                 AddUncachedStatesFromItem(item, stateContainer);
             }
             catch (Exception e)
             {
                 _logger.Error(e, "Error when collecting items states.");
             }
-        }
-
-        private static void AddUntrackedStatesFromItem(IStateGettable item, ApiManagerStateContainer stateContainer)
-        {
-            if (item.UntrackedFields == null || !item.UntrackedFields.Any())
-                return;
-
-            if (stateContainer.UntrackedStates.ContainsKey(item.ItemId))
-            {
-                var untrackedItem = stateContainer.UntrackedStates[item.ItemId];
-
-                //If null then whole Item is untracked if not null then merge states
-                if (untrackedItem.ApplyOnlyEnumeratedStates)
-                {
-                    foreach (var itemUntrackedField in item.UntrackedFields)
-                    {
-                        if (!untrackedItem.States.Contains(itemUntrackedField))
-                            untrackedItem.States.Add(itemUntrackedField);
-                    }
-                }
-            }
-            else
-                stateContainer.UntrackedStates.Add(item.ItemId,
-                    new AppSettingItemInfo
-                    {
-                        ItemId = item.ItemId,
-                        ApplyOnlyEnumeratedStates = true,
-                        States = item.UntrackedFields.ToList()
-                    });
         }
 
         private static void AddUncachedStatesFromItem(IStateGettable item, ApiManagerStateContainer stateContainer)
@@ -364,23 +338,6 @@ namespace SmartHomeApi.Core.Services
                         ApplyOnlyEnumeratedStates = true,
                         States = item.UncachedFields.ToList()
                     });
-        }
-
-        private void AddUntrackedItemsFromConfig(ApiManagerStateContainer stateContainer)
-        {
-            var untrackedItems = _fabric.GetConfiguration().UntrackedItems;
-
-            foreach (var untrackedItem in untrackedItems)
-            {
-                if (string.IsNullOrWhiteSpace(untrackedItem.ItemId) ||
-                    stateContainer.UntrackedStates.ContainsKey(untrackedItem.ItemId))
-                    continue;
-
-                if (untrackedItem.ApplyOnlyEnumeratedStates && untrackedItem.States == null)
-                    untrackedItem.States = new List<string>();
-
-                stateContainer.UntrackedStates.Add(untrackedItem.ItemId, untrackedItem);
-            }
         }
 
         private void AddUncachedItemsFromConfig(ApiManagerStateContainer stateContainer)

@@ -65,5 +65,10 @@ namespace SmartHomeApi.Core
         {
             return _provider.GetService<INotificationsProcessor>();
         }
+
+        public IUntrackedStatesProcessor GetUntrackedStatesProcessor()
+        {
+            return _provider.GetService<IUntrackedStatesProcessor>();
+        }
     }
 }
