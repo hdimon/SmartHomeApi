@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Common.Utils;
 using Newtonsoft.Json;
 using SmartHomeApi.Core.Interfaces;
 using SmartHomeApi.Core.Interfaces.Configuration;
@@ -604,8 +604,8 @@ namespace SmartHomeApi.Core.Services
             else //Both are null => no changes
                 return true;
 
-            var obj1IsDict = IsDictionary(obj1);
-            var obj2IsDict = IsDictionary(obj2);
+            var obj1IsDict = TypeHelper.IsDictionary(obj1);
+            var obj2IsDict = TypeHelper.IsDictionary(obj2);
 
             if (obj1IsDict && obj2IsDict)
             {
@@ -625,22 +625,12 @@ namespace SmartHomeApi.Core.Services
             return isEqual;
         }
 
-        private bool IsDictionary(object obj)
-        {
-            if (obj == null) 
-                return false;
-
-            return obj is IDictionary &&
-                   obj.GetType().IsGenericType &&
-                   obj.GetType().GetGenericTypeDefinition().IsAssignableFrom(typeof(Dictionary<,>));
-        }
-
         private string GetValueString(object value)
         {
             if (value == null)
                 return null;
 
-            if (IsSimpleType(value.GetType()))
+            if (TypeHelper.IsSimpleType(value.GetType()))
                 return value.ToString();
 
             try
@@ -655,22 +645,6 @@ namespace SmartHomeApi.Core.Services
             }
 
             return null;
-        }
-
-        public bool IsSimpleType(Type type)
-        {
-            return
-                type.IsPrimitive ||
-                type == typeof(string) ||
-                type == typeof(decimal) ||
-                type == typeof(DateTime) ||
-                type == typeof(DateTimeOffset) ||
-                type == typeof(TimeSpan) ||
-                type == typeof(Guid) ||
-                type.IsEnum ||
-                Convert.GetTypeCode(type) != TypeCode.Object ||
-                (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>) &&
-                 IsSimpleType(type.GetGenericArguments()[0]));
         }
 
         public void RegisterSubscriber(IStateChangedSubscriber subscriber)
