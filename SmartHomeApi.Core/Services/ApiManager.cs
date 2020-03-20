@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Common.Utils;
-using Newtonsoft.Json;
 using SmartHomeApi.Core.Interfaces;
 using SmartHomeApi.Core.Interfaces.Configuration;
 using SmartHomeApi.Core.Models;
@@ -17,9 +15,9 @@ namespace SmartHomeApi.Core.Services
         private ApiManagerStateContainer _stateContainer;
         private Task _worker;
         private readonly ReaderWriterLock _readerWriterLock = new ReaderWriterLock();
-        private readonly List<IStateChangedSubscriber> _stateChangedSubscribers = new List<IStateChangedSubscriber>();
         private readonly IApiLogger _logger;
         private readonly IStatesContainerTransformer _stateContainerTransformer;
+        private readonly INotificationsProcessor _notificationsProcessor;
         private readonly CancellationTokenSource _disposingCancellationTokenSource = new CancellationTokenSource();
 
         public string ItemType => null;
@@ -29,6 +27,7 @@ namespace SmartHomeApi.Core.Services
         {
             _fabric = fabric;
             _logger = _fabric.GetApiLogger();
+            _notificationsProcessor = _fabric.GetNotificationsProcessor();
 
             var state = CreateStatesContainer();
             _stateContainer = new ApiManagerStateContainer(state);
@@ -107,7 +106,7 @@ namespace SmartHomeApi.Core.Services
 
             _stateContainerTransformer.AddStateChangedEvent(ev);
 
-            NotifySubscribers(ev);
+            _notificationsProcessor.NotifySubscribers(ev);
 
             ISetValueResult result = null;
 
@@ -164,7 +163,7 @@ namespace SmartHomeApi.Core.Services
 
             var state = await TransformStateIfRequired(stateContainer.State, transform);
 
-            if (!state.States.ContainsKey(itemId)) 
+            if (!state.States.ContainsKey(itemId))
                 return new ItemState(itemId, string.Empty);
 
             var itemState = state.States[itemId];
@@ -195,7 +194,8 @@ namespace SmartHomeApi.Core.Services
             return string.Empty;
         }
 
-        private async Task<IItemState> FilterOutUncachedStates(IItemState itemState, ApiManagerStateContainer stateContainer)
+        private async Task<IItemState> FilterOutUncachedStates(IItemState itemState,
+            ApiManagerStateContainer stateContainer)
         {
             if (!stateContainer.UncachedStates.ContainsKey(itemState.ItemId))
                 return itemState;
@@ -252,10 +252,7 @@ namespace SmartHomeApi.Core.Services
             if (_worker == null || _worker.IsCompleted)
             {
                 _worker = Task.Factory.StartNew(CollectItemsStates).Unwrap().ContinueWith(
-                    t =>
-                    {
-                        _logger.Error(t.Exception);
-                    },
+                    t => { _logger.Error(t.Exception); },
                     TaskContinuationOptions.OnlyOnFaulted);
             }
         }
@@ -283,7 +280,7 @@ namespace SmartHomeApi.Core.Services
                     var oldStateContainer = GetStateSafely();
                     SetStateSafely(stateContainer);
 
-                    NotifySubscribersAboutChanges(oldStateContainer);
+                    _notificationsProcessor.NotifySubscribersAboutChanges(oldStateContainer, _stateContainer);
                 }
                 catch (Exception e)
                 {
@@ -313,7 +310,7 @@ namespace SmartHomeApi.Core.Services
 
         private static void AddUntrackedStatesFromItem(IStateGettable item, ApiManagerStateContainer stateContainer)
         {
-            if (item.UntrackedFields == null || !item.UntrackedFields.Any()) 
+            if (item.UntrackedFields == null || !item.UntrackedFields.Any())
                 return;
 
             if (stateContainer.UntrackedStates.ContainsKey(item.ItemId))
@@ -334,7 +331,7 @@ namespace SmartHomeApi.Core.Services
                 stateContainer.UntrackedStates.Add(item.ItemId,
                     new AppSettingItemInfo
                     {
-                        ItemId = item.ItemId, 
+                        ItemId = item.ItemId,
                         ApplyOnlyEnumeratedStates = true,
                         States = item.UntrackedFields.ToList()
                     });
@@ -363,7 +360,7 @@ namespace SmartHomeApi.Core.Services
                 stateContainer.UncachedStates.Add(item.ItemId,
                     new AppSettingItemInfo
                     {
-                        ItemId = item.ItemId, 
+                        ItemId = item.ItemId,
                         ApplyOnlyEnumeratedStates = true,
                         States = item.UncachedFields.ToList()
                     });
@@ -458,230 +455,19 @@ namespace SmartHomeApi.Core.Services
             return state;
         }
 
-        private void NotifySubscribersAboutChanges(ApiManagerStateContainer oldStateContainer)
-        {
-            var newStates = _stateContainer.State.States;
-            var oldStates = oldStateContainer.State.States;
-
-            var addedDevices = newStates.Keys.Except(oldStates.Keys).ToList();
-            var removedDevices = oldStates.Keys.Except(newStates.Keys).ToList();
-            var updatedDevices = newStates.Keys.Except(addedDevices).ToList();
-
-            NotifySubscribersAboutRemovedDevices(removedDevices, oldStateContainer);
-            NotifySubscribersAboutAddedDevices(addedDevices, _stateContainer);
-            NotifySubscribersAboutUpdatedDevices(updatedDevices, oldStateContainer, _stateContainer);
-        }
-
-        private void NotifySubscribersAboutRemovedDevices(List<string> removedDevices,
-            ApiManagerStateContainer oldStateContainer)
-        {
-            foreach (var removedDevice in removedDevices)
-            {
-                var itemState = oldStateContainer.State.States[removedDevice];
-
-                var trackedStates = GetOnlyTrackedStates(oldStateContainer.UntrackedStates, itemState);
-
-                foreach (var telemetryPair in trackedStates)
-                {
-                    var valueString = GetValueString(telemetryPair.Value);
-
-                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueRemoved, itemState.ItemType,
-                        itemState.ItemId, telemetryPair.Key, valueString, null));
-                }
-            }
-        }
-
-        private void NotifySubscribersAboutAddedDevices(List<string> addedDevices,
-            ApiManagerStateContainer newStateContainer)
-        {
-            foreach (var addedDevice in addedDevices)
-            {
-                var itemState = newStateContainer.State.States[addedDevice];
-
-                var trackedStates = GetOnlyTrackedStates(newStateContainer.UntrackedStates, itemState);
-
-                foreach (var telemetryPair in trackedStates)
-                {
-                    var valueString = GetValueString(telemetryPair.Value);
-
-                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueAdded, itemState.ItemType,
-                        itemState.ItemId, telemetryPair.Key, null, valueString));
-                }
-            }
-        }
-
-        private void NotifySubscribersAboutUpdatedDevices(List<string> updatedDevices,
-            ApiManagerStateContainer oldStateContainer, ApiManagerStateContainer newStateContainer)
-        {
-            foreach (var updatedDevice in updatedDevices)
-            {
-                var newItemState = newStateContainer.State.States[updatedDevice];
-                var oldItemState = oldStateContainer.State.States[updatedDevice];
-
-                var newTelemetry = GetOnlyTrackedStates(newStateContainer.UntrackedStates, newItemState);
-                var oldTelemetry = GetOnlyTrackedStates(oldStateContainer.UntrackedStates, oldItemState);
-
-                var addedParameters = newTelemetry.Keys.Except(oldTelemetry.Keys).ToList();
-                var removedParameters = oldTelemetry.Keys.Except(newTelemetry.Keys).ToList();
-                var updatedParameters = newTelemetry.Keys.Except(addedParameters).ToList();
-
-                if (oldItemState.ConnectionStatus != newItemState.ConnectionStatus)
-                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueUpdated, newItemState.ItemType,
-                        newItemState.ItemId, nameof(newItemState.ConnectionStatus),
-                        oldItemState.ConnectionStatus.ToString(),
-                        newItemState.ConnectionStatus.ToString()));
-
-                foreach (var removedParameter in removedParameters)
-                {
-                    var oldValueString = GetValueString(oldTelemetry[removedParameter]);
-
-                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueRemoved, newItemState.ItemType,
-                        newItemState.ItemId, removedParameter, oldValueString, null));
-                }
-
-                foreach (var addedParameter in addedParameters)
-                {
-                    var newValueString = GetValueString(newTelemetry[addedParameter]);
-
-                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueAdded, newItemState.ItemType,
-                        newItemState.ItemId, addedParameter, null, newValueString));
-                }
-
-                foreach (var updatedParameter in updatedParameters)
-                {
-                    var areEqual = ObjectsAreEqual(oldTelemetry[updatedParameter], newTelemetry[updatedParameter]);
-
-                    if (!areEqual)
-                    {
-                        var oldValueString = GetValueString(oldTelemetry[updatedParameter]);
-                        var newValueString = GetValueString(newTelemetry[updatedParameter]);
-
-                        if (!_stateContainerTransformer.ParameterIsTransformed(updatedDevice, updatedParameter))
-                            NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueUpdated,
-                                newItemState.ItemType, newItemState.ItemId, updatedParameter, oldValueString,
-                                newValueString));
-                    }
-                }
-            }
-        }
-
-        private Dictionary<string, object> GetOnlyTrackedStates(IStateGettable item, Dictionary<string, object> states)
-        {
-            if (item == null || item.UntrackedFields == null || !item.UntrackedFields.Any())
-                return states;
-
-            return states.Where(p => !item.UntrackedFields.Contains(p.Key))
-                         .ToDictionary(pair => pair.Key, pair => pair.Value);
-        }
-
-        private Dictionary<string, object> GetOnlyTrackedStates(Dictionary<string, AppSettingItemInfo> untrackedStates,
-            IItemState itemState)
-        {
-            if (!untrackedStates.ContainsKey(itemState.ItemId))
-                return itemState.States;
-
-            var untrackedFields = untrackedStates[itemState.ItemId];
-
-            if (!untrackedFields.ApplyOnlyEnumeratedStates) //It means item is not tracked at all
-                return new Dictionary<string, object>();
-
-            if (!untrackedFields.States.Any())
-                return itemState.States;
-
-            return itemState.States.Where(p => !untrackedFields.States.Contains(p.Key))
-                            .ToDictionary(pair => pair.Key, pair => pair.Value);
-        }
-
-        private bool ObjectsAreEqual(object obj1, object obj2)
-        {
-            //TODO test this method. Maybe it's faster just to serialize objects.
-            Type type;
-
-            if (obj1 != null)
-                type = obj1.GetType();
-            else if (obj2 != null)
-                type = obj2.GetType();
-            else //Both are null => no changes
-                return true;
-
-            var obj1IsDict = TypeHelper.IsDictionary(obj1);
-            var obj2IsDict = TypeHelper.IsDictionary(obj2);
-
-            if (obj1IsDict && obj2IsDict)
-            {
-                var obj1String = JsonConvert.SerializeObject(obj1);
-                var obj2String = JsonConvert.SerializeObject(obj2);
-
-                return obj1String == obj2String;
-            }
-            
-            if (obj1IsDict || obj2IsDict)
-                return false;
-
-            var comparer = new ObjectsComparer.Comparer();
-
-            var isEqual = comparer.Compare(type, obj1, obj2);
-
-            return isEqual;
-        }
-
-        private string GetValueString(object value)
-        {
-            if (value == null)
-                return null;
-
-            if (TypeHelper.IsSimpleType(value.GetType()))
-                return value.ToString();
-
-            try
-            {
-                var serialized = JsonConvert.SerializeObject(value);
-
-                return serialized;
-            }
-            catch (Exception e)
-            {
-                _logger.Error(e);
-            }
-
-            return null;
-        }
-
         public void RegisterSubscriber(IStateChangedSubscriber subscriber)
         {
-            _stateChangedSubscribers.Add(subscriber);
+            _notificationsProcessor.RegisterSubscriber(subscriber);
         }
 
         public void UnregisterSubscriber(IStateChangedSubscriber subscriber)
         {
-            _stateChangedSubscribers.Remove(subscriber);
+            _notificationsProcessor.UnregisterSubscriber(subscriber);
         }
 
         public void NotifySubscribers(StateChangedEvent args)
         {
-            foreach (var stateChangedSubscriber in _stateChangedSubscribers)
-            {
-                Task.Run(async () => await stateChangedSubscriber.Notify(args))
-                    .ContinueWith(t =>
-                    {
-                        _logger.Error(t.Exception);
-                    }, TaskContinuationOptions.OnlyOnFaulted);
-            }
-        }
-
-        private class ApiManagerStateContainer
-        {
-            public IStatesContainer State { get; set; }
-
-            public Dictionary<string, AppSettingItemInfo> UntrackedStates { get; set; } =
-                new Dictionary<string, AppSettingItemInfo>();
-            public Dictionary<string, AppSettingItemInfo> UncachedStates { get; set; } =
-                new Dictionary<string, AppSettingItemInfo>();
-
-            public ApiManagerStateContainer(IStatesContainer state)
-            {
-                State = state;
-            }
+            _notificationsProcessor.NotifySubscribers(args);
         }
     }
 }
