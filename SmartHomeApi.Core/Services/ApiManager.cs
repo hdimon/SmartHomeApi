@@ -23,6 +23,7 @@ namespace SmartHomeApi.Core.Services
 
         public string ItemType => null;
         public string ItemId => null;
+        public bool IsInitialized { get; private set; }
 
         public ApiManager(ISmartHomeApiFabric fabric)
         {
@@ -35,11 +36,7 @@ namespace SmartHomeApi.Core.Services
 
             var state = CreateStatesContainer();
             _stateContainer = new ApiManagerStateContainer(state);
-
-            
         }
-
-        public bool IsInitialized { get; private set; }
 
         public async Task Initialize()
         {
@@ -150,7 +147,7 @@ namespace SmartHomeApi.Core.Services
 
             foreach (var itemStatePair in state.States)
             {
-                var st = await FilterOutUncachedStates(itemStatePair.Value, stateContainer);
+                var st = _uncachedStatesProcessor.FilterOutUncachedStates(itemStatePair.Value, stateContainer);
 
                 if (st != null)
                     trState.Add(itemStatePair.Key, st);
@@ -172,7 +169,7 @@ namespace SmartHomeApi.Core.Services
 
             var itemState = state.States[itemId];
 
-            itemState = await FilterOutUncachedStates(itemState, stateContainer);
+            itemState = _uncachedStatesProcessor.FilterOutUncachedStates(itemState, stateContainer);
 
             if (itemState == null)
                 return new ItemState(itemId, string.Empty);
@@ -196,35 +193,6 @@ namespace SmartHomeApi.Core.Services
             }
 
             return string.Empty;
-        }
-
-        private async Task<IItemState> FilterOutUncachedStates(IItemState itemState,
-            ApiManagerStateContainer stateContainer)
-        {
-            if (!stateContainer.UncachedStates.ContainsKey(itemState.ItemId))
-                return itemState;
-
-            var state = (IItemState)itemState.Clone();
-
-            var uncachedState = stateContainer.UncachedStates[itemState.ItemId];
-
-            //If ApplyOnlyEnumeratedStates = false then whole Item in uncached
-            if (!uncachedState.ApplyOnlyEnumeratedStates)
-                return null;
-
-            var cachedStates = new Dictionary<string, object>();
-
-            foreach (var stateState in state.States)
-            {
-                if (uncachedState.States.Contains(stateState.Key))
-                    continue;
-
-                cachedStates.Add(stateState.Key, stateState.Value);
-            }
-
-            state.States = cachedStates;
-
-            return state;
         }
 
         public async Task<IList<IItem>> GetItems()
