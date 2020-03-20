@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SmartHomeApi.Core.Interfaces;
+using SmartHomeApi.Core.Interfaces.Configuration;
 using SmartHomeApi.Core.Models;
 
 namespace SmartHomeApi.Core.Services
@@ -146,8 +147,10 @@ namespace SmartHomeApi.Core.Services
 
             foreach (var itemStatePair in state.States)
             {
-                var st = await FilterOutUntrackableStates(itemStatePair.Value);
-                trState.Add(itemStatePair.Key, st);
+                var st = await FilterOutUncachedStates(itemStatePair.Value, stateContainer);
+
+                if (st != null)
+                    trState.Add(itemStatePair.Key, st);
             }
 
             state.States = trState;
@@ -161,16 +164,18 @@ namespace SmartHomeApi.Core.Services
 
             var state = await TransformStateIfRequired(stateContainer.State, transform);
 
-            if (state.States.ContainsKey(itemId))
-            {
-                var itemState = state.States[itemId];
+            if (!state.States.ContainsKey(itemId)) 
+                return new ItemState(itemId, string.Empty);
 
-                itemState = await FilterOutUntrackableStates(itemState);
+            var itemState = state.States[itemId];
 
-                return itemState;
-            }
+            itemState = await FilterOutUncachedStates(itemState, stateContainer);
 
-            return new ItemState(itemId, string.Empty);
+            if (itemState == null)
+                return new ItemState(itemId, string.Empty);
+
+            return itemState;
+
         }
 
         public async Task<object> GetState(string deviceId, string parameter, bool transform = false)
@@ -190,17 +195,30 @@ namespace SmartHomeApi.Core.Services
             return string.Empty;
         }
 
-        private async Task<IItemState> FilterOutUntrackableStates(IItemState itemState)
+        private async Task<IItemState> FilterOutUncachedStates(IItemState itemState, ApiManagerStateContainer stateContainer)
         {
-            var gettableItems = await GetGettableItems();
-            var gettableItem = gettableItems.FirstOrDefault(i => i.ItemId == itemState.ItemId);
-
-            if (gettableItem == null)
+            if (!stateContainer.UncachedStates.ContainsKey(itemState.ItemId))
                 return itemState;
 
             var state = (IItemState)itemState.Clone();
-            var trackedStates = GetOnlyTrackedStates(gettableItem, state.States);
-            state.States = trackedStates;
+
+            var uncachedState = stateContainer.UncachedStates[itemState.ItemId];
+
+            //If ApplyOnlyEnumeratedStates = false then whole Item in uncached
+            if (!uncachedState.ApplyOnlyEnumeratedStates)
+                return null;
+
+            var cachedStates = new Dictionary<string, object>();
+
+            foreach (var stateState in state.States)
+            {
+                if (uncachedState.States.Contains(stateState.Key))
+                    continue;
+
+                cachedStates.Add(stateState.Key, stateState.Value);
+            }
+
+            state.States = cachedStates;
 
             return state;
         }
@@ -254,38 +272,134 @@ namespace SmartHomeApi.Core.Services
                     var stateContainer = new ApiManagerStateContainer(state);
 
                     var gettableItems = await GetGettableItems();
+                    AddUntrackedItemsFromConfig(stateContainer);
+                    AddUncachedItemsFromConfig(stateContainer);
 
                     foreach (var item in gettableItems)
                     {
-                        try
-                        {
-                            var deviceState = item.GetState();
-
-                            state.States.Add(deviceState.ItemId, deviceState);
-
-                            if (item.UntrackedFields != null && item.UntrackedFields.Any())
-                                stateContainer.UntrackedStates.Add(item.ItemId, item.UntrackedFields);
-
-                            if (item.UncachedFields != null && item.UncachedFields.Any())
-                                stateContainer.UncachedStates.Add(item.ItemId, item.UncachedFields);
-                        }
-                        catch (Exception e)
-                        {
-                            _logger.Error(e, "Error when collecting items states.");
-                        }
+                        CollectItemState(item, stateContainer);
                     }
 
-                    var oldState = await GetState();
                     var oldStateContainer = GetStateSafely();
-                    oldStateContainer.State = oldState;
                     SetStateSafely(stateContainer);
 
-                    NotifySubscribersAboutChanges(oldStateContainer, gettableItems);
+                    NotifySubscribersAboutChanges(oldStateContainer);
                 }
                 catch (Exception e)
                 {
                     _logger.Error(e, "Error when collecting items states.");
                 }
+            }
+        }
+
+        private void CollectItemState(IStateGettable item, ApiManagerStateContainer stateContainer)
+        {
+            IStatesContainer state = stateContainer.State;
+
+            try
+            {
+                var deviceState = item.GetState();
+
+                state.States.Add(deviceState.ItemId, deviceState);
+
+                AddUntrackedStatesFromItem(item, stateContainer);
+                AddUncachedStatesFromItem(item, stateContainer);
+            }
+            catch (Exception e)
+            {
+                _logger.Error(e, "Error when collecting items states.");
+            }
+        }
+
+        private static void AddUntrackedStatesFromItem(IStateGettable item, ApiManagerStateContainer stateContainer)
+        {
+            if (item.UntrackedFields == null || !item.UntrackedFields.Any()) 
+                return;
+
+            if (stateContainer.UntrackedStates.ContainsKey(item.ItemId))
+            {
+                var untrackedItem = stateContainer.UntrackedStates[item.ItemId];
+
+                //If null then whole Item is untracked if not null then merge states
+                if (untrackedItem.ApplyOnlyEnumeratedStates)
+                {
+                    foreach (var itemUntrackedField in item.UntrackedFields)
+                    {
+                        if (!untrackedItem.States.Contains(itemUntrackedField))
+                            untrackedItem.States.Add(itemUntrackedField);
+                    }
+                }
+            }
+            else
+                stateContainer.UntrackedStates.Add(item.ItemId,
+                    new AppSettingItemInfo
+                    {
+                        ItemId = item.ItemId, 
+                        ApplyOnlyEnumeratedStates = true,
+                        States = item.UntrackedFields.ToList()
+                    });
+        }
+
+        private static void AddUncachedStatesFromItem(IStateGettable item, ApiManagerStateContainer stateContainer)
+        {
+            if (item.UncachedFields == null || !item.UncachedFields.Any())
+                return;
+
+            if (stateContainer.UncachedStates.ContainsKey(item.ItemId))
+            {
+                var uncachedItem = stateContainer.UncachedStates[item.ItemId];
+
+                //If null then whole Item is uncached if not null then merge states
+                if (uncachedItem.ApplyOnlyEnumeratedStates)
+                {
+                    foreach (var itemUncachedField in item.UncachedFields)
+                    {
+                        if (!uncachedItem.States.Contains(itemUncachedField))
+                            uncachedItem.States.Add(itemUncachedField);
+                    }
+                }
+            }
+            else
+                stateContainer.UncachedStates.Add(item.ItemId,
+                    new AppSettingItemInfo
+                    {
+                        ItemId = item.ItemId, 
+                        ApplyOnlyEnumeratedStates = true,
+                        States = item.UncachedFields.ToList()
+                    });
+        }
+
+        private void AddUntrackedItemsFromConfig(ApiManagerStateContainer stateContainer)
+        {
+            var untrackedItems = _fabric.GetConfiguration().UntrackedItems;
+
+            foreach (var untrackedItem in untrackedItems)
+            {
+                if (string.IsNullOrWhiteSpace(untrackedItem.ItemId) ||
+                    stateContainer.UntrackedStates.ContainsKey(untrackedItem.ItemId))
+                    continue;
+
+                if (untrackedItem.ApplyOnlyEnumeratedStates && untrackedItem.States == null)
+                    untrackedItem.States = new List<string>();
+
+                stateContainer.UntrackedStates.Add(untrackedItem.ItemId, untrackedItem);
+            }
+        }
+
+        private void AddUncachedItemsFromConfig(ApiManagerStateContainer stateContainer)
+        {
+            var uncachedItems = _fabric.GetConfiguration().UncachedItems;
+
+            foreach (var uncachedItem in uncachedItems)
+            {
+                if (string.IsNullOrWhiteSpace(uncachedItem.ItemId) ||
+                    stateContainer.UncachedStates.ContainsKey(uncachedItem.ItemId))
+                    continue;
+
+                if (uncachedItem.ApplyOnlyEnumeratedStates && uncachedItem.States == null)
+                    uncachedItem.States = new List<string>();
+
+                stateContainer.UncachedStates.Add(uncachedItem.ItemId, uncachedItem);
             }
         }
 
@@ -344,7 +458,7 @@ namespace SmartHomeApi.Core.Services
             return state;
         }
 
-        private void NotifySubscribersAboutChanges(ApiManagerStateContainer oldStateContainer, List<IStateGettable> gettableItems)
+        private void NotifySubscribersAboutChanges(ApiManagerStateContainer oldStateContainer)
         {
             var newStates = _stateContainer.State.States;
             var oldStates = oldStateContainer.State.States;
@@ -460,17 +574,21 @@ namespace SmartHomeApi.Core.Services
                          .ToDictionary(pair => pair.Key, pair => pair.Value);
         }
 
-        private Dictionary<string, object> GetOnlyTrackedStates(Dictionary<string, IList<string>> untrackedStates,
+        private Dictionary<string, object> GetOnlyTrackedStates(Dictionary<string, AppSettingItemInfo> untrackedStates,
             IItemState itemState)
         {
-            var untrackedFields = untrackedStates.ContainsKey(itemState.ItemId)
-                ? untrackedStates[itemState.ItemId]
-                : null;
-
-            if (untrackedFields == null || !untrackedFields.Any())
+            if (!untrackedStates.ContainsKey(itemState.ItemId))
                 return itemState.States;
 
-            return itemState.States.Where(p => !untrackedFields.Contains(p.Key))
+            var untrackedFields = untrackedStates[itemState.ItemId];
+
+            if (!untrackedFields.ApplyOnlyEnumeratedStates) //It means item is not tracked at all
+                return new Dictionary<string, object>();
+
+            if (!untrackedFields.States.Any())
+                return itemState.States;
+
+            return itemState.States.Where(p => !untrackedFields.States.Contains(p.Key))
                             .ToDictionary(pair => pair.Key, pair => pair.Value);
         }
 
@@ -581,10 +699,10 @@ namespace SmartHomeApi.Core.Services
         {
             public IStatesContainer State { get; set; }
 
-            public Dictionary<string, IList<string>> UntrackedStates { get; set; } =
-                new Dictionary<string, IList<string>>();
-            public Dictionary<string, IList<string>> UncachedStates { get; set; } =
-                new Dictionary<string, IList<string>>();
+            public Dictionary<string, AppSettingItemInfo> UntrackedStates { get; set; } =
+                new Dictionary<string, AppSettingItemInfo>();
+            public Dictionary<string, AppSettingItemInfo> UncachedStates { get; set; } =
+                new Dictionary<string, AppSettingItemInfo>();
 
             public ApiManagerStateContainer(IStatesContainer state)
             {

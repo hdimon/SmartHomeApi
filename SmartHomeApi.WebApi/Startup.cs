@@ -13,6 +13,7 @@ using Newtonsoft.Json.Serialization;
 using SmartHomeApi.Core;
 using SmartHomeApi.Core.DeviceHelpers;
 using SmartHomeApi.Core.Interfaces;
+using SmartHomeApi.Core.Interfaces.Configuration;
 using SmartHomeApi.Core.Services;
 
 namespace SmartHomeApi.WebApi

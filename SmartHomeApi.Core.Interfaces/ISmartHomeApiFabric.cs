@@ -1,4 +1,6 @@
-﻿namespace SmartHomeApi.Core.Interfaces
+﻿using SmartHomeApi.Core.Interfaces.Configuration;
+
+namespace SmartHomeApi.Core.Interfaces
 {
     public interface ISmartHomeApiFabric
     {
