@@ -70,5 +70,10 @@ namespace SmartHomeApi.Core
         {
             return _provider.GetService<IUntrackedStatesProcessor>();
         }
+
+        public IUncachedStatesProcessor GetUncachedStatesProcessor()
+        {
+            return _provider.GetService<IUncachedStatesProcessor>();
+        }
     }
 }

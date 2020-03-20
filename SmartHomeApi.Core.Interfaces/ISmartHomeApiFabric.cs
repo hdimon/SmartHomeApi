@@ -14,5 +14,6 @@ namespace SmartHomeApi.Core.Interfaces
         IStatesContainerTransformer GetStateContainerTransformer();
         INotificationsProcessor GetNotificationsProcessor();
         IUntrackedStatesProcessor GetUntrackedStatesProcessor();
+        IUncachedStatesProcessor GetUncachedStatesProcessor();
     }
 }

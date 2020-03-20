@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartHomeApi.Core.Interfaces;
-using SmartHomeApi.Core.Interfaces.Configuration;
 using SmartHomeApi.Core.Models;
 
 namespace SmartHomeApi.Core.Services
@@ -19,6 +18,7 @@ namespace SmartHomeApi.Core.Services
         private readonly IStatesContainerTransformer _stateContainerTransformer;
         private readonly INotificationsProcessor _notificationsProcessor;
         private readonly IUntrackedStatesProcessor _untrackedStatesProcessor;
+        private readonly IUncachedStatesProcessor _uncachedStatesProcessor;
         private readonly CancellationTokenSource _disposingCancellationTokenSource = new CancellationTokenSource();
 
         public string ItemType => null;
@@ -31,6 +31,7 @@ namespace SmartHomeApi.Core.Services
             _stateContainerTransformer = _fabric.GetStateContainerTransformer();
             _notificationsProcessor = _fabric.GetNotificationsProcessor();
             _untrackedStatesProcessor = _fabric.GetUntrackedStatesProcessor();
+            _uncachedStatesProcessor = _fabric.GetUncachedStatesProcessor();
 
             var state = CreateStatesContainer();
             _stateContainer = new ApiManagerStateContainer(state);
@@ -273,7 +274,7 @@ namespace SmartHomeApi.Core.Services
 
                     var gettableItems = await GetGettableItems();
                     _untrackedStatesProcessor.AddUntrackedItemsFromConfig(stateContainer);
-                    AddUncachedItemsFromConfig(stateContainer);
+                    _uncachedStatesProcessor.AddUncachedItemsFromConfig(stateContainer);
 
                     foreach (var item in gettableItems)
                     {
@@ -303,57 +304,11 @@ namespace SmartHomeApi.Core.Services
                 state.States.Add(deviceState.ItemId, deviceState);
 
                 _untrackedStatesProcessor.AddUntrackedStatesFromItem(item, stateContainer);
-                AddUncachedStatesFromItem(item, stateContainer);
+                _uncachedStatesProcessor.AddUncachedStatesFromItem(item, stateContainer);
             }
             catch (Exception e)
             {
                 _logger.Error(e, "Error when collecting items states.");
-            }
-        }
-
-        private static void AddUncachedStatesFromItem(IStateGettable item, ApiManagerStateContainer stateContainer)
-        {
-            if (item.UncachedFields == null || !item.UncachedFields.Any())
-                return;
-
-            if (stateContainer.UncachedStates.ContainsKey(item.ItemId))
-            {
-                var uncachedItem = stateContainer.UncachedStates[item.ItemId];
-
-                //If null then whole Item is uncached if not null then merge states
-                if (uncachedItem.ApplyOnlyEnumeratedStates)
-                {
-                    foreach (var itemUncachedField in item.UncachedFields)
-                    {
-                        if (!uncachedItem.States.Contains(itemUncachedField))
-                            uncachedItem.States.Add(itemUncachedField);
-                    }
-                }
-            }
-            else
-                stateContainer.UncachedStates.Add(item.ItemId,
-                    new AppSettingItemInfo
-                    {
-                        ItemId = item.ItemId,
-                        ApplyOnlyEnumeratedStates = true,
-                        States = item.UncachedFields.ToList()
-                    });
-        }
-
-        private void AddUncachedItemsFromConfig(ApiManagerStateContainer stateContainer)
-        {
-            var uncachedItems = _fabric.GetConfiguration().UncachedItems;
-
-            foreach (var uncachedItem in uncachedItems)
-            {
-                if (string.IsNullOrWhiteSpace(uncachedItem.ItemId) ||
-                    stateContainer.UncachedStates.ContainsKey(uncachedItem.ItemId))
-                    continue;
-
-                if (uncachedItem.ApplyOnlyEnumeratedStates && uncachedItem.States == null)
-                    uncachedItem.States = new List<string>();
-
-                stateContainer.UncachedStates.Add(uncachedItem.ItemId, uncachedItem);
             }
         }
 
