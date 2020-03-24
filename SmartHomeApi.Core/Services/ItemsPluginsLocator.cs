@@ -375,8 +375,10 @@ namespace SmartHomeApi.Core.Services
 
                         try
                         {
+                            var tempPluginDirectoryPath = GetPluginPath(deleteContainer.Plugin);
+
                             await AsyncHelpers.RetryOnFault(
-                                async () => Directory.Delete(deleteContainer.Plugin.PluginDirectoryInfo.FullName, true), 5,
+                                async () => Directory.Delete(tempPluginDirectoryPath, true), 5,
                                 () => Task.Delay(1000));
                         }
                         catch (Exception e)
