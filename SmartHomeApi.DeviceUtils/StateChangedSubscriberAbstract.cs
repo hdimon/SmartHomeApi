@@ -14,6 +14,7 @@ namespace SmartHomeApi.DeviceUtils
         protected readonly IApiManager Manager;
         protected readonly IItemHelpersFabric HelpersFabric;
         protected readonly IApiLogger Logger;
+        protected CancellationTokenSource DisposingCancellationTokenSource = new CancellationTokenSource();
 
         protected StateChangedSubscriberAbstract(IApiManager manager, IItemHelpersFabric helpersFabric)
         {
@@ -160,7 +161,15 @@ namespace SmartHomeApi.DeviceUtils
 
         public void Dispose()
         {
-            Manager.UnregisterSubscriber(this);
+            try
+            {
+                Manager.UnregisterSubscriber(this);
+                DisposingCancellationTokenSource.Cancel();
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e);
+            }
         }
     }
 }
