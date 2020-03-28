@@ -50,6 +50,24 @@ namespace SmartHomeApi.WebApi
 
             services.AddControllers();
 
+            /*var settings = JsonSerializerSettingsProvider.CreateSerializerSettings();
+            settings.ContractResolver = new DefaultContractResolver();
+            settings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+            settings.Converters.Add(new StringEnumConverter());
+            settings.Formatting = Formatting.Indented;*/
+            JsonConvert.DefaultSettings = () =>
+            {
+                var settings = new JsonSerializerSettings
+                {
+                    ContractResolver = new DefaultContractResolver(),
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                    Formatting = Formatting.Indented
+                };
+                settings.Converters.Add(new StringEnumConverter());
+
+                return settings;
+            };
+
             services.AddMvc(options =>
                     {
                         /*options.Filters.Add(typeof(LogExceptionAttribute));*/

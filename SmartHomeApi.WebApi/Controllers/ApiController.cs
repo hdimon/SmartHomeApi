@@ -6,6 +6,7 @@ namespace SmartHomeApi.WebApi.Controllers
 {
     [Route("[controller]")]
     [ApiController]
+    [CustomJsonFormatter]
     public class ApiController : ControllerBase
     {
         private readonly ISmartHomeApiFabric _fabric;
