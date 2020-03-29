@@ -169,13 +169,10 @@ namespace SmartHomeApi.Core.Services
 
             var itemState = state.States[itemId];
 
-            itemState = _uncachedStatesProcessor.FilterOutUncachedStates(itemState, stateContainer);
-
             if (itemState == null)
                 return new ItemState(itemId, string.Empty);
 
             return itemState;
-
         }
 
         public async Task<object> GetState(string deviceId, string parameter, bool transform = false)
