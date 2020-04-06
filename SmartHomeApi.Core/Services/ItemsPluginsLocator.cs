@@ -412,7 +412,7 @@ namespace SmartHomeApi.Core.Services
                 }
             }
 
-            _logger.Info("Assemblies unloading have been finished.");
+            _logger.Info("Assemblies unloading has been finished.");
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
