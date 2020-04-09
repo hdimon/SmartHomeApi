@@ -61,7 +61,7 @@ namespace SmartHomeApi.WebApi
                 {
                     ContractResolver = new DefaultContractResolver(),
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                    Formatting = Formatting.Indented
+                    Formatting = Formatting.None
                 };
                 settings.Converters.Add(new StringEnumConverter());
 
