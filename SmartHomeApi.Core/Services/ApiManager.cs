@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartHomeApi.Core.Interfaces;
+using SmartHomeApi.Core.Interfaces.ExecuteCommandResults;
 using SmartHomeApi.Core.Models;
 
 namespace SmartHomeApi.Core.Services
@@ -198,6 +199,32 @@ namespace SmartHomeApi.Core.Services
             var items = await GetItems(itemsLocator);
 
             return items.ToList();
+        }
+
+        public async Task<ExecuteCommandResultAbstract> Execute(ExecuteCommand command)
+        {
+            var itemsLocator = _fabric.GetItemsLocator();
+            var items = await GetItems(itemsLocator);
+
+            var item = items.FirstOrDefault(i => i is IExecutable it && it.ItemId == command.ItemId);
+
+            if (item == null)
+                return new ExecuteCommandResultNotFound();
+
+            var eItem = (IExecutable)item;
+
+            ExecuteCommandResultAbstract result = null;
+
+            try
+            {
+                result = await eItem.Execute(command);
+            }
+            catch (Exception e)
+            {
+                _logger.Error(e);
+            }
+
+            return result ?? new ExecuteCommandResultInternalError();
         }
 
         private IStatesContainer CreateStatesContainer()

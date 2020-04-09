@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using SmartHomeApi.Core.Interfaces.ExecuteCommandResults;
 
 namespace SmartHomeApi.Core.Interfaces
 {
@@ -13,5 +14,6 @@ namespace SmartHomeApi.Core.Interfaces
         Task<IItemState> GetState(string deviceId, bool transform = false);
         Task<object> GetState(string deviceId, string parameter, bool transform = false);
         Task<IList<IItem>> GetItems();
+        Task<ExecuteCommandResultAbstract> Execute(ExecuteCommand command);
     }
 }
