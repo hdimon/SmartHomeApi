@@ -110,9 +110,13 @@ namespace SmartHomeApi.WebApi.Controllers
             switch (result)
             {
                 case ExecuteCommandResultNotFound _:
-                    return NotFound(result);
+                    return NotFound(/*result*/);
                 case ExecuteCommandResultInternalError _:
                     return StatusCode(StatusCodes.Status500InternalServerError, result);
+                case ExecuteCommandResultFileContent content:
+                {
+                    return File(content.FileContents, content.ContentType);
+                }
                 default:
                     return Ok(result);
             }
