@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Common.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
@@ -118,7 +119,17 @@ namespace SmartHomeApi.WebApi.Controllers
                     return File(content.FileContents, content.ContentType);
                 }
                 default:
+                {
+                    if (_fabric.GetConfiguration().SoftPluginsLoading)
+                    {
+                        //Since plugin type is cached in Newtonsoft and it can't be fully disabled (see explanation in ApiDefaultContractResolver)
+                        //then convert type to dynamic object. It allows to unload plugin.
+                        var dyn = TypeHelper.ObjToDynamic(result);
+                        return Ok(dyn);
+                    }
+
                     return Ok(result);
+                }
             }
         }
     }

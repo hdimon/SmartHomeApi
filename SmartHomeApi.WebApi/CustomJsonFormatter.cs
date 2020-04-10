@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Serialization;
 
 namespace SmartHomeApi.WebApi
 {
@@ -29,7 +28,7 @@ namespace SmartHomeApi.WebApi
                 return;
 
             var settings = JsonSerializerSettingsProvider.CreateSerializerSettings();
-            settings.ContractResolver = new DefaultContractResolver();
+            settings.ContractResolver = new ApiDefaultContractResolver();
             settings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
             settings.Converters.Add(new StringEnumConverter());
             settings.Formatting = Formatting.Indented;

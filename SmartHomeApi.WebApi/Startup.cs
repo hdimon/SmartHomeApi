@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Serialization;
 using SmartHomeApi.Core;
 using SmartHomeApi.Core.DeviceHelpers;
 using SmartHomeApi.Core.Interfaces;
@@ -50,16 +49,11 @@ namespace SmartHomeApi.WebApi
 
             services.AddControllers();
 
-            /*var settings = JsonSerializerSettingsProvider.CreateSerializerSettings();
-            settings.ContractResolver = new DefaultContractResolver();
-            settings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-            settings.Converters.Add(new StringEnumConverter());
-            settings.Formatting = Formatting.Indented;*/
             JsonConvert.DefaultSettings = () =>
             {
                 var settings = new JsonSerializerSettings
                 {
-                    ContractResolver = new DefaultContractResolver(),
+                    ContractResolver = new ApiDefaultContractResolver(),
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
                     Formatting = Formatting.None
                 };
@@ -73,7 +67,7 @@ namespace SmartHomeApi.WebApi
                         /*options.Filters.Add(typeof(LogExceptionAttribute));*/
                     })
                     .AddNewtonsoftJson(options => {
-                        options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+                        options.SerializerSettings.ContractResolver = new ApiDefaultContractResolver();
                         options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                         options.SerializerSettings.Converters.Add(new StringEnumConverter());
                         options.SerializerSettings.Formatting = Formatting.Indented;

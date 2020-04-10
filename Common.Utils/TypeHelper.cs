@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Dynamic;
+using System.Linq.Expressions;
 
 namespace Common.Utils
 {
@@ -30,6 +32,34 @@ namespace Common.Utils
             return obj is IDictionary &&
                    obj.GetType().IsGenericType &&
                    obj.GetType().GetGenericTypeDefinition().IsAssignableFrom(typeof(Dictionary<,>));
+        }
+
+        public static dynamic ToDynamic<T>(T obj)
+        {
+            IDictionary<string, object> expando = new ExpandoObject();
+
+            foreach (var propertyInfo in typeof(T).GetProperties())
+            {
+                var propertyExpression = Expression.Property(Expression.Constant(obj), propertyInfo);
+                var currentValue = Expression.Lambda<Func<string>>(propertyExpression).Compile().Invoke();
+                expando.Add(propertyInfo.Name.ToLower(), currentValue);
+            }
+
+            return expando as ExpandoObject;
+        }
+
+        public static dynamic ObjToDynamic(object obj)
+        {
+            IDictionary<string, object> expando = new ExpandoObject();
+
+            foreach (var propertyInfo in obj.GetType().GetProperties())
+            {
+                var propertyExpression = Expression.Property(Expression.Constant(obj), propertyInfo);
+                var currentValue = Expression.Lambda<Func<string>>(propertyExpression).Compile().Invoke();
+                expando.Add(propertyInfo.Name.ToLower(), currentValue);
+            }
+
+            return expando as ExpandoObject;
         }
     }
 }
