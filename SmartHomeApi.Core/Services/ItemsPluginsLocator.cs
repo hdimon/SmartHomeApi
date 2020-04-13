@@ -311,7 +311,8 @@ namespace SmartHomeApi.Core.Services
 
                 if (!checkPluginResult.Success)
                 {
-                    CollectGarbage(checkPluginResult.Reference, dllPath);
+                    if (checkPluginResult.Reference != null)
+                        CollectGarbage(checkPluginResult.Reference, dllPath);
                     continue;
                 }
 
@@ -420,14 +421,23 @@ namespace SmartHomeApi.Core.Services
         {
             var context = new CollectibleAssemblyContext(dllPath);
 
-            Assembly assembly;
+            Assembly assembly = null;
 
             //Load from FileStream instead of by AssemblyName because it never blocks dll.
             using (var fs = new FileStream(dllPath, FileMode.Open, FileAccess.Read))
             {
-                assembly = context.LoadFromStream(fs);
+                try
+                {
+                    assembly = context.LoadFromStream(fs);
+                }
+                catch (BadImageFormatException e)
+                {
+                    //_logger.Error(e);
+                }
             }
 
+            if (assembly == null)
+                return new LoadingPluginResult { Success = false, Reference = null };
             /*Assembly assembly =
                 context.LoadFromAssemblyName(new AssemblyName(Path.GetFileNameWithoutExtension(dllPath)));*/
 
