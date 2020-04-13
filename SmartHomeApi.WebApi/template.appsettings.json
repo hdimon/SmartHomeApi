@@ -1,6 +1,32 @@
 {
     "AppSettings": {
-        "SoftPluginsLoading": true 
+        "SoftPluginsLoading": true,
+        "UntrackedItems": [
+            {
+                "ItemId": "TestItem"
+            },
+            {
+                "ItemId": "OpenWeatherSPb",
+                "ApplyOnlyEnumeratedStates": true,
+                "States": [ "Forecast" ]
+            },
+            {
+                "ItemId": "OpenWeather.OpenHabAdapter"
+            }
+        ],
+        "UncachedItems": [
+            {
+                "ItemId": "TestItem"
+            },
+            {
+                "ItemId": "OpenWeatherSPb",
+                "ApplyOnlyEnumeratedStates": false,
+                "States": [ "Forecast" ]
+            },
+            {
+                "ItemId": "OpenWeather.OpenHabAdapter"
+            }
+        ]
     },
     "Logging": {
         "LogLevel": {
