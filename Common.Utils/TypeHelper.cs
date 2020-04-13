@@ -42,7 +42,7 @@ namespace Common.Utils
             {
                 var propertyExpression = Expression.Property(Expression.Constant(obj), propertyInfo);
                 var currentValue = Expression.Lambda<Func<string>>(propertyExpression).Compile().Invoke();
-                expando.Add(propertyInfo.Name.ToLower(), currentValue);
+                expando.Add(propertyInfo.Name, currentValue);
             }
 
             return expando as ExpandoObject;
@@ -56,7 +56,7 @@ namespace Common.Utils
             {
                 var propertyExpression = Expression.Property(Expression.Constant(obj), propertyInfo);
                 var currentValue = Expression.Lambda<Func<string>>(propertyExpression).Compile().Invoke();
-                expando.Add(propertyInfo.Name.ToLower(), currentValue);
+                expando.Add(propertyInfo.Name, currentValue);
             }
 
             return expando as ExpandoObject;
