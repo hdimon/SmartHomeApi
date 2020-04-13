@@ -3,28 +3,22 @@
         "SoftPluginsLoading": true,
         "UntrackedItems": [
             {
-                "ItemId": "TestItem"
+                "ItemId": "TestItem1" //Whole item will not be tracked
             },
             {
-                "ItemId": "OpenWeatherSPb",
-                "ApplyOnlyEnumeratedStates": true,
-                "States": [ "Forecast" ]
-            },
-            {
-                "ItemId": "OpenWeather.OpenHabAdapter"
+                "ItemId": "TestItem2",
+                "ApplyOnlyEnumeratedStates": true, //Only fields enumerated in "States" array will not be tracked
+                "States": [ "StateField1" ] //other fields will still be tracked
             }
         ],
         "UncachedItems": [
             {
-                "ItemId": "TestItem"
+                "ItemId": "TestItem1" //Whole item will not be cached in global state, i.e. state returned by GetState() method
             },
             {
-                "ItemId": "OpenWeatherSPb",
-                "ApplyOnlyEnumeratedStates": false,
-                "States": [ "Forecast" ]
-            },
-            {
-                "ItemId": "OpenWeather.OpenHabAdapter"
+                "ItemId": "TestItem2",
+                "ApplyOnlyEnumeratedStates": true, //Only fields enumerated in "States" array will not be cached in global state
+                "States": [ "StateField1" ] //Pay attention that these fields are still accessible when getting state by ItemId or Parameter
             }
         ]
     },
