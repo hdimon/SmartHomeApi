@@ -10,21 +10,26 @@ namespace SmartHomeApi.Core.DeviceHelpers
     public class ItemStateStorageHelper : IItemStateStorageHelper
     {
         private readonly IApiLogger _logger;
+        private readonly string _storageDirectory;
 
         public ItemStateStorageHelper(IApiLogger logger)
         {
             _logger = logger;
+
+            _storageDirectory = Path.Combine(Directory.GetCurrentDirectory(), "PluginsStateStorage");
+            Directory.CreateDirectory(_storageDirectory);
         }
 
         public async Task SaveState(object state, string fileNamePattern)
         {
             var content = JsonConvert.SerializeObject(state, Formatting.Indented);
 
-            var fileName = fileNamePattern + ".txt";
+            var fileName = fileNamePattern + ".json";
+            var filePath = Path.Combine(_storageDirectory, fileName);
 
             try
             {
-                await AsyncHelpers.RetryOnFault(() => File.WriteAllTextAsync(fileName, content), 5,
+                await AsyncHelpers.RetryOnFault(() => File.WriteAllTextAsync(filePath, content), 5,
                     () => Task.Delay(2000));
             }
             catch (Exception e)
@@ -37,13 +42,14 @@ namespace SmartHomeApi.Core.DeviceHelpers
         {
             T obj = default;
 
-            var fileName = fileNamePattern + ".txt";
+            var fileName = fileNamePattern + ".json";
+            var filePath = Path.Combine(_storageDirectory, fileName);
 
             string content = null;
 
             try
             {
-                content = File.ReadAllText(fileName);
+                content = File.ReadAllText(filePath);
             }
             catch (Exception e)
             {
