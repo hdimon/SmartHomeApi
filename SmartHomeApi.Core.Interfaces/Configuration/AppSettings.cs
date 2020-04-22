@@ -6,6 +6,7 @@ namespace SmartHomeApi.Core.Interfaces.Configuration
 {
     public class AppSettings : ICloneable
     {
+        public string ApiCulture { get; set; }
         public bool SoftPluginsLoading { get; set; }
         public string DataDirectoryPath { get; set; }
         public List<AppSettingItemInfo> UntrackedItems { get; set; } = new List<AppSettingItemInfo>();
@@ -14,6 +15,7 @@ namespace SmartHomeApi.Core.Interfaces.Configuration
         {
             var clone = new AppSettings();
 
+            clone.ApiCulture = ApiCulture;
             clone.SoftPluginsLoading = SoftPluginsLoading;
             clone.DataDirectoryPath = DataDirectoryPath;
             clone.UntrackedItems = UntrackedItems.Select(i => (AppSettingItemInfo)i.Clone()).ToList();

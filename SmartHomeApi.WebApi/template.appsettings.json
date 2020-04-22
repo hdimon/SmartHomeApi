@@ -1,5 +1,6 @@
 {
     "AppSettings": {
+        "ApiCulture": "en-US",
         "SoftPluginsLoading": true,
         "DataDirectoryPath": "C:\\SmartHomeApiData",
         "UntrackedItems": [
