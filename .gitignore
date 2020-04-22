@@ -343,3 +343,6 @@ ASALocalRun/
 /SmartHomeApi.WebApi/_NotNeededConfigs
 /SmartHomeApi.WebApi/_NotNeededPlugins
 /SmartHomeApi.WebApi/Data
+/SmartHomeApiData
+/_NotNeededConfigs
+/_NotNeededPlugins
