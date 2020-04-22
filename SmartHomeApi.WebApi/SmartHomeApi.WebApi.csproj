@@ -28,12 +28,26 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="template.appsettings.Development.json" />
+    <Content Remove="template.appsettings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Virtual_HeatingSystemAfterMorningAlarmClock.txt" />
     <None Remove="Virtual_HeatingSystemAlarmClock.txt" />
     <None Remove="Virtual_HeatingSystemMorningAlarmClock.txt" />
     <None Remove="Virtual_MainAlarmClock.txt" />
     <None Remove="Virtual_States.txt" />
     <None Remove="Virtual_TowelHeaterTurningOffAlarmClock.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="template.appsettings.Development.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="template.appsettings.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
