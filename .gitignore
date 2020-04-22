@@ -340,3 +340,6 @@ ASALocalRun/
 /SmartHomeApi.WebApi/appsettings.json
 /SmartHomeApi.WebApi/appsettings.Development.json
 /SmartHomeApi.WebApi/PluginsStateStorage
+/SmartHomeApi.WebApi/_NotNeededConfigs
+/SmartHomeApi.WebApi/_NotNeededPlugins
+/SmartHomeApi.WebApi/Data

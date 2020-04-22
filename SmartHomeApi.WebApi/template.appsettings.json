@@ -23,6 +23,13 @@
             }
         ]
     },
+    "Kestrel": {
+        "EndPoints": {
+            "Http": {
+                "Url": "http://0.0.0.0:5100"
+            }
+        }
+    },
     "Logging": {
         "LogLevel": {
             "Default": "Information",

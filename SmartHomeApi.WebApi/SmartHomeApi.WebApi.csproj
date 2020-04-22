@@ -7,16 +7,24 @@
   <ItemGroup>
     <Compile Remove="Configs\**" />
     <Compile Remove="Logs\**" />
+    <Compile Remove="PluginsStateStorage\**" />
     <Compile Remove="Plugins\**" />
+    <Compile Remove="TempPlugins\**" />
     <Content Remove="Configs\**" />
     <Content Remove="Logs\**" />
+    <Content Remove="PluginsStateStorage\**" />
     <Content Remove="Plugins\**" />
+    <Content Remove="TempPlugins\**" />
     <EmbeddedResource Remove="Configs\**" />
     <EmbeddedResource Remove="Logs\**" />
+    <EmbeddedResource Remove="PluginsStateStorage\**" />
     <EmbeddedResource Remove="Plugins\**" />
+    <EmbeddedResource Remove="TempPlugins\**" />
     <None Remove="Configs\**" />
     <None Remove="Logs\**" />
+    <None Remove="PluginsStateStorage\**" />
     <None Remove="Plugins\**" />
+    <None Remove="TempPlugins\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,12 +38,22 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.1.0-preview1.19506.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="3.1.3" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.1.3" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.0-preview1-19509-03" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SmartHomeApi.Core\SmartHomeApi.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="InstallWindowsService.bat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="UninstallWindowsService.bat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
