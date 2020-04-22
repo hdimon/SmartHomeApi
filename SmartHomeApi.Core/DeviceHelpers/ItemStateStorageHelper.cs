@@ -2,8 +2,10 @@
 using System.IO;
 using System.Threading.Tasks;
 using Common.Utils;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using SmartHomeApi.Core.Interfaces;
+using SmartHomeApi.Core.Interfaces.Configuration;
 
 namespace SmartHomeApi.Core.DeviceHelpers
 {
@@ -12,11 +14,11 @@ namespace SmartHomeApi.Core.DeviceHelpers
         private readonly IApiLogger _logger;
         private readonly string _storageDirectory;
 
-        public ItemStateStorageHelper(IApiLogger logger)
+        public ItemStateStorageHelper(IApiLogger logger, IOptionsMonitor<AppSettings> appSettingsMonitor)
         {
             _logger = logger;
 
-            _storageDirectory = Path.Combine(Directory.GetCurrentDirectory(), "PluginsStateStorage");
+            _storageDirectory = Path.Combine(appSettingsMonitor.CurrentValue.DataDirectoryPath, "PluginsStateStorage");
             Directory.CreateDirectory(_storageDirectory);
         }
 

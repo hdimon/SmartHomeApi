@@ -29,11 +29,12 @@ namespace SmartHomeApi.Core.Services
         {
             _fabric = fabric;
             _logger = _fabric.GetApiLogger();
-            _configDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Configs");
         }
 
         public async Task Initialize()
         {
+            _configDirectory = Path.Combine(_fabric.GetConfiguration().DataDirectoryPath, "Configs");
+
             RunConfigsCollectorWorker();
 
             IsInitialized = true;

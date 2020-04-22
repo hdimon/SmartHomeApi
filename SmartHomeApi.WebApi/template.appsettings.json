@@ -1,6 +1,7 @@
 {
     "AppSettings": {
         "SoftPluginsLoading": true,
+        "DataDirectoryPath": "C:\\SmartHomeApiData",
         "UntrackedItems": [
             {
                 "ItemId": "TestItem1" //Whole item will not be tracked

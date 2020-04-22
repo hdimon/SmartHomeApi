@@ -33,15 +33,15 @@ namespace SmartHomeApi.Core.Services
 
         public ItemsPluginsLocator(ISmartHomeApiFabric fabric)
         {
-            _pluginsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Plugins");
-            _tempPluginsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "TempPlugins");
+            var config = fabric.GetConfiguration();
+
+            _pluginsDirectory = Path.Combine(config.DataDirectoryPath, "Plugins");
+            _tempPluginsDirectory = Path.Combine(config.DataDirectoryPath, "TempPlugins");
 
             if (Directory.Exists(_tempPluginsDirectory))
                 Directory.Delete(_tempPluginsDirectory, true);
 
             Directory.CreateDirectory(_tempPluginsDirectory);
-            
-            var config = fabric.GetConfiguration();
 
             _softPluginsLoading = config.SoftPluginsLoading;
             //_logger.Info($"SoftPluginsLoading = {config.SoftPluginsLoading}");
