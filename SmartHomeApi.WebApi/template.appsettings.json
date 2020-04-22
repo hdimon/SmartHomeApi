@@ -3,6 +3,9 @@
         "ApiCulture": "en-US",
         "SoftPluginsLoading": true,
         "DataDirectoryPath": "C:\\SmartHomeApiData",
+        "PluginsLocatorIntervalMs": 5000,
+        "ConfigsLocatorIntervalMs": 5000,
+        "ItemsLocatorIntervalMs": 5000,
         "UntrackedItems": [
             {
                 "ItemId": "TestItem1" //Whole item will not be tracked

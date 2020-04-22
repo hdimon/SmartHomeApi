@@ -9,6 +9,9 @@ namespace SmartHomeApi.Core.Interfaces.Configuration
         public string ApiCulture { get; set; }
         public bool SoftPluginsLoading { get; set; }
         public string DataDirectoryPath { get; set; }
+        public int? PluginsLocatorIntervalMs { get; set; }
+        public int? ConfigsLocatorIntervalMs { get; set; }
+        public int? ItemsLocatorIntervalMs { get; set; }
         public List<AppSettingItemInfo> UntrackedItems { get; set; } = new List<AppSettingItemInfo>();
         public List<AppSettingItemInfo> UncachedItems { get; set; } = new List<AppSettingItemInfo>();
         public object Clone()
@@ -18,6 +21,9 @@ namespace SmartHomeApi.Core.Interfaces.Configuration
             clone.ApiCulture = ApiCulture;
             clone.SoftPluginsLoading = SoftPluginsLoading;
             clone.DataDirectoryPath = DataDirectoryPath;
+            clone.PluginsLocatorIntervalMs = PluginsLocatorIntervalMs;
+            clone.ConfigsLocatorIntervalMs = ConfigsLocatorIntervalMs;
+            clone.ItemsLocatorIntervalMs = ItemsLocatorIntervalMs;
             clone.UntrackedItems = UntrackedItems.Select(i => (AppSettingItemInfo)i.Clone()).ToList();
             clone.UncachedItems = UncachedItems.Select(i => (AppSettingItemInfo)i.Clone()).ToList();
 

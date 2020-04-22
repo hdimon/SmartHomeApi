@@ -45,7 +45,7 @@ namespace SmartHomeApi.DeviceUtils
             while (!DisposingCancellationTokenSource.IsCancellationRequested)
             {
                 if (!_isFirstRun)
-                    await Task.Delay(1000, DisposingCancellationTokenSource.Token);
+                    await Task.Delay(GetWorkerInterval(), DisposingCancellationTokenSource.Token);
 
                 try
                 {
@@ -56,6 +56,11 @@ namespace SmartHomeApi.DeviceUtils
                     Logger.Error(e);
                 }
             }
+        }
+
+        private int GetWorkerInterval()
+        {
+            return Fabric.GetConfiguration().ItemsLocatorIntervalMs ?? 1000;
         }
 
         private async Task ItemsLocatorWorker()

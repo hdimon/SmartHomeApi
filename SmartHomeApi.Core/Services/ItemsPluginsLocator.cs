@@ -72,7 +72,7 @@ namespace SmartHomeApi.Core.Services
             while (!_disposingCancellationTokenSource.IsCancellationRequested)
             {
                 if (!_isFirstRun)
-                    await Task.Delay(1000, _disposingCancellationTokenSource.Token);
+                    await Task.Delay(GetWorkerInterval(), _disposingCancellationTokenSource.Token);
 
                 try
                 {
@@ -83,6 +83,11 @@ namespace SmartHomeApi.Core.Services
                     _logger.Error(e);
                 }
             }
+        }
+
+        private int GetWorkerInterval()
+        {
+            return _fabric.GetConfiguration().PluginsLocatorIntervalMs ?? 1000;
         }
 
         private async Task PluginsCollectorWorker()
