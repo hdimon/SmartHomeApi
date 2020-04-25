@@ -18,7 +18,11 @@ namespace SmartHomeApi.WebApi
             config.GetSection("AppSettings").Bind(settings);
 
             if (!string.IsNullOrWhiteSpace(settings.ApiCulture))
-                CultureInfo.CurrentCulture = new CultureInfo(settings.ApiCulture);
+            {
+                var culture = new CultureInfo(settings.ApiCulture);
+                CultureInfo.DefaultThreadCurrentCulture = culture;
+                CultureInfo.DefaultThreadCurrentUICulture = culture;
+            }
 
             CreateHostBuilder(args).Build().Run();
         }
