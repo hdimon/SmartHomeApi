@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using SmartHomeApi.Core.Interfaces;
 
@@ -110,8 +111,8 @@ namespace SmartHomeApi.Core.Services
                             $@"StatesContainerTransformer: Value [{value}] could not be converted to {sourceType} type.");
                         break;
                     case "Int32":
-                        if (int.TryParse(value, out int intRes))
-                            return intRes;
+                        if (double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out double dRes))
+                            return Convert.ToInt32(dRes);
 
                         _logger.Warning(
                             $@"StatesContainerTransformer: Value [{value}] could not be converted to {sourceType} type.");
