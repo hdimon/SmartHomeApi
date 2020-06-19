@@ -88,6 +88,9 @@ namespace SmartHomeApi.Core.Services
 
         private object GetConvertedNewValue(object parameterValueObject, string value)
         {
+            if (parameterValueObject == null)
+                return value;
+
             try
             {
                 var sourceType = parameterValueObject.GetType().Name;
