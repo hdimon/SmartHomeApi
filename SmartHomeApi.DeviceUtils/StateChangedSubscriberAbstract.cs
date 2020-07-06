@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Common.Utils;
@@ -70,9 +71,9 @@ namespace SmartHomeApi.DeviceUtils
             return isCancellationRequested;
         }
 
-        protected async Task ExecuteCommands(string itemType, IList<SetValueCommand> commands,
-            StateChangedEvent args, int maxTries, int failoverActionIntervalSeconds, string errorMessage,
-            SemaphoreSlim _semaphoreSlim, ConcurrentQueue<CancellationTokenSource> ctSources)
+        protected async Task ExecuteCommands(string itemType, IList<SetValueCommand> commands, StateChangedEvent args,
+            int maxTries, int failoverActionIntervalSeconds, SemaphoreSlim _semaphoreSlim,
+            ConcurrentQueue<CancellationTokenSource> ctSources)
         {
             try
             {
@@ -85,7 +86,7 @@ namespace SmartHomeApi.DeviceUtils
                 var cancellationTokenSource = new CancellationTokenSource();
                 ctSources.Enqueue(cancellationTokenSource);
 
-                await ExecuteCommands(itemType, commands, args, maxTries, failoverActionIntervalSeconds, errorMessage,
+                await ExecuteCommands(itemType, commands, args, maxTries, failoverActionIntervalSeconds,
                     cancellationTokenSource.Token);
             }
             finally
@@ -96,7 +97,7 @@ namespace SmartHomeApi.DeviceUtils
         }
 
         protected async Task ExecuteCommands(string itemType, IList<SetValueCommand> commands,
-            StateChangedEvent args, int maxTries, int failoverActionIntervalSeconds, string errorMessage,
+            StateChangedEvent args, int maxTries, int failoverActionIntervalSeconds,
             CancellationToken cancellationToken)
         {
             if (commands == null)
@@ -126,13 +127,12 @@ namespace SmartHomeApi.DeviceUtils
 
                     commandsToRun = commandsToRun.Where(t => failed.Contains(t.ItemId)).ToList();
 
-                    Logger.Warning("Commands execution was not fully successful so try to execute it again in " +
-                                   $"{failoverActionIntervalSeconds} seconds. Event: {args}.");
+                    Logger.Warning(GetFailedExecutionMessage(failoverActionIntervalSeconds, commandsToRun));
 
                     if (IsCancellationRequested(itemType, cancellationToken, args))
                         return;
 
-                    throw new Exception($"{errorMessage}. Event: {args}.");
+                    throw new Exception(GetFailedExecutionMessage(commandsToRun));
                 }
 
                 await AsyncHelpers.RetryOnFault(ExecuteCommandsAction, maxTries,
@@ -147,6 +147,38 @@ namespace SmartHomeApi.DeviceUtils
             {
                 Logger.Error(e.Message);
             }
+        }
+
+        private string GetFailedExecutionMessage(IList<SetValueCommand> failedCommands)
+        {
+            var message = new StringBuilder();
+
+            message.Append("Commands execution was failed. Failed commands: ");
+
+            var commands = string.Join("," + Environment.NewLine, failedCommands);
+
+            message.AppendLine(commands);
+
+            message.Append(".");
+
+            return message.ToString();
+        }
+
+        private string GetFailedExecutionMessage(int failoverActionIntervalSeconds, IList<SetValueCommand> failedCommands)
+        {
+            var message = new StringBuilder();
+
+            message.Append("Commands execution was not fully successful so try to execute it again in ");
+            message.Append(failoverActionIntervalSeconds);
+            message.Append(" seconds. Failed commands: ");
+
+            var commands = string.Join("," + Environment.NewLine, failedCommands);
+
+            message.AppendLine(commands);
+
+            message.Append(".");
+
+            return message.ToString();
         }
 
         protected SetValueCommand CreateCommand(string itemId, string parameter, string value)
