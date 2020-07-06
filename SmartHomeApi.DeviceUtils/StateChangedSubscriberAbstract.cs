@@ -153,11 +153,11 @@ namespace SmartHomeApi.DeviceUtils
         {
             var message = new StringBuilder();
 
-            message.Append("Commands execution was failed. Failed commands: ");
+            message.AppendLine("Commands execution was failed. Failed commands: ");
 
             var commands = string.Join("," + Environment.NewLine, failedCommands);
 
-            message.AppendLine(commands);
+            message.Append(commands);
 
             message.Append(".");
 
@@ -170,11 +170,11 @@ namespace SmartHomeApi.DeviceUtils
 
             message.Append("Commands execution was not fully successful so try to execute it again in ");
             message.Append(failoverActionIntervalSeconds);
-            message.Append(" seconds. Failed commands: ");
+            message.AppendLine(" seconds. Failed commands: ");
 
             var commands = string.Join("," + Environment.NewLine, failedCommands);
 
-            message.AppendLine(commands);
+            message.Append(commands);
 
             message.Append(".");
 

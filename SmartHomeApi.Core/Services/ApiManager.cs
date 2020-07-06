@@ -89,15 +89,15 @@ namespace SmartHomeApi.Core.Services
             _logger.Info("ApiManager has been disposed.");
         }
 
-        public async Task<ISetValueResult> SetValue(string deviceId, string parameter, string value)
+        public async Task<ISetValueResult> SetValue(string itemId, string parameter, string value)
         {
             var itemsLocator = _fabric.GetItemsLocator();
             var items = await GetItems(itemsLocator);
 
-            var item = items.FirstOrDefault(i => i is IStateSettable it && it.ItemId == deviceId);
+            var item = items.FirstOrDefault(i => i is IStateSettable it && it.ItemId == itemId);
 
             if (item == null)
-                return new SetValueResult(false);
+                return new SetValueResult(itemId, null, false);
 
             var not = (IStateSettable)item;
 
@@ -115,6 +115,8 @@ namespace SmartHomeApi.Core.Services
             try
             {
                 result = await not.SetValue(parameter, value);
+
+                result = new SetValueResult(not.ItemId, not.ItemType, result.Success);
             }
             catch (Exception e)
             {
@@ -123,15 +125,15 @@ namespace SmartHomeApi.Core.Services
 
             _stateContainerTransformer.RemoveStateChangedEvent(ev);
 
-            return result ?? new SetValueResult(false);
+            return result ?? new SetValueResult(not.ItemId, not.ItemType, false);
         }
 
-        public async Task<ISetValueResult> Increase(string deviceId, string parameter)
+        public async Task<ISetValueResult> Increase(string itemId, string parameter)
         {
             return new SetValueResult(false);
         }
 
-        public async Task<ISetValueResult> Decrease(string deviceId, string parameter)
+        public async Task<ISetValueResult> Decrease(string itemId, string parameter)
         {
             return new SetValueResult(false);
         }
@@ -176,15 +178,15 @@ namespace SmartHomeApi.Core.Services
             return itemState;
         }
 
-        public async Task<object> GetState(string deviceId, string parameter, bool transform = false)
+        public async Task<object> GetState(string itemId, string parameter, bool transform = false)
         {
             var stateContainer = GetStateSafely();
 
             var state = await TransformStateIfRequired(stateContainer.State, transform);
 
-            if (state.States.ContainsKey(deviceId))
+            if (state.States.ContainsKey(itemId))
             {
-                var deviceState = state.States[deviceId];
+                var deviceState = state.States[itemId];
 
                 if (deviceState.States.ContainsKey(parameter))
                     return deviceState.States[parameter];
