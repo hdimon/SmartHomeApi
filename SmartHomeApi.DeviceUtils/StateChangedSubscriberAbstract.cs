@@ -103,7 +103,13 @@ namespace SmartHomeApi.DeviceUtils
             if (commands == null)
                 return;
 
-            if (IsCancellationRequested(itemType, cancellationToken, args))
+            using var linkedTokenSource =
+                CancellationTokenSource.CreateLinkedTokenSource(DisposingCancellationTokenSource.Token,
+                    cancellationToken);
+
+            var cToken = linkedTokenSource.Token;
+
+            if (IsCancellationRequested(itemType, cToken, args))
                 return;
 
             var commandsToRun = commands;
@@ -112,7 +118,7 @@ namespace SmartHomeApi.DeviceUtils
             {
                 async Task ExecuteCommandsAction()
                 {
-                    if (IsCancellationRequested(itemType, cancellationToken, args))
+                    if (IsCancellationRequested(itemType, cToken, args))
                         return;
 
                     var results = await Task
@@ -129,14 +135,14 @@ namespace SmartHomeApi.DeviceUtils
 
                     Logger.Warning(GetFailedExecutionMessage(failoverActionIntervalSeconds, commandsToRun));
 
-                    if (IsCancellationRequested(itemType, cancellationToken, args))
+                    if (IsCancellationRequested(itemType, cToken, args))
                         return;
 
                     throw new Exception(GetFailedExecutionMessage(commandsToRun));
                 }
 
                 await AsyncHelpers.RetryOnFault(ExecuteCommandsAction, maxTries,
-                                      () => Task.Delay(failoverActionIntervalSeconds * 1000, cancellationToken))
+                                      () => Task.Delay(failoverActionIntervalSeconds * 1000, cToken))
                                   .ConfigureAwait(false);
             }
             catch (TaskCanceledException)
