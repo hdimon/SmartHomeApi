@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ObjectsComparer;
 using SmartHomeApi.Core.Interfaces;
 
 namespace SmartHomeApi.DeviceUtils
@@ -145,12 +146,29 @@ namespace SmartHomeApi.DeviceUtils
 
             var existingConfig = configurableItem.Config;
 
-            var comparer = new ObjectsComparer.Comparer();
+            var comparer = new Comparer();
+            IEnumerable<Difference> differences;
 
-            var isEqual = comparer.Compare(ConfigType, existingConfig, config, out var differences);
+            try
+            {
+                var isEqual = comparer.Compare(ConfigType, existingConfig, config, out differences);
 
-            if (isEqual) 
+                if (isEqual) 
+                    return item;
+            }
+            catch (ArgumentException e)
+            {
+                Logger.Warning("Configs comparing error: " + e.Message);
+
+                //Try to set new config then.
+                configurableItem.OnConfigChange(config);
                 return item;
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e);
+                throw;
+            }
 
             Logger.Info($"Config for item {config.ItemId} was changed.");
 

@@ -8,6 +8,8 @@ namespace SmartHomeApi.Core.Interfaces.Configuration
     {
         public string ApiCulture { get; set; }
         public bool SoftPluginsLoading { get; set; }
+        public int UnloadPluginsMaxTries { get; set; }
+        public int UnloadPluginsTriesIntervalMS { get; set; }
         public string DataDirectoryPath { get; set; }
         public int? PluginsLocatorIntervalMs { get; set; }
         public int? ConfigsLocatorIntervalMs { get; set; }
@@ -20,6 +22,8 @@ namespace SmartHomeApi.Core.Interfaces.Configuration
 
             clone.ApiCulture = ApiCulture;
             clone.SoftPluginsLoading = SoftPluginsLoading;
+            clone.UnloadPluginsMaxTries = UnloadPluginsMaxTries;
+            clone.UnloadPluginsTriesIntervalMS = UnloadPluginsTriesIntervalMS;
             clone.DataDirectoryPath = DataDirectoryPath;
             clone.PluginsLocatorIntervalMs = PluginsLocatorIntervalMs;
             clone.ConfigsLocatorIntervalMs = ConfigsLocatorIntervalMs;

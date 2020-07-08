@@ -23,7 +23,9 @@ namespace SmartHomeApi.Core.Services
         private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
         private volatile bool _isFirstRun = true;
         private readonly List<string> _librariesExtensions = new List<string> { ".dll" };
-        private bool _softPluginsLoading = true;
+        private readonly bool _softPluginsLoading = true;
+        private readonly int _unloadPluginsMaxTries = 5;
+        private readonly int _unloadPluginsTriesIntervalMS = 500;
         private readonly CancellationTokenSource _disposingCancellationTokenSource = new CancellationTokenSource();
 
         private ConcurrentDictionary<string, IItemsLocator> _locators = new ConcurrentDictionary<string, IItemsLocator>();
@@ -44,6 +46,11 @@ namespace SmartHomeApi.Core.Services
             Directory.CreateDirectory(_tempPluginsDirectory);
 
             _softPluginsLoading = config.SoftPluginsLoading;
+            _unloadPluginsMaxTries =
+                config.UnloadPluginsMaxTries > 0 ? config.UnloadPluginsMaxTries : _unloadPluginsMaxTries;
+            _unloadPluginsTriesIntervalMS = config.UnloadPluginsTriesIntervalMS > 0
+                ? config.UnloadPluginsTriesIntervalMS
+                : _unloadPluginsTriesIntervalMS;
             //_logger.Info($"SoftPluginsLoading = {config.SoftPluginsLoading}");
 
             _fabric = fabric;
@@ -374,7 +381,7 @@ namespace SmartHomeApi.Core.Services
                         if (!removingFailed)
                             deleteContainer.Plugin.Locators.Clear();
 
-                        await Task.Delay(1000);
+                        await Task.Delay(1000, _disposingCancellationTokenSource.Token);
 
                         if (!CollectGarbage(deleteContainer.Reference, deleteContainer.Plugin.PluginName))
                             throw new Exception("Could not unload dll. It's recommended to restart service.");
@@ -385,7 +392,7 @@ namespace SmartHomeApi.Core.Services
 
                             await AsyncHelpers.RetryOnFault(
                                 async () => Directory.Delete(tempPluginDirectoryPath, true), 5,
-                                () => Task.Delay(1000));
+                                () => Task.Delay(1000, _disposingCancellationTokenSource.Token));
                         }
                         catch (Exception e)
                         {
@@ -393,7 +400,7 @@ namespace SmartHomeApi.Core.Services
                         }
 
                         _logger.Info($"{deleteContainer.Plugin.PluginName} has been unloaded.");
-                    }, 5, () => Task.Delay(500));
+                    }, _unloadPluginsMaxTries, () => Task.Delay(_unloadPluginsTriesIntervalMS, _disposingCancellationTokenSource.Token));
                 }
                 catch (Exception e)
                 {
