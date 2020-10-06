@@ -104,7 +104,7 @@ namespace SmartHomeApi.Core.Services
             var currentPatameterState = await GetState(not.ItemId, parameter);
 
             var ev = new StateChangedEvent(StateChangedEventType.ValueSet, not.ItemType, not.ItemId, parameter,
-                currentPatameterState?.ToString(), value);
+                currentPatameterState?.ToString(), value, currentPatameterState, value);
 
             _stateContainerTransformer.AddStateChangedEvent(ev);
 

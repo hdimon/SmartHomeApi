@@ -53,7 +53,7 @@ namespace SmartHomeApi.Core.Services
                     var valueString = GetValueString(telemetryPair.Value);
 
                     NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueRemoved, itemState.ItemType,
-                        itemState.ItemId, telemetryPair.Key, valueString, null));
+                        itemState.ItemId, telemetryPair.Key, valueString, null, telemetryPair.Value, null));
                 }
             }
         }
@@ -72,7 +72,7 @@ namespace SmartHomeApi.Core.Services
                     var valueString = GetValueString(telemetryPair.Value);
 
                     NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueAdded, itemState.ItemType,
-                        itemState.ItemId, telemetryPair.Key, null, valueString));
+                        itemState.ItemId, telemetryPair.Key, null, valueString, null, telemetryPair.Value));
                 }
             }
         }
@@ -96,14 +96,17 @@ namespace SmartHomeApi.Core.Services
                     NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueUpdated, newItemState.ItemType,
                         newItemState.ItemId, nameof(newItemState.ConnectionStatus),
                         oldItemState.ConnectionStatus.ToString(),
-                        newItemState.ConnectionStatus.ToString()));
+                        newItemState.ConnectionStatus.ToString(),
+                        oldItemState.ConnectionStatus,
+                        newItemState.ConnectionStatus));
 
                 foreach (var removedParameter in removedParameters)
                 {
                     var oldValueString = GetValueString(oldTelemetry[removedParameter]);
 
                     NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueRemoved, newItemState.ItemType,
-                        newItemState.ItemId, removedParameter, oldValueString, null));
+                        newItemState.ItemId, removedParameter, oldValueString, null, oldTelemetry[removedParameter],
+                        null));
                 }
 
                 foreach (var addedParameter in addedParameters)
@@ -111,7 +114,7 @@ namespace SmartHomeApi.Core.Services
                     var newValueString = GetValueString(newTelemetry[addedParameter]);
 
                     NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueAdded, newItemState.ItemType,
-                        newItemState.ItemId, addedParameter, null, newValueString));
+                        newItemState.ItemId, addedParameter, null, newValueString, null, newTelemetry[addedParameter]));
                 }
 
                 foreach (var updatedParameter in updatedParameters)
@@ -126,7 +129,7 @@ namespace SmartHomeApi.Core.Services
                         if (!_stateContainerTransformer.ParameterIsTransformed(updatedDevice, updatedParameter))
                             NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueUpdated,
                                 newItemState.ItemType, newItemState.ItemId, updatedParameter, oldValueString,
-                                newValueString));
+                                newValueString, oldTelemetry[updatedParameter], newTelemetry[updatedParameter]));
                     }
                 }
             }
