@@ -197,7 +197,7 @@ namespace SmartHomeApi.DeviceUtils
             return command;
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             try
             {
