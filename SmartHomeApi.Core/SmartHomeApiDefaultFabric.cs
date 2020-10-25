@@ -56,11 +56,6 @@ namespace SmartHomeApi.Core
             return _provider.GetService<IApiLogger>();
         }
 
-        public IStatesContainerTransformer GetStateContainerTransformer()
-        {
-            return _provider.GetService<IStatesContainerTransformer>();
-        }
-
         public INotificationsProcessor GetNotificationsProcessor()
         {
             return _provider.GetService<INotificationsProcessor>();

@@ -12,7 +12,6 @@ namespace SmartHomeApi.Core.Services
     public class NotificationsProcessor : INotificationsProcessor
     {
         private readonly List<IStateChangedSubscriber> _stateChangedSubscribers = new List<IStateChangedSubscriber>();
-        private readonly IStatesContainerTransformer _stateContainerTransformer;
         private readonly IApiLogger _logger;
 
         public string ItemType => null;
@@ -21,7 +20,6 @@ namespace SmartHomeApi.Core.Services
         public NotificationsProcessor(ISmartHomeApiFabric fabric)
         {
             _logger = fabric.GetApiLogger();
-            _stateContainerTransformer = fabric.GetStateContainerTransformer();
         }
 
         public void NotifySubscribersAboutChanges(ApiManagerStateContainer oldStateContainer,
@@ -126,10 +124,9 @@ namespace SmartHomeApi.Core.Services
                         var oldValueString = GetValueString(oldTelemetry[updatedParameter]);
                         var newValueString = GetValueString(newTelemetry[updatedParameter]);
 
-                        if (!_stateContainerTransformer.ParameterIsTransformed(updatedDevice, updatedParameter))
-                            NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueUpdated,
-                                newItemState.ItemType, newItemState.ItemId, updatedParameter, oldValueString,
-                                newValueString, oldTelemetry[updatedParameter], newTelemetry[updatedParameter]));
+                        NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueUpdated,
+                            newItemState.ItemType, newItemState.ItemId, updatedParameter, oldValueString,
+                            newValueString, oldTelemetry[updatedParameter], newTelemetry[updatedParameter]));
                     }
                 }
             }

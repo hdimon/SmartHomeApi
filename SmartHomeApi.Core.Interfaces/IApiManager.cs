@@ -10,9 +10,9 @@ namespace SmartHomeApi.Core.Interfaces
         Task<ISetValueResult> SetValue(string itemId, string parameter, string value);
         Task<ISetValueResult> Increase(string itemId, string parameter);
         Task<ISetValueResult> Decrease(string itemId, string parameter);
-        Task<IStatesContainer> GetState(bool transform = false);
-        Task<IItemState> GetState(string itemId, bool transform = false);
-        Task<object> GetState(string itemId, string parameter, bool transform = false);
+        Task<IStatesContainer> GetState();
+        Task<IItemState> GetState(string itemId);
+        Task<object> GetState(string itemId, string parameter);
         Task<IList<IItem>> GetItems();
         Task<ExecuteCommandResultAbstract> Execute(ExecuteCommand command);
     }

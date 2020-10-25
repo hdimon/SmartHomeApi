@@ -27,7 +27,7 @@ namespace SmartHomeApi.WebApi.Controllers
         {
             var manager = _fabric.GetApiManager();
 
-            return await manager.GetState(true);
+            return await manager.GetState();
         }
 
         [HttpGet]
@@ -36,7 +36,7 @@ namespace SmartHomeApi.WebApi.Controllers
         {
             var manager = _fabric.GetApiManager();
 
-            return await manager.GetState(deviceId, true);
+            return await manager.GetState(deviceId);
         }
 
         [HttpGet]
@@ -45,7 +45,7 @@ namespace SmartHomeApi.WebApi.Controllers
         {
             var manager = _fabric.GetApiManager();
 
-            return await manager.GetState(deviceId, parameter, true);
+            return await manager.GetState(deviceId, parameter);
         }
 
         /*[HttpPost]

@@ -16,7 +16,6 @@ namespace SmartHomeApi.Core.Services
         private Task _worker;
         private readonly ReaderWriterLock _readerWriterLock = new ReaderWriterLock();
         private readonly IApiLogger _logger;
-        private readonly IStatesContainerTransformer _stateContainerTransformer;
         private readonly INotificationsProcessor _notificationsProcessor;
         private readonly IUntrackedStatesProcessor _untrackedStatesProcessor;
         private readonly IUncachedStatesProcessor _uncachedStatesProcessor;
@@ -30,7 +29,6 @@ namespace SmartHomeApi.Core.Services
         {
             _fabric = fabric;
             _logger = _fabric.GetApiLogger();
-            _stateContainerTransformer = _fabric.GetStateContainerTransformer();
             _notificationsProcessor = _fabric.GetNotificationsProcessor();
             _untrackedStatesProcessor = _fabric.GetUntrackedStatesProcessor();
             _uncachedStatesProcessor = _fabric.GetUncachedStatesProcessor();
@@ -106,8 +104,6 @@ namespace SmartHomeApi.Core.Services
             var ev = new StateChangedEvent(StateChangedEventType.ValueSet, not.ItemType, not.ItemId, parameter,
                 currentPatameterState?.ToString(), value, currentPatameterState, value);
 
-            _stateContainerTransformer.AddStateChangedEvent(ev);
-
             _notificationsProcessor.NotifySubscribers(ev);
 
             ISetValueResult result = null;
@@ -123,8 +119,6 @@ namespace SmartHomeApi.Core.Services
                 _logger.Error(e);
             }
 
-            _stateContainerTransformer.RemoveStateChangedEvent(ev);
-
             return result ?? new SetValueResult(not.ItemId, not.ItemType, false);
         }
 
@@ -138,13 +132,11 @@ namespace SmartHomeApi.Core.Services
             return new SetValueResult(false);
         }
 
-        public async Task<IStatesContainer> GetState(bool transform = false)
+        public async Task<IStatesContainer> GetState()
         {
             var stateContainer = GetStateSafely();
 
-            var state = await TransformStateIfRequired(stateContainer.State, transform);
-
-            state = (IStatesContainer)state.Clone();
+            var state = (IStatesContainer)stateContainer.State.Clone();
 
             var trState = new Dictionary<string, IItemState>();
 
@@ -161,11 +153,11 @@ namespace SmartHomeApi.Core.Services
             return state;
         }
 
-        public async Task<IItemState> GetState(string itemId, bool transform = false)
+        public async Task<IItemState> GetState(string itemId)
         {
             var stateContainer = GetStateSafely();
 
-            var state = await TransformStateIfRequired(stateContainer.State, transform);
+            var state = stateContainer.State;
 
             if (!state.States.ContainsKey(itemId))
                 return new ItemState(itemId, string.Empty);
@@ -178,11 +170,11 @@ namespace SmartHomeApi.Core.Services
             return itemState;
         }
 
-        public async Task<object> GetState(string itemId, string parameter, bool transform = false)
+        public async Task<object> GetState(string itemId, string parameter)
         {
             var stateContainer = GetStateSafely();
 
-            var state = await TransformStateIfRequired(stateContainer.State, transform);
+            var state = stateContainer.State;
 
             if (state.States.ContainsKey(itemId))
             {
@@ -324,16 +316,6 @@ namespace SmartHomeApi.Core.Services
             }
         }
 
-        private async Task<List<IStateTransformable>> GetTransformableItems()
-        {
-            var itemsLocator = _fabric.GetItemsLocator();
-            var items = await GetItems(itemsLocator);
-
-            var transformableItems = items.Where(d => d is IStateTransformable).Cast<IStateTransformable>().ToList();
-
-            return transformableItems;
-        }
-
         private async Task<List<IStateGettable>> GetGettableItems()
         {
             var itemsLocator = _fabric.GetItemsLocator();
@@ -343,22 +325,6 @@ namespace SmartHomeApi.Core.Services
                                      .OrderBy(i => i.ItemType).ThenBy(i => i.ItemId).ToList();
 
             return gettableItems;
-        }
-
-        private async Task<IStatesContainer> TransformStateIfRequired(IStatesContainer state, bool transform)
-        {
-            if (!transform)
-                return state;
-
-            var transformableItems = await GetTransformableItems();
-
-            if (transformableItems.Any() || _stateContainerTransformer.TransformationIsNeeded())
-            {
-                state = (IStatesContainer)state.Clone();
-                _stateContainerTransformer.Transform(state, transformableItems);
-            }
-
-            return state;
         }
 
         public void RegisterSubscriber(IStateChangedSubscriber subscriber)

@@ -11,7 +11,6 @@ namespace SmartHomeApi.Core.Interfaces
         IApiManager GetApiManager();
         IItemHelpersFabric GetItemHelpersFabric(string itemId);
         IApiLogger GetApiLogger();
-        IStatesContainerTransformer GetStateContainerTransformer();
         INotificationsProcessor GetNotificationsProcessor();
         IUntrackedStatesProcessor GetUntrackedStatesProcessor();
         IUncachedStatesProcessor GetUncachedStatesProcessor();
