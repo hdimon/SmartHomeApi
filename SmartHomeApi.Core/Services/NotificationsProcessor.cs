@@ -65,6 +65,11 @@ namespace SmartHomeApi.Core.Services
 
                 var trackedStates = GetOnlyTrackedStates(newStateContainer.UntrackedStates, itemState);
 
+                NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueAdded, itemState.ItemType,
+                    itemState.ItemId, nameof(itemState.ConnectionStatus),
+                    null, itemState.ConnectionStatus.ToString(),
+                    null, itemState.ConnectionStatus));
+
                 foreach (var telemetryPair in trackedStates)
                 {
                     var valueString = GetValueString(telemetryPair.Value);
