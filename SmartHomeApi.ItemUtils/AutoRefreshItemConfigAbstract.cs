@@ -1,4 +1,4 @@
-﻿namespace SmartHomeApi.DeviceUtils
+﻿namespace SmartHomeApi.ItemUtils
 {
     public class AutoRefreshItemConfigAbstract : ItemConfigAbstract
     {

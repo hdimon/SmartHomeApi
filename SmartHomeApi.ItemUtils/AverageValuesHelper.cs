@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Linq;
 
-namespace SmartHomeApi.DeviceUtils
+namespace SmartHomeApi.ItemUtils
 {
     public class AverageValuesHelper
     {

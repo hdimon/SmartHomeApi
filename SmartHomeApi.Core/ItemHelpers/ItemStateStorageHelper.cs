@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 using SmartHomeApi.Core.Interfaces;
 using SmartHomeApi.Core.Interfaces.Configuration;
 
-namespace SmartHomeApi.Core.DeviceHelpers
+namespace SmartHomeApi.Core.ItemHelpers
 {
     public class ItemStateStorageHelper : IItemStateStorageHelper
     {

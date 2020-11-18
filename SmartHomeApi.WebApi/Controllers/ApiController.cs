@@ -31,38 +31,38 @@ namespace SmartHomeApi.WebApi.Controllers
         }
 
         [HttpGet]
-        [Route("[action]/{deviceId}")]
-        public async Task<IItemState> GetState(string deviceId)
+        [Route("[action]/{itemId}")]
+        public async Task<IItemState> GetState(string itemId)
         {
             var manager = _fabric.GetApiManager();
 
-            return await manager.GetState(deviceId);
+            return await manager.GetState(itemId);
         }
 
         [HttpGet]
-        [Route("[action]/{deviceId}/{parameter}")]
-        public async Task<object> GetState(string deviceId, string parameter)
+        [Route("[action]/{itemId}/{parameter}")]
+        public async Task<object> GetState(string itemId, string parameter)
         {
             var manager = _fabric.GetApiManager();
 
-            return await manager.GetState(deviceId, parameter);
+            return await manager.GetState(itemId, parameter);
         }
 
         /*[HttpPost]
-        public async Task SetValue(string deviceId, string parameter, string value)
+        public async Task SetValue(string itemId, string parameter, string value)
         {
-            var manager = _fabric.GetDeviceManager();
+            var manager = _fabric.GetItemManager();
 
-            await manager.SetValue(deviceId, parameter, value);
+            await manager.SetValue(itemId, parameter, value);
         }*/
 
         [HttpGet]
-        [Route("[action]/{deviceId}/{parameter}/{value?}")]
-        public async Task<ISetValueResult> SetValue(string deviceId, string parameter, string value)
+        [Route("[action]/{itemId}/{parameter}/{value?}")]
+        public async Task<ISetValueResult> SetValue(string itemId, string parameter, string value)
         {
             var manager = _fabric.GetApiManager();
 
-            var result = await manager.SetValue(deviceId, parameter, value);
+            var result = await manager.SetValue(itemId, parameter, value);
 
             return result;
         }

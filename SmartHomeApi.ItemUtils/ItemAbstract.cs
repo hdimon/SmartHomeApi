@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Common.Utils;
 using SmartHomeApi.Core.Interfaces;
 
-namespace SmartHomeApi.DeviceUtils
+namespace SmartHomeApi.ItemUtils
 {
-    public abstract class DeviceAbstract : IItem, IStateSettable, IStateGettable, IConfigurable, IInitializable, IDisposable
+    public abstract class ItemAbstract : IItem, IStateSettable, IStateGettable, IConfigurable, IInitializable, IDisposable
     {
         private readonly AsyncLazy _initializeTask;
 
@@ -27,7 +27,7 @@ namespace SmartHomeApi.DeviceUtils
             Config = newConfig;
         }
 
-        protected DeviceAbstract(IItemHelpersFabric helpersFabric, IItemConfig config)
+        protected ItemAbstract(IItemHelpersFabric helpersFabric, IItemConfig config)
         {
             HelpersFabric = helpersFabric;
             Config = config;
@@ -56,7 +56,7 @@ namespace SmartHomeApi.DeviceUtils
 
             try
             {
-                await InitializeDevice();
+                await InitializeItem();
             }
             catch (Exception e)
             {
@@ -66,7 +66,7 @@ namespace SmartHomeApi.DeviceUtils
             IsInitialized = true;
         }
 
-        protected virtual async Task InitializeDevice()
+        protected virtual async Task InitializeItem()
         {
         }
 

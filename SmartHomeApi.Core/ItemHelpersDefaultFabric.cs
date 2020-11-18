@@ -16,7 +16,7 @@ namespace SmartHomeApi.Core
             _itemId = itemId;
         }
 
-        public IItemStateStorageHelper GetDeviceStateStorageHelper()
+        public IItemStateStorageHelper GetItemStateStorageHelper()
         {
             return _provider.GetService<IItemStateStorageHelper>();
         }

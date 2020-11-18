@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Common.Utils;
 using SmartHomeApi.Core.Interfaces;
 
-namespace SmartHomeApi.DeviceUtils
+namespace SmartHomeApi.ItemUtils
 {
     public abstract class StandardItem : StateChangedSubscriberAbstract, IStateSettable, IStateGettable, IConfigurable, IInitializable
     {
@@ -59,7 +59,7 @@ namespace SmartHomeApi.DeviceUtils
 
             try
             {
-                await InitializeDevice();
+                await InitializeItem();
             }
             catch (Exception e)
             {
@@ -69,7 +69,7 @@ namespace SmartHomeApi.DeviceUtils
             IsInitialized = true;
         }
 
-        protected virtual async Task InitializeDevice()
+        protected virtual async Task InitializeItem()
         {
         }
 

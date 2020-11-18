@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NUnit.Framework;
-using SmartHomeApi.DeviceUtils;
+using SmartHomeApi.ItemUtils;
 
 namespace SmartHomeApi.Core.UnitTests
 {

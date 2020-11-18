@@ -3,7 +3,7 @@ using SmartHomeApi.Core.Interfaces;
 
 namespace SmartHomeApi.UnitTestsBase.Stubs
 {
-    public class DeviceStateStorageStubHelper : IItemStateStorageHelper
+    public class ItemStateStorageStubHelper : IItemStateStorageHelper
     {
         public async Task SaveState(object state, string fileNamePattern)
         {

@@ -18,12 +18,12 @@ namespace SmartHomeApi.Core.Interfaces
         {
         }
 
-        public StateChangedEvent(StateChangedEventType eventType, string deviceType, string deviceId, string parameter,
+        public StateChangedEvent(StateChangedEventType eventType, string itemType, string itemId, string parameter,
             string oldValue, string newValue, object oldObject, object newObject)
         {
             EventType = eventType;
-            ItemType = deviceType;
-            ItemId = deviceId;
+            ItemType = itemType;
+            ItemId = itemId;
             Parameter = parameter;
             OldValue = oldValue;
             NewValue = newValue;

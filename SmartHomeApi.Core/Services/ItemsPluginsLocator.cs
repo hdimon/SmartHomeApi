@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Common.Utils;
 using SmartHomeApi.Core.Interfaces;
-using SmartHomeApi.DeviceUtils;
+using SmartHomeApi.ItemUtils;
 
 namespace SmartHomeApi.Core.Services
 {

@@ -3,13 +3,13 @@ using SmartHomeApi.Core.Interfaces;
 
 namespace SmartHomeApi.Core.Models
 {
-    public class DeviceStatesContainer : IStatesContainer
+    public class ItemStatesContainer : IStatesContainer
     {
         public Dictionary<string, IItemState> States { get; set; } = new Dictionary<string, IItemState>();
 
         public object Clone()
         {
-            var clone = new DeviceStatesContainer();
+            var clone = new ItemStatesContainer();
 
             foreach (var itemState in States)
             {

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Common.Utils;
 using SmartHomeApi.Core.Interfaces;
 
-namespace SmartHomeApi.DeviceUtils
+namespace SmartHomeApi.ItemUtils
 {
     public abstract class StateChangedSubscriberAbstract : IStateChangedSubscriber, IDisposable
     {

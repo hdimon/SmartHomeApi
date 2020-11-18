@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\SmartHomeApi.DeviceUtils\SmartHomeApi.DeviceUtils.csproj" />
+    <ProjectReference Include="..\..\SmartHomeApi.ItemUtils\SmartHomeApi.ItemUtils.csproj" />
   </ItemGroup>
 
 </Project>

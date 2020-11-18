@@ -1,6 +1,6 @@
 ﻿using SmartHomeApi.Core.Interfaces;
 
-namespace SmartHomeApi.DeviceUtils
+namespace SmartHomeApi.ItemUtils
 {
     public class ItemConfigAbstract : IItemConfig
     {

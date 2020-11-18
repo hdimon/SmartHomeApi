@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using ObjectsComparer;
 using SmartHomeApi.Core.Interfaces;
 
-namespace SmartHomeApi.DeviceUtils
+namespace SmartHomeApi.ItemUtils
 {
     public abstract class AutoRefreshItemsLocatorAbstract : IItemsLocator
     {

@@ -28,21 +28,21 @@ namespace SmartHomeApi.Core.Services
             var newStates = newStateContainer.State.States;
             var oldStates = oldStateContainer.State.States;
 
-            var addedDevices = newStates.Keys.Except(oldStates.Keys).ToList();
-            var removedDevices = oldStates.Keys.Except(newStates.Keys).ToList();
-            var updatedDevices = newStates.Keys.Except(addedDevices).ToList();
+            var addedItems = newStates.Keys.Except(oldStates.Keys).ToList();
+            var removedItems = oldStates.Keys.Except(newStates.Keys).ToList();
+            var updatedItems = newStates.Keys.Except(addedItems).ToList();
 
-            NotifySubscribersAboutRemovedDevices(removedDevices, oldStateContainer);
-            NotifySubscribersAboutAddedDevices(addedDevices, newStateContainer);
-            NotifySubscribersAboutUpdatedDevices(updatedDevices, oldStateContainer, newStateContainer);
+            NotifySubscribersAboutRemovedItems(removedItems, oldStateContainer);
+            NotifySubscribersAboutAddedItems(addedItems, newStateContainer);
+            NotifySubscribersAboutUpdatedItems(updatedItems, oldStateContainer, newStateContainer);
         }
 
-        private void NotifySubscribersAboutRemovedDevices(List<string> removedDevices,
+        private void NotifySubscribersAboutRemovedItems(List<string> removedItems,
             ApiManagerStateContainer oldStateContainer)
         {
-            foreach (var removedDevice in removedDevices)
+            foreach (var removedItem in removedItems)
             {
-                var itemState = oldStateContainer.State.States[removedDevice];
+                var itemState = oldStateContainer.State.States[removedItem];
 
                 var trackedStates = GetOnlyTrackedStates(oldStateContainer.UntrackedStates, itemState);
 
@@ -56,12 +56,12 @@ namespace SmartHomeApi.Core.Services
             }
         }
 
-        private void NotifySubscribersAboutAddedDevices(List<string> addedDevices,
+        private void NotifySubscribersAboutAddedItems(List<string> addedItems,
             ApiManagerStateContainer newStateContainer)
         {
-            foreach (var addedDevice in addedDevices)
+            foreach (var addedItem in addedItems)
             {
-                var itemState = newStateContainer.State.States[addedDevice];
+                var itemState = newStateContainer.State.States[addedItem];
 
                 var trackedStates = GetOnlyTrackedStates(newStateContainer.UntrackedStates, itemState);
 
@@ -80,13 +80,13 @@ namespace SmartHomeApi.Core.Services
             }
         }
 
-        private void NotifySubscribersAboutUpdatedDevices(List<string> updatedDevices,
+        private void NotifySubscribersAboutUpdatedItems(List<string> updatedItems,
             ApiManagerStateContainer oldStateContainer, ApiManagerStateContainer newStateContainer)
         {
-            foreach (var updatedDevice in updatedDevices)
+            foreach (var updatedItem in updatedItems)
             {
-                var newItemState = newStateContainer.State.States[updatedDevice];
-                var oldItemState = oldStateContainer.State.States[updatedDevice];
+                var newItemState = newStateContainer.State.States[updatedItem];
+                var oldItemState = oldStateContainer.State.States[updatedItem];
 
                 var newTelemetry = GetOnlyTrackedStates(newStateContainer.UntrackedStates, newItemState);
                 var oldTelemetry = GetOnlyTrackedStates(oldStateContainer.UntrackedStates, oldItemState);

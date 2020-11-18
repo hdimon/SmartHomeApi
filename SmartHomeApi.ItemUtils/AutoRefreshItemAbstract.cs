@@ -4,9 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using SmartHomeApi.Core.Interfaces;
 
-namespace SmartHomeApi.DeviceUtils
+namespace SmartHomeApi.ItemUtils
 {
-    public abstract class AutoRefreshDeviceAbstract : DeviceAbstract
+    public abstract class AutoRefreshItemAbstract : ItemAbstract
     {
         private Task _worker;
         private int _requestFailureCount;
@@ -18,14 +18,14 @@ namespace SmartHomeApi.DeviceUtils
         protected IItemState CurrentState;
         protected readonly ReaderWriterLock RwLock = new ReaderWriterLock();
 
-        protected AutoRefreshDeviceAbstract(IItemHelpersFabric helpersFabric, IItemConfig config) : base(helpersFabric, config)
+        protected AutoRefreshItemAbstract(IItemHelpersFabric helpersFabric, IItemConfig config) : base(helpersFabric, config)
         {
             CurrentState = new ItemState(ItemId, ItemType);
         }
 
         protected abstract Task<IItemState> RequestData();
 
-        protected override async Task InitializeDevice()
+        protected override async Task InitializeItem()
         {
             RunDataCollectorWorker();
         }

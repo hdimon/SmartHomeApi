@@ -2,7 +2,7 @@
 {
     public interface IItemHelpersFabric
     {
-        IItemStateStorageHelper GetDeviceStateStorageHelper();
+        IItemStateStorageHelper GetItemStateStorageHelper();
         IApiLogger GetApiLogger();
     }
 }

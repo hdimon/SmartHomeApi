@@ -10,9 +10,9 @@ using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using SmartHomeApi.Core;
-using SmartHomeApi.Core.DeviceHelpers;
 using SmartHomeApi.Core.Interfaces;
 using SmartHomeApi.Core.Interfaces.Configuration;
+using SmartHomeApi.Core.ItemHelpers;
 using SmartHomeApi.Core.Services;
 
 namespace SmartHomeApi.WebApi

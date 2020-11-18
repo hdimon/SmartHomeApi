@@ -178,10 +178,10 @@ namespace SmartHomeApi.Core.Services
 
             if (state.States.ContainsKey(itemId))
             {
-                var deviceState = state.States[itemId];
+                var itemState = state.States[itemId];
 
-                if (deviceState.States.ContainsKey(parameter))
-                    return deviceState.States[parameter];
+                if (itemState.States.ContainsKey(parameter))
+                    return itemState.States[parameter];
             }
 
             return string.Empty;
@@ -223,7 +223,7 @@ namespace SmartHomeApi.Core.Services
 
         private IStatesContainer CreateStatesContainer()
         {
-            return new DeviceStatesContainer();
+            return new ItemStatesContainer();
         }
 
         private ApiManagerStateContainer GetStateSafely()
@@ -285,9 +285,9 @@ namespace SmartHomeApi.Core.Services
 
             try
             {
-                var deviceState = item.GetState();
+                var itemState = item.GetState();
 
-                state.States.Add(deviceState.ItemId, deviceState);
+                state.States.Add(itemState.ItemId, itemState);
 
                 _untrackedStatesProcessor.AddUntrackedStatesFromItem(item, stateContainer);
                 _uncachedStatesProcessor.AddUncachedStatesFromItem(item, stateContainer);

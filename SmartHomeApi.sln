@@ -11,13 +11,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartHomeApi.Core.Interface
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartHomeApi.Core.UnitTests", "UnitTests\SmartHomeApi.Core.UnitTests\SmartHomeApi.Core.UnitTests.csproj", "{53A99F54-3144-4D30-AB57-F362BABDA065}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartHomeApi.DeviceUtils", "SmartHomeApi.DeviceUtils\SmartHomeApi.DeviceUtils.csproj", "{22F1B451-67F7-47BC-A498-FD8FD008B446}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartHomeApi.ItemUtils", "SmartHomeApi.ItemUtils\SmartHomeApi.ItemUtils.csproj", "{22F1B451-67F7-47BC-A498-FD8FD008B446}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Utils", "Common.Utils\Common.Utils.csproj", "{2787CD55-0240-4489-AAEC-BA87F82664C4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{6B46741C-184D-490B-9A5E-F75057E84E11}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartHomeApi.UnitTestsBase", "UnitTests\SmartHomeApi.UnitTestsBase\SmartHomeApi.UnitTestsBase.csproj", "{CC67EAC1-A2F0-4C85-A6CC-BA5A27091C16}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartHomeApi.UnitTestsBase", "UnitTests\SmartHomeApi.UnitTestsBase\SmartHomeApi.UnitTestsBase.csproj", "{CC67EAC1-A2F0-4C85-A6CC-BA5A27091C16}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

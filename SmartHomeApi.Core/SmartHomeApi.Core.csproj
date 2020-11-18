@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SmartHomeApi.Core.Interfaces\SmartHomeApi.Core.Interfaces.csproj" />
-    <ProjectReference Include="..\SmartHomeApi.DeviceUtils\SmartHomeApi.DeviceUtils.csproj" />
+    <ProjectReference Include="..\SmartHomeApi.ItemUtils\SmartHomeApi.ItemUtils.csproj" />
   </ItemGroup>
 
   <ItemGroup>

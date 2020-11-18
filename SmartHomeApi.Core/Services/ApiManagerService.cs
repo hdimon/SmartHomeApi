@@ -10,9 +10,9 @@ namespace SmartHomeApi.Core.Services
     {
         private readonly IApiManager _apiManager;
 
-        public ApiManagerService(IApiManager deviceManager)
+        public ApiManagerService(IApiManager itemManager)
         {
-            _apiManager = deviceManager;
+            _apiManager = itemManager;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
