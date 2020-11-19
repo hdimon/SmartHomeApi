@@ -2,6 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <Authors>Dmitry Khlybov</Authors>
+    <Product>SmartHomeApi</Product>
+    <Description>SDK for creating own SmartHomeApi plugins.</Description>
+    <PackageTags>SmartHomeApi Plugin</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
