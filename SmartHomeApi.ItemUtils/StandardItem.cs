@@ -3,16 +3,18 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Common.Utils;
 using SmartHomeApi.Core.Interfaces;
+using SmartHomeApi.Core.Interfaces.ExecuteCommandResults;
 
 namespace SmartHomeApi.ItemUtils
 {
-    public abstract class StandardItem : StateChangedSubscriberAbstract, IStateSettable, IStateGettable, IConfigurable, IInitializable
+    public abstract class StandardItem : StateChangedSubscriberAbstract, IStateSettable, IStateGettable, IConfigurable, IInitializable, IExecutable
     {
         private readonly AsyncLazy _initializeTask;
 
         private readonly IItemState _defaultState;
         public string ItemId { get; }
         public string ItemType { get; }
+
         public IItemConfig Config { get; private set; }
         public bool IsInitialized { get; set; }
 
@@ -76,6 +78,11 @@ namespace SmartHomeApi.ItemUtils
         protected override async Task ProcessNotification(StateChangedEvent args)
         {
             
+        }
+
+        public virtual async Task<ExecuteCommandResultAbstract> Execute(ExecuteCommand command)
+        {
+            return new ExecuteCommandResultNotFound();
         }
     }
 }
