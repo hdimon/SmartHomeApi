@@ -288,9 +288,6 @@ namespace SmartHomeApi.Core.Services
                 var itemState = item.GetState();
 
                 state.States.Add(itemState.ItemId, itemState);
-
-                _untrackedStatesProcessor.AddUntrackedStatesFromItem(item, stateContainer);
-                _uncachedStatesProcessor.AddUncachedStatesFromItem(item, stateContainer);
             }
             catch (Exception e)
             {

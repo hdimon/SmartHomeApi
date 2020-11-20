@@ -18,9 +18,6 @@ namespace SmartHomeApi.ItemUtils
         public IItemConfig Config { get; private set; }
         public bool IsInitialized { get; set; }
 
-        public virtual IList<string> UncachedFields { get; }
-        public virtual IList<string> UntrackedFields { get; }
-
         protected StandardItem(IApiManager manager, IItemHelpersFabric helpersFabric, IItemConfig config) : base(manager, helpersFabric)
         {
             Config = config;

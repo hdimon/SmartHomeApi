@@ -19,9 +19,6 @@ namespace SmartHomeApi.ItemUtils
         public string ItemType { get; }
         public IItemConfig Config { get; private set; }
 
-        public virtual IList<string> UncachedFields { get; }
-        public virtual IList<string> UntrackedFields { get; }
-
         public virtual void OnConfigChange(IItemConfig newConfig, IEnumerable<ItemConfigChangedField> changedFields)
         {
             Config = newConfig;
