@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq.Expressions;
+using System.Text.Json;
 
 namespace Common.Utils
 {
@@ -60,6 +61,30 @@ namespace Common.Utils
             }
 
             return expando as ExpandoObject;
+        }
+
+        public static T GetValue<T>(object val)
+        {
+            if (IsSimpleType(typeof(T)))
+            {
+                return (T)val;
+            }
+
+            //Try to get it as string
+            string v = val as string;
+
+            if (v == null)
+                return default;
+
+            return JsonSerializer.Deserialize<T>(v);
+        }
+
+        public static T GetValue<T>(object val, T defaultValue)
+        {
+            if (val == null)
+                return defaultValue;
+
+            return GetValue<T>(val);
         }
     }
 }

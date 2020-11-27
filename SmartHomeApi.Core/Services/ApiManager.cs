@@ -87,7 +87,7 @@ namespace SmartHomeApi.Core.Services
             _logger.Info("ApiManager has been disposed.");
         }
 
-        public async Task<ISetValueResult> SetValue(string itemId, string parameter, string value)
+        public async Task<ISetValueResult> SetValue(string itemId, string parameter, object value)
         {
             var itemsLocator = _fabric.GetItemsLocator();
             var items = await GetItems(itemsLocator);
@@ -99,10 +99,10 @@ namespace SmartHomeApi.Core.Services
 
             var not = (IStateSettable)item;
 
-            var currentPatameterState = await GetState(not.ItemId, parameter);
+            var currentParameterState = await GetState(not.ItemId, parameter);
 
             var ev = new StateChangedEvent(StateChangedEventType.ValueSet, not.ItemType, not.ItemId, parameter,
-                currentPatameterState?.ToString(), value, currentPatameterState, value);
+                currentParameterState?.ToString(), value?.ToString(), currentParameterState, value);
 
             _notificationsProcessor.NotifySubscribers(ev);
 
@@ -184,7 +184,7 @@ namespace SmartHomeApi.Core.Services
                     return itemState.States[parameter];
             }
 
-            return string.Empty;
+            return null;
         }
 
         public async Task<IList<IItem>> GetItems()
@@ -287,7 +287,8 @@ namespace SmartHomeApi.Core.Services
             {
                 var itemState = item.GetState();
 
-                state.States.Add(itemState.ItemId, itemState);
+                if (itemState != null)
+                    state.States.Add(itemState.ItemId, itemState);
             }
             catch (Exception e)
             {

@@ -35,7 +35,7 @@ namespace SmartHomeApi.ItemUtils
             Config = newConfig;
         }
 
-        public virtual async Task<ISetValueResult> SetValue(string parameter, string value)
+        public virtual async Task<ISetValueResult> SetValue(string parameter, object value)
         {
             return new SetValueResult();
         }

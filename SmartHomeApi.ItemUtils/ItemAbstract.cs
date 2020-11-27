@@ -36,7 +36,7 @@ namespace SmartHomeApi.ItemUtils
             _initializeTask = new AsyncLazy(InitializeSafely);
         }
 
-        public abstract Task<ISetValueResult> SetValue(string parameter, string value);
+        public abstract Task<ISetValueResult> SetValue(string parameter, object value);
         public abstract IItemState GetState();
 
         public bool IsInitialized { get; set; }

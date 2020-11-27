@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Threading;
 using System.Threading.Tasks;
 using Common.Utils;
 using Microsoft.AspNetCore.Http;
@@ -6,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using SmartHomeApi.Core.Interfaces;
 using SmartHomeApi.Core.Interfaces.ExecuteCommandResults;
+using SmartHomeApi.Core.Interfaces.Extensions;
 
 namespace SmartHomeApi.WebApi.Controllers
 {
@@ -48,23 +52,46 @@ namespace SmartHomeApi.WebApi.Controllers
             return await manager.GetState(itemId, parameter);
         }
 
-        /*[HttpPost]
-        public async Task SetValue(string itemId, string parameter, string value)
-        {
-            var manager = _fabric.GetItemManager();
-
-            await manager.SetValue(itemId, parameter, value);
-        }*/
-
-        [HttpGet]
-        [Route("[action]/{itemId}/{parameter}/{value?}")]
-        public async Task<ISetValueResult> SetValue(string itemId, string parameter, string value)
+        [HttpPost]
+        [Route("[action]/{itemId}/{parameter}/{value?}/{type?}/{locale?}")]
+        public async Task<ISetValueResult> SetValue(string itemId, string parameter, string value, string type, string locale)
         {
             var manager = _fabric.GetApiManager();
+            var logger = _fabric.GetApiLogger();
 
-            var result = await manager.SetValue(itemId, parameter, value);
+            if (value == null)
+            {
+                var result = await manager.SetValue(itemId, parameter, null);
 
-            return result;
+                return result;
+            }
+
+            if (!Enum.TryParse<ValueDataType>(type, true, out var valueType))
+            {
+                var validTypes = Enum.GetNames(typeof(ValueDataType));
+                logger.Error($"DataType [{type}] is not valid. Valid types are: {string.Join(", ", validTypes)}.");
+                return new SetValueResult(false);
+            }
+
+            CultureInfo culture = GetCultureInfo(locale);
+
+            if (culture == null)
+                return new SetValueResult(false);
+
+            object objValue;
+
+            try
+            {
+                objValue = value.GetAsObject(valueType, culture);
+            }
+            catch (Exception)
+            {
+                logger.Error($"Can't cast [{value}] of type [{type}] to Object.");
+
+                return new SetValueResult(false);
+            }
+
+            return await manager.SetValue(itemId, parameter, objValue);
         }
 
         [HttpGet]
@@ -131,6 +158,36 @@ namespace SmartHomeApi.WebApi.Controllers
                     return Ok(result);
                 }
             }
+        }
+
+        private CultureInfo GetCultureInfo(string locale)
+        {
+            var logger = _fabric.GetApiLogger();
+            CultureInfo culture = null;
+
+            if (!string.IsNullOrWhiteSpace(locale))
+            {
+                try
+                {
+                    if (!CultureInfoHelper.Exists(locale))
+                    {
+                        logger.Error($"Culture [{locale}] is not valid.");
+                        return null;
+                    }
+
+                    culture = CultureInfo.GetCultureInfo(locale);
+                }
+                catch (Exception)
+                {
+                    logger.Error($"Culture [{locale}] is not valid.");
+                    return null;
+                }
+            }
+
+            if (culture == null)
+                culture = Thread.CurrentThread.CurrentCulture;
+
+            return culture;
         }
     }
 }

@@ -6,6 +6,6 @@ namespace SmartHomeApi.Core.Interfaces
     {
         string ItemId { get; }
         string ItemType { get; }
-        Task<ISetValueResult> SetValue(string parameter, string value);
+        Task<ISetValueResult> SetValue(string parameter, object value);
     }
 }

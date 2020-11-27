@@ -7,7 +7,7 @@ namespace SmartHomeApi.Core.Interfaces
 {
     public interface IApiManager : IInitializable, IDisposable, IStateChangedNotifier
     {
-        Task<ISetValueResult> SetValue(string itemId, string parameter, string value);
+        Task<ISetValueResult> SetValue(string itemId, string parameter, object value);
         Task<ISetValueResult> Increase(string itemId, string parameter);
         Task<ISetValueResult> Decrease(string itemId, string parameter);
         Task<IStatesContainer> GetState();
