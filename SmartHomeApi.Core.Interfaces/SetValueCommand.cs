@@ -4,7 +4,7 @@
     {
         public string ItemId { get; set; }
         public string Parameter { get; set; }
-        public string Value { get; set; }
+        public object Value { get; set; }
 
         public override string ToString()
         {

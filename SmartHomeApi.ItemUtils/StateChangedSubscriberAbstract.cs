@@ -187,7 +187,7 @@ namespace SmartHomeApi.ItemUtils
             return message.ToString();
         }
 
-        protected SetValueCommand CreateCommand(string itemId, string parameter, string value)
+        protected SetValueCommand CreateCommand(string itemId, string parameter, object value)
         {
             var command = new SetValueCommand();
             command.ItemId = itemId;
