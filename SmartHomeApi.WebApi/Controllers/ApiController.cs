@@ -44,12 +44,19 @@ namespace SmartHomeApi.WebApi.Controllers
         }
 
         [HttpGet]
-        [Route("[action]/{itemId}/{parameter}")]
-        public async Task<object> GetState(string itemId, string parameter)
+        [Route("[action]/{itemId}/{parameter}/{locale?}")]
+        public async Task<object> GetState(string itemId, string parameter, string locale)
         {
             var manager = _fabric.GetApiManager();
 
-            return await manager.GetState(itemId, parameter);
+            CultureInfo culture = GetCultureInfo(locale);
+
+            if (culture == null)
+                throw new ArgumentException($"Culture [{locale}] is not valid.");
+
+            var obj = await manager.GetState(itemId, parameter);
+
+            return Convert.ToString(obj, culture);
         }
 
         [HttpPost]
