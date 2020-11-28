@@ -56,6 +56,9 @@ namespace SmartHomeApi.WebApi.Controllers
 
             var obj = await manager.GetState(itemId, parameter);
 
+            if (obj is bool)
+                return obj.ToString()?.ToLower();
+
             return Convert.ToString(obj, culture);
         }
 
