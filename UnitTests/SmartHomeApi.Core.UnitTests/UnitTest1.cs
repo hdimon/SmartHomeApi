@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Common.Utils;
 using Newtonsoft.Json;
@@ -547,10 +548,39 @@ namespace SmartHomeApi.Core.UnitTests
             { }
         }
 
+        [Test]
+        public void SerializationTest()
+        {
+            var obj = new DoubleTest { Value = 10, Date = DateTime.Now};
+
+            var culture = CultureInfo.GetCultureInfo("ru-RU");
+
+            Thread.CurrentThread.CurrentCulture = culture;
+            var dt = DateTime.Now.ToLongTimeString();
+
+            var serialized = JsonSerializer.Serialize(obj);
+
+            culture = CultureInfo.GetCultureInfo("en-EN");
+            Thread.CurrentThread.CurrentCulture = culture;
+            serialized = JsonSerializer.Serialize(obj);
+
+            var res1 = bool.Parse("true");
+            var res2 = bool.Parse("True");
+
+            var res3 = bool.Parse("false");
+            var res4 = bool.Parse("False");
+        }
+
         private class TestClass
         {
             public string TestStr { get; set; }
             public int TestInt { get; set; }
+        }
+
+        private class DoubleTest
+        {
+            public double Value { get; set; }
+            public DateTime Date { get; set; }
         }
     }
 }
