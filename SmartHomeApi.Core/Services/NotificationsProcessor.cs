@@ -208,6 +208,9 @@ namespace SmartHomeApi.Core.Services
             else //Both are null => no changes
                 return true;
 
+            if (obj1 != null && obj2 != null && obj1.GetType() != obj2.GetType())
+                return false;
+
             var obj1IsDict = TypeHelper.IsDictionary(obj1);
             var obj2IsDict = TypeHelper.IsDictionary(obj2);
 

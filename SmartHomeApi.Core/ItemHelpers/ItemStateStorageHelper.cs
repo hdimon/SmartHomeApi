@@ -24,7 +24,8 @@ namespace SmartHomeApi.Core.ItemHelpers
 
         public async Task SaveState(object state, string fileNamePattern)
         {
-            var content = JsonConvert.SerializeObject(state, Formatting.Indented);
+            var options = new JsonSerializerSettings { Converters = { new NewtonsoftTimeSpanConverter() } };
+            var content = JsonConvert.SerializeObject(state, Formatting.Indented, options);
 
             var fileName = fileNamePattern + ".json";
             var filePath = Path.Combine(_storageDirectory, fileName);
@@ -63,7 +64,8 @@ namespace SmartHomeApi.Core.ItemHelpers
 
             try
             {
-                obj = JsonConvert.DeserializeObject<T>(content);
+                var options = new JsonSerializerSettings { Converters = { new NewtonsoftTimeSpanConverter() } };
+                obj = JsonConvert.DeserializeObject<T>(content, options);
             }
             catch (Exception e)
             {

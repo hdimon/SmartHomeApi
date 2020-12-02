@@ -551,7 +551,8 @@ namespace SmartHomeApi.Core.UnitTests
         [Test]
         public void SerializationTest()
         {
-            var obj = new DoubleTest { Value = 10, Date = DateTime.Now};
+            var dtNow = DateTime.Now;
+            var obj = new DoubleTest { Value = 10, Date = dtNow };
 
             var culture = CultureInfo.GetCultureInfo("ru-RU");
 
@@ -569,6 +570,45 @@ namespace SmartHomeApi.Core.UnitTests
 
             var res3 = bool.Parse("false");
             var res4 = bool.Parse("False");
+
+            var options = new JsonSerializerSettings() { Converters = { new NewtonsoftTimeSpanConverter() }};
+
+            var timeSpanMs = DateTime.Now.TimeOfDay;
+            var time = new TimeSpan(timeSpanMs.Hours, timeSpanMs.Minutes, timeSpanMs.Seconds);
+            var timeFull = new TimeSpan(3, time.Hours, time.Minutes, time.Seconds, 123);
+            var dict = new Dictionary<string, object>();
+            
+            dict.Add("String", "Indoor");
+            dict.Add("StringNull", null);
+            dict.Add("Integer", 3);
+            dict.Add("Double", 1.5d);
+            dict.Add("Decimal", 2.5m);
+            dict.Add("Boolean", true);
+            dict.Add("DateTime", dtNow);
+            dict.Add("TimeSpan", time);
+            dict.Add("TimeSpanMs", timeSpanMs);
+            dict.Add("TimeSpanFull", timeFull);
+
+            serialized = JsonConvert.SerializeObject(dict, Formatting.Indented, options);
+
+            var desDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(serialized, options);
+
+            Assert.AreEqual("Indoor", desDict["String"]);
+            Assert.AreEqual(null, desDict["StringNull"]);
+            Assert.AreEqual(3, (int)(long)desDict["Integer"]);
+            Assert.AreEqual(1.5d, (double)desDict["Double"]);
+            Assert.AreEqual(2.5m, (decimal)(double)desDict["Decimal"]);
+            Assert.AreEqual(true, (bool)desDict["Boolean"]);
+            Assert.AreEqual(dtNow, (DateTime)desDict["DateTime"]);
+            Assert.AreEqual(time, (TimeSpan)desDict["TimeSpan"]);
+            Assert.AreEqual(timeSpanMs, (TimeSpan)desDict["TimeSpanMs"]);
+            Assert.AreEqual(timeFull, (TimeSpan)desDict["TimeSpanFull"]);
+
+            serialized = JsonConvert.SerializeObject(obj, Formatting.Indented, options);
+            var doubleTest = JsonConvert.DeserializeObject<DoubleTest>(serialized, options);
+            Assert.IsNotNull(doubleTest);
+            Assert.AreEqual(10, doubleTest.Value);
+            Assert.AreEqual(dtNow, doubleTest.Date);
         }
 
         private class TestClass
