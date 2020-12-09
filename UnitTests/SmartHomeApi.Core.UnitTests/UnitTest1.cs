@@ -236,6 +236,9 @@ namespace SmartHomeApi.Core.UnitTests
             catch (InvalidCastException)
             {
             }
+            catch (FormatException)
+            {
+            }
 
             try
             {
@@ -254,6 +257,9 @@ namespace SmartHomeApi.Core.UnitTests
                 var res8 = TypeHelper.GetValue<int>(null);
             }
             catch (NullReferenceException)
+            {
+            }
+            catch (InvalidCastException)
             {
             }
 
@@ -279,7 +285,12 @@ namespace SmartHomeApi.Core.UnitTests
             TestClass res13 = TypeHelper.GetValue<TestClass>(null, null);
             Assert.IsNull(res13);
 
-            //var res14 = TypeHelper.GetValue("true", false);
+            long test = 7;
+            var res14 = TypeHelper.GetValue<int>(test);
+            Assert.AreEqual(7, res14);
+
+            var res15 = TypeHelper.GetValue<int?>(test);
+            Assert.AreEqual(7, res15);
         }
 
         [Test]

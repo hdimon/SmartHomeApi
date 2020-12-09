@@ -67,6 +67,17 @@ namespace Common.Utils
         {
             if (IsSimpleType(typeof(T)))
             {
+                if (typeof(T) == typeof(int))
+                    return (T)Convert.ChangeType(val, typeof(int));
+
+                if (typeof(T) == typeof(int?))
+                {
+                    if (val == null)
+                        return default;
+
+                    return (T)Convert.ChangeType(val, typeof(int));
+                }
+
                 return (T)val;
             }
 
