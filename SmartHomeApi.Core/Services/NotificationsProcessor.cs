@@ -65,11 +65,6 @@ namespace SmartHomeApi.Core.Services
 
                 var trackedStates = GetOnlyTrackedStates(newStateContainer.UntrackedStates, itemState);
 
-                NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueAdded, itemState.ItemType,
-                    itemState.ItemId, nameof(itemState.ConnectionStatus),
-                    null, itemState.ConnectionStatus.ToString(),
-                    null, itemState.ConnectionStatus));
-
                 foreach (var telemetryPair in trackedStates)
                 {
                     var valueString = GetValueString(telemetryPair.Value);
@@ -94,14 +89,6 @@ namespace SmartHomeApi.Core.Services
                 var addedParameters = newTelemetry.Keys.Except(oldTelemetry.Keys).ToList();
                 var removedParameters = oldTelemetry.Keys.Except(newTelemetry.Keys).ToList();
                 var updatedParameters = newTelemetry.Keys.Except(addedParameters).ToList();
-
-                if (oldItemState.ConnectionStatus != newItemState.ConnectionStatus)
-                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueUpdated, newItemState.ItemType,
-                        newItemState.ItemId, nameof(newItemState.ConnectionStatus),
-                        oldItemState.ConnectionStatus.ToString(),
-                        newItemState.ConnectionStatus.ToString(),
-                        oldItemState.ConnectionStatus,
-                        newItemState.ConnectionStatus));
 
                 foreach (var removedParameter in removedParameters)
                 {

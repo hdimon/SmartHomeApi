@@ -25,7 +25,7 @@ namespace SmartHomeApi.ItemUtils
             ItemId = config.ItemId;
             ItemType = config.ItemType;
 
-            _defaultState = new ItemState(ItemId, ItemType) { ConnectionStatus = ConnectionStatus.Stable };
+            _defaultState = new ItemState(ItemId, ItemType);
 
             _initializeTask = new AsyncLazy(InitializeSafely);
         }

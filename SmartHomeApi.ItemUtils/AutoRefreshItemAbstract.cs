@@ -69,6 +69,7 @@ namespace SmartHomeApi.ItemUtils
             bool failed = false;
 
             var state = await RequestData();
+            state.States["ConnectionStatus"] = ConnectionStatus.Stable;
             ExtendItemStates(state);
 
             if (!CurrentState.States.Any() && !state.States.Any())
@@ -94,21 +95,21 @@ namespace SmartHomeApi.ItemUtils
 
                 if (_requestFailureCount < RequestFailureMinThreshold)
                 {
-                    state.ConnectionStatus = ConnectionStatus.Stable;
+                    state.States["ConnectionStatus"] = ConnectionStatus.Stable;
                 }
                 else if (_requestFailureCount < RequestFailureMaxThreshold)
                 {
-                    state.ConnectionStatus = ConnectionStatus.Unstable;
+                    state.States["ConnectionStatus"] = ConnectionStatus.Unstable;
                 }
                 else if (_requestFailureCount >= RequestFailureMaxThreshold)
                 {
-                    state.ConnectionStatus = ConnectionStatus.Lost;
+                    state.States["ConnectionStatus"] = ConnectionStatus.Lost;
                 }
             }
             else
             {
                 _requestFailureCount = 0;
-                state.ConnectionStatus = ConnectionStatus.Stable;
+                state.States["ConnectionStatus"] = ConnectionStatus.Stable;
             }
 
             SetStateSafely(state);

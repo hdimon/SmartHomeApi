@@ -1,10 +1,10 @@
 ﻿namespace SmartHomeApi.Core.Interfaces
 {
-    public enum ConnectionStatus
+    public static class ConnectionStatus
     {
-        Unknown,
-        Stable,
-        Unstable,
-        Lost
+        public static readonly string Unknown = "Unknown";
+        public static readonly string Stable = "Stable";
+        public static readonly string Unstable = "Unstable";
+        public static readonly string Lost = "Lost";
     }
 }

@@ -7,7 +7,6 @@ namespace SmartHomeApi.Core.Interfaces
     {
         string ItemId { get; }
         string ItemType { get; }
-        ConnectionStatus ConnectionStatus { get; set; }
 
         Dictionary<string, object> States { get; set; }
     }
