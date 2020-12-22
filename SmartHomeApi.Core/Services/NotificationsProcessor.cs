@@ -48,10 +48,8 @@ namespace SmartHomeApi.Core.Services
 
                 foreach (var telemetryPair in trackedStates)
                 {
-                    var valueString = GetValueString(telemetryPair.Value);
-
                     NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueRemoved, itemState.ItemType,
-                        itemState.ItemId, telemetryPair.Key, valueString, null, telemetryPair.Value, null));
+                        itemState.ItemId, telemetryPair.Key, telemetryPair.Value, null));
                 }
             }
         }
@@ -67,10 +65,8 @@ namespace SmartHomeApi.Core.Services
 
                 foreach (var telemetryPair in trackedStates)
                 {
-                    var valueString = GetValueString(telemetryPair.Value);
-
                     NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueAdded, itemState.ItemType,
-                        itemState.ItemId, telemetryPair.Key, null, valueString, null, telemetryPair.Value));
+                        itemState.ItemId, telemetryPair.Key, null, telemetryPair.Value));
                 }
             }
         }
@@ -92,19 +88,14 @@ namespace SmartHomeApi.Core.Services
 
                 foreach (var removedParameter in removedParameters)
                 {
-                    var oldValueString = GetValueString(oldTelemetry[removedParameter]);
-
                     NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueRemoved, newItemState.ItemType,
-                        newItemState.ItemId, removedParameter, oldValueString, null, oldTelemetry[removedParameter],
-                        null));
+                        newItemState.ItemId, removedParameter, oldTelemetry[removedParameter], null));
                 }
 
                 foreach (var addedParameter in addedParameters)
                 {
-                    var newValueString = GetValueString(newTelemetry[addedParameter]);
-
                     NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueAdded, newItemState.ItemType,
-                        newItemState.ItemId, addedParameter, null, newValueString, null, newTelemetry[addedParameter]));
+                        newItemState.ItemId, addedParameter, null, newTelemetry[addedParameter]));
                 }
 
                 foreach (var updatedParameter in updatedParameters)
@@ -113,12 +104,9 @@ namespace SmartHomeApi.Core.Services
 
                     if (!areEqual)
                     {
-                        var oldValueString = GetValueString(oldTelemetry[updatedParameter]);
-                        var newValueString = GetValueString(newTelemetry[updatedParameter]);
-
-                        NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueUpdated,
-                            newItemState.ItemType, newItemState.ItemId, updatedParameter, oldValueString,
-                            newValueString, oldTelemetry[updatedParameter], newTelemetry[updatedParameter]));
+                        NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueUpdated, newItemState.ItemType,
+                            newItemState.ItemId, updatedParameter, oldTelemetry[updatedParameter],
+                            newTelemetry[updatedParameter]));
                     }
                 }
             }
@@ -159,28 +147,6 @@ namespace SmartHomeApi.Core.Services
 
             return itemState.States.Where(p => !untrackedFields.States.Contains(p.Key))
                             .ToDictionary(pair => pair.Key, pair => pair.Value);
-        }
-
-        private string GetValueString(object value)
-        {
-            if (value == null)
-                return null;
-
-            if (TypeHelper.IsSimpleType(value.GetType()))
-                return value.ToString();
-
-            try
-            {
-                var serialized = JsonConvert.SerializeObject(value);
-
-                return serialized;
-            }
-            catch (Exception e)
-            {
-                _logger.Error(e);
-            }
-
-            return null;
         }
 
         private bool ObjectsAreEqual(object obj1, object obj2)

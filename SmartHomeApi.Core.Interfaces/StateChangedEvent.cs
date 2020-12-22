@@ -9,17 +9,15 @@ namespace SmartHomeApi.Core.Interfaces
         public string ItemType { get; }
         public string ItemId { get; }
         public string Parameter { get; }
-        public string OldValue { get; }
-        public string NewValue { get; }
-        public object OldObject { get; }
-        public object NewObject { get; }
+        public object OldValue { get; }
+        public object NewValue { get; }
 
         public StateChangedEvent()
         {
         }
 
         public StateChangedEvent(StateChangedEventType eventType, string itemType, string itemId, string parameter,
-            string oldValue, string newValue, object oldObject, object newObject)
+            object oldValue, object newValue)
         {
             EventType = eventType;
             ItemType = itemType;
@@ -27,8 +25,6 @@ namespace SmartHomeApi.Core.Interfaces
             Parameter = parameter;
             OldValue = oldValue;
             NewValue = newValue;
-            OldObject = oldObject;
-            NewObject = newObject;
             EventDate = DateTimeOffset.Now;
         }
 

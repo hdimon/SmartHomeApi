@@ -102,7 +102,7 @@ namespace SmartHomeApi.Core.Services
             var currentParameterState = await GetState(not.ItemId, parameter);
 
             var ev = new StateChangedEvent(StateChangedEventType.ValueSet, not.ItemType, not.ItemId, parameter,
-                currentParameterState?.ToString(), value?.ToString(), currentParameterState, value);
+                currentParameterState, value);
 
             _notificationsProcessor.NotifySubscribers(ev);
 
