@@ -11,14 +11,16 @@ namespace SmartHomeApi.Core.Services
 {
     public class NotificationsProcessor : INotificationsProcessor
     {
-        private readonly List<IStateChangedSubscriber> _stateChangedSubscribers = new List<IStateChangedSubscriber>();
+        private readonly ISmartHomeApiFabric _fabric;
         private readonly IApiLogger _logger;
+        private readonly List<IStateChangedSubscriber> _stateChangedSubscribers = new List<IStateChangedSubscriber>();
 
         public string ItemType => null;
         public string ItemId => null;
 
         public NotificationsProcessor(ISmartHomeApiFabric fabric)
         {
+            _fabric = fabric;
             _logger = fabric.GetApiLogger();
         }
 
@@ -124,6 +126,19 @@ namespace SmartHomeApi.Core.Services
 
         public void NotifySubscribers(StateChangedEvent args)
         {
+            var untrackedItems = _fabric.GetConfiguration().UntrackedItems;
+
+            var untrackedItem = untrackedItems.FirstOrDefault(i => i.ItemId == args.ItemId);
+
+            if (untrackedItem != null)
+            {
+                if (untrackedItem.ApplyOnlyEnumeratedStates) //It means item is not tracked at all
+                    return;
+
+                if (untrackedItem.States != null && untrackedItem.States.Any(itemId => itemId == args.ItemId))
+                    return;
+            }
+
             var areEqual = ObjectsAreEqual(args.OldValue, args.NewValue);
 
             if (areEqual)

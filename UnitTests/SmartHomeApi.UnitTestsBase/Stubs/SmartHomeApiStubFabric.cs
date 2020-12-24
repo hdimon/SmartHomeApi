@@ -9,7 +9,7 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
     {
         public AppSettings GetConfiguration()
         {
-            throw new NotImplementedException();
+            return new AppSettings();
         }
 
         public IItemsPluginsLocator GetItemsPluginsLocator()
