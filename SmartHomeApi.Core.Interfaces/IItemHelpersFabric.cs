@@ -4,5 +4,6 @@
     {
         IItemStateStorageHelper GetItemStateStorageHelper();
         IApiLogger GetApiLogger();
+        IItemStateNew GetOrCreateItemState();
     }
 }

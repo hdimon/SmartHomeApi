@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SmartHomeApi.Core.Interfaces\SmartHomeApi.Core.Interfaces.csproj" />
+    <ProjectReference Include="..\..\SmartHomeApi.Core\SmartHomeApi.Core.csproj" />
   </ItemGroup>
 
 </Project>

@@ -124,6 +124,11 @@ namespace SmartHomeApi.Core.Services
 
         public void NotifySubscribers(StateChangedEvent args)
         {
+            var areEqual = ObjectsAreEqual(args.OldValue, args.NewValue);
+
+            if (areEqual)
+                return;
+
             foreach (var stateChangedSubscriber in _stateChangedSubscribers)
             {
                 Task.Run(async () => await stateChangedSubscriber.Notify(args))
@@ -164,6 +169,7 @@ namespace SmartHomeApi.Core.Services
             if (obj1 != null && obj2 != null && obj1.GetType() != obj2.GetType())
                 return false;
 
+            //TODO change that to working with any reference type but not only dictionary
             var obj1IsDict = TypeHelper.IsDictionary(obj1);
             var obj2IsDict = TypeHelper.IsDictionary(obj2);
 

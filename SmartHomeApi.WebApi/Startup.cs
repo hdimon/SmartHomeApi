@@ -41,6 +41,7 @@ namespace SmartHomeApi.WebApi
             //services.AddSingleton<IItemHelpersFabric, ItemHelpersDefaultFabric>();
             services.AddSingleton<IApiLogger, ApiLogger>();
             services.AddSingleton<INotificationsProcessor, NotificationsProcessor>();
+            services.AddSingleton<IItemStatesProcessor, ItemStatesProcessor>();
 
             services.AddTransient<IItemStateStorageHelper, ItemStateStorageHelper>();
             services.AddTransient<IUntrackedStatesProcessor, UntrackedStatesProcessor>();

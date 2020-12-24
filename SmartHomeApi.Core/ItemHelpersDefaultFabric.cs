@@ -9,11 +9,19 @@ namespace SmartHomeApi.Core
     {
         private readonly IServiceProvider _provider;
         private readonly string _itemId;
+        private readonly string _itemType;
 
         public ItemHelpersDefaultFabric(IServiceProvider provider, string itemId)
         {
             _provider = provider;
             _itemId = itemId;
+        }
+
+        public ItemHelpersDefaultFabric(IServiceProvider provider, string itemId, string itemType)
+        {
+            _provider = provider;
+            _itemId = itemId;
+            _itemType = itemType;
         }
 
         public IItemStateStorageHelper GetItemStateStorageHelper()
@@ -26,6 +34,13 @@ namespace SmartHomeApi.Core
             var logger = _provider.GetService<IApiLogger>();
 
             return new ApiItemLogger(logger, _itemId);
+        }
+
+        public IItemStateNew GetOrCreateItemState()
+        {
+            var statesProcessor = _provider.GetService<IItemStatesProcessor>();
+
+            return statesProcessor.GetOrCreateItemState(_itemId, _itemType);
         }
     }
 }

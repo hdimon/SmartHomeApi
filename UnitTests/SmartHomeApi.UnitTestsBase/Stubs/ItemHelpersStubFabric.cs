@@ -13,5 +13,10 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
         {
             return new ApiStubLogger();
         }
+
+        public IItemStateNew GetOrCreateItemState()
+        {
+            return null;
+        }
     }
 }
