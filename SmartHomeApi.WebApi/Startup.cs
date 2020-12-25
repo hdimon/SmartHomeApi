@@ -44,6 +44,7 @@ namespace SmartHomeApi.WebApi
             services.AddSingleton<IItemStatesProcessor, ItemStatesProcessor>();
 
             services.AddTransient<IItemStateStorageHelper, ItemStateStorageHelper>();
+            services.AddTransient<IJsonSerializer, NewtonsoftJsonSerializer>();
             services.AddTransient<IUntrackedStatesProcessor, UntrackedStatesProcessor>();
             services.AddTransient<IUncachedStatesProcessor, UncachedStatesProcessor>();
 

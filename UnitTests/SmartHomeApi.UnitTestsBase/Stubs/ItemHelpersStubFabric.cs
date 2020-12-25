@@ -9,6 +9,11 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
             return new ItemStateStorageStubHelper();
         }
 
+        public IJsonSerializer GetJsonSerializer()
+        {
+            throw new System.NotImplementedException();
+        }
+
         public IApiLogger GetApiLogger()
         {
             return new ApiStubLogger();

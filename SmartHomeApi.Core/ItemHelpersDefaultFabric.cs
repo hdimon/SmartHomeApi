@@ -29,6 +29,11 @@ namespace SmartHomeApi.Core
             return _provider.GetService<IItemStateStorageHelper>();
         }
 
+        public IJsonSerializer GetJsonSerializer()
+        {
+            return _provider.GetService<IJsonSerializer>();
+        }
+
         public IApiLogger GetApiLogger()
         {
             var logger = _provider.GetService<IApiLogger>();

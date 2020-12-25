@@ -3,7 +3,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Common.Utils;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using SmartHomeApi.Core.Interfaces;
 using SmartHomeApi.Core.Interfaces.Configuration;
 
@@ -12,11 +11,13 @@ namespace SmartHomeApi.Core.ItemHelpers
     public class ItemStateStorageHelper : IItemStateStorageHelper
     {
         private readonly IApiLogger _logger;
+        private readonly IJsonSerializer _serializer;
         private readonly string _storageDirectory;
 
-        public ItemStateStorageHelper(IApiLogger logger, IOptionsMonitor<AppSettings> appSettingsMonitor)
+        public ItemStateStorageHelper(IApiLogger logger, IJsonSerializer serializer, IOptionsMonitor<AppSettings> appSettingsMonitor)
         {
             _logger = logger;
+            _serializer = serializer;
 
             _storageDirectory = Path.Combine(appSettingsMonitor.CurrentValue.DataDirectoryPath, "PluginsStateStorage");
             Directory.CreateDirectory(_storageDirectory);
@@ -24,8 +25,7 @@ namespace SmartHomeApi.Core.ItemHelpers
 
         public async Task SaveState(object state, string fileNamePattern)
         {
-            var options = new JsonSerializerSettings { Converters = { new NewtonsoftTimeSpanConverter() } };
-            var content = JsonConvert.SerializeObject(state, Formatting.Indented, options);
+            var content = _serializer.Serialize(state);
 
             var fileName = fileNamePattern + ".json";
             var filePath = Path.Combine(_storageDirectory, fileName);
@@ -64,8 +64,7 @@ namespace SmartHomeApi.Core.ItemHelpers
 
             try
             {
-                var options = new JsonSerializerSettings { Converters = { new NewtonsoftTimeSpanConverter() } };
-                obj = JsonConvert.DeserializeObject<T>(content, options);
+                obj = _serializer.Deserialize<T>(content);
             }
             catch (Exception e)
             {
