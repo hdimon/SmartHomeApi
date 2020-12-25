@@ -132,7 +132,7 @@ namespace SmartHomeApi.Core.Services
 
             if (untrackedItem != null)
             {
-                if (untrackedItem.ApplyOnlyEnumeratedStates) //It means item is not tracked at all
+                if (!untrackedItem.ApplyOnlyEnumeratedStates) //It means item is not tracked at all
                     return;
 
                 if (untrackedItem.States != null && untrackedItem.States.Any(itemId => itemId == args.ItemId))
