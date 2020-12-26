@@ -11,7 +11,6 @@ namespace SmartHomeApi.ItemUtils
     {
         private readonly AsyncLazy _initializeTask;
 
-        private readonly IItemState _defaultState;
         public string ItemId { get; }
         public string ItemType { get; }
 
@@ -24,8 +23,6 @@ namespace SmartHomeApi.ItemUtils
 
             ItemId = config.ItemId;
             ItemType = config.ItemType;
-
-            _defaultState = new ItemState(ItemId, ItemType);
 
             _initializeTask = new AsyncLazy(InitializeSafely);
         }
@@ -42,7 +39,7 @@ namespace SmartHomeApi.ItemUtils
 
         public virtual IItemState GetState()
         {
-            return _defaultState;
+            return null;
         }
 
 
