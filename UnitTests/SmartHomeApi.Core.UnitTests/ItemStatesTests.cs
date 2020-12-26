@@ -101,7 +101,12 @@ namespace SmartHomeApi.Core.UnitTests
             Assert.AreEqual(1, states.Count);
             Assert.AreEqual("qwerty", state.GetState("Param2"));
 
-            var test = processor.GetStatesContainer();
+            var apiState = processor.GetStatesContainer();
+            Assert.AreEqual(1, apiState.States.Count);
+
+            var itemState = apiState.States[itemId];
+            Assert.AreEqual(itemId, itemState.ItemId);
+            Assert.AreEqual(itemType, itemState.ItemType);
         }
     }
 }

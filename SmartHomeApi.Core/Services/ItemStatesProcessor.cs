@@ -9,16 +9,11 @@ namespace SmartHomeApi.Core.Services
     public class ItemStatesProcessor : IItemStatesProcessor
     {
         private readonly ISmartHomeApiFabric _fabric;
-        //private readonly INotificationsProcessor _notificationsProcessor;
         private readonly ConcurrentDictionary<string, IItemStateNew> _states = new ConcurrentDictionary<string, IItemStateNew>();
-
-        /*private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, object>> _statesDict =
-            new ConcurrentDictionary<string, ConcurrentDictionary<string, object>>();*/
 
         public ItemStatesProcessor(ISmartHomeApiFabric fabric)
         {
             _fabric = fabric;
-            //_notificationsProcessor = _fabric.GetNotificationsProcessor();
         }
 
         public IItemStateNew GetOrCreateItemState(string itemId, string itemType)
@@ -31,9 +26,6 @@ namespace SmartHomeApi.Core.Services
 
         private IItemStateNew ItemStateFactory(string itemId, string itemType)
         {
-            //var states = _statesDict.GetOrAdd(itemId, new ConcurrentDictionary<string, object>());
-            //var proxy = new ItemStateProxy(itemId, itemType, _fabric, states);
-
             var proxy = new ItemStateProxy(itemId, itemType, _fabric, new ConcurrentDictionary<string, object>());
 
             return new ItemStateNew(itemId, itemType, proxy);

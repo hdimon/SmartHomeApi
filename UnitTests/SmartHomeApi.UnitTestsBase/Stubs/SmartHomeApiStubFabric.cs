@@ -49,7 +49,7 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
 
         public INotificationsProcessor GetNotificationsProcessor()
         {
-            return new NotificationsProcessor(this);
+            return new StubNotificationsProcessor();
         }
 
         public IUntrackedStatesProcessor GetUntrackedStatesProcessor()

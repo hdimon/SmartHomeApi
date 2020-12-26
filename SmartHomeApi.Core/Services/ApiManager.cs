@@ -12,6 +12,7 @@ namespace SmartHomeApi.Core.Services
     public class ApiManager : IApiManager
     {
         private readonly ISmartHomeApiFabric _fabric;
+        private readonly IItemStatesProcessor _statesProcessor;
         private ApiManagerStateContainer _stateContainer;
         private Task _worker;
         private readonly ReaderWriterLock _readerWriterLock = new ReaderWriterLock();
@@ -25,9 +26,10 @@ namespace SmartHomeApi.Core.Services
         public string ItemId => null;
         public bool IsInitialized { get; private set; }
 
-        public ApiManager(ISmartHomeApiFabric fabric)
+        public ApiManager(ISmartHomeApiFabric fabric, IItemStatesProcessor statesProcessor)
         {
             _fabric = fabric;
+            _statesProcessor = statesProcessor;
             _logger = _fabric.GetApiLogger();
             _notificationsProcessor = _fabric.GetNotificationsProcessor();
             _untrackedStatesProcessor = _fabric.GetUntrackedStatesProcessor();
@@ -255,6 +257,8 @@ namespace SmartHomeApi.Core.Services
 
                 try
                 {
+                    var apiState = _statesProcessor.GetStatesContainer();
+
                     var state = CreateStatesContainer();
                     var stateContainer = new ApiManagerStateContainer(state);
 
@@ -268,6 +272,22 @@ namespace SmartHomeApi.Core.Services
                     }
 
                     var oldStateContainer = GetStateSafely();
+
+                    //Temporary code, merge states
+                    foreach (var (itemId, states) in apiState.States)
+                    {
+                        /*if (!stateContainer.State.States.ContainsKey(itemId))
+                        {
+                            continue;
+                        }*/
+
+                        stateContainer.State.States[itemId] = states;
+                        //Also assign this state to oldStateContainer because otherwise it will initiate double notification
+                        if (oldStateContainer.State.States.ContainsKey(itemId))
+                            oldStateContainer.State.States[itemId] = states;
+                    }
+                    //Temporary code
+
                     SetStateSafely(stateContainer);
 
                     _notificationsProcessor.NotifySubscribersAboutChanges(oldStateContainer, _stateContainer);

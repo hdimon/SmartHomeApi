@@ -53,8 +53,7 @@ namespace SmartHomeApi.Core
 
         public IItemHelpersFabric GetItemHelpersFabric(string itemId, string itemType)
         {
-            return new ItemHelpersDefaultFabric(_provider, itemId);
-            //return _provider.GetService<IItemHelpersFabric>();
+            return new ItemHelpersDefaultFabric(_provider, itemId, itemType);
         }
 
         public IApiLogger GetApiLogger()

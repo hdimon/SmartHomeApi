@@ -24,38 +24,30 @@ namespace SmartHomeApi.Core
 
         public void SetState(string key, object value)
         {
+            if (string.IsNullOrWhiteSpace(key))
+                return;
+
             object oldValue = null;
+            bool isAdded = true;
 
             var setValue = _states.AddOrUpdate(key, value, (param, old) =>
             {
                 oldValue = old;
+                isAdded = false;
 
                 return value;
             });
-            //_states.AddOrUpdate(key, (s) => AddValueFactory(s, value), (s, oldValue) => UpdateValueFactory(s, oldValue, value));
 
-            _notificationsProcessor.NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueAdded, _itemType, _itemId,
-                key, oldValue, setValue));
+            _notificationsProcessor.NotifySubscribers(new StateChangedEvent(
+                isAdded ? StateChangedEventType.ValueAdded : StateChangedEventType.ValueUpdated, _itemType, _itemId, key,
+                oldValue, setValue));
         }
-
-        /*private object AddValueFactory(string key, object value)
-        {
-            _notificationsProcessor.NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueAdded, _itemType, _itemId,
-                key, null, value));
-
-            return value;
-        }
-
-        private object UpdateValueFactory(string key, object oldValue, object value)
-        {
-            _notificationsProcessor.NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueUpdated, _itemType,
-                _itemId, key, oldValue, value));
-
-            return value;
-        }*/
 
         public object GetState(string key)
         {
+            if (string.IsNullOrWhiteSpace(key))
+                return null;
+
             if (_states.TryGetValue(key, out var value))
                 return value;
 
@@ -64,6 +56,9 @@ namespace SmartHomeApi.Core
 
         public void RemoveState(string key)
         {
+            if (string.IsNullOrWhiteSpace(key))
+                return;
+
             if (!_states.TryRemove(key, out var oldValue))
                 return;
 

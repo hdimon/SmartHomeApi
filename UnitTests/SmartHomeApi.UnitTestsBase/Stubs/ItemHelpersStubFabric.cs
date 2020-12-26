@@ -1,9 +1,24 @@
 ﻿using SmartHomeApi.Core.Interfaces;
+using SmartHomeApi.Core.ItemHelpers;
+using SmartHomeApi.Core.Services;
 
 namespace SmartHomeApi.UnitTestsBase.Stubs
 {
     public class ItemHelpersStubFabric : IItemHelpersFabric
     {
+        private string _itemId;
+        private string _itemType;
+        private ISmartHomeApiFabric _fabric;
+        private IItemStatesProcessor _statesProcessor;
+
+        public ItemHelpersStubFabric(string itemId, string itemType, ISmartHomeApiFabric fabric)
+        {
+            _itemId = itemId;
+            _itemType = itemType;
+            _fabric = fabric;
+            _statesProcessor = new ItemStatesProcessor(fabric);
+        }
+
         public IItemStateStorageHelper GetItemStateStorageHelper()
         {
             return new ItemStateStorageStubHelper();
@@ -11,7 +26,7 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
 
         public IJsonSerializer GetJsonSerializer()
         {
-            throw new System.NotImplementedException();
+            return new NewtonsoftJsonSerializer();
         }
 
         public IApiLogger GetApiLogger()
@@ -21,7 +36,7 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
 
         public IItemStateNew GetOrCreateItemState()
         {
-            return null;
+            return _statesProcessor.GetOrCreateItemState(_itemId, _itemType);
         }
     }
 }
