@@ -7,6 +7,7 @@ namespace Common.Utils
     public class RecurrentWorker
     {
         private Task _worker;
+        private volatile bool _isFirstRun = true;
         private readonly CancellationToken _cToken;
         private readonly Action<Exception> _onException;
         private readonly Func<CancellationToken, Task> _preAction;
@@ -35,7 +36,11 @@ namespace Common.Utils
         {
             while (!_cToken.IsCancellationRequested)
             {
-                await _preAction(_cToken);
+                if (!_isFirstRun)
+                    await _preAction(_cToken);
+
+                if (_isFirstRun)
+                    _isFirstRun = false;
 
                 try
                 {

@@ -27,7 +27,7 @@ namespace SmartHomeApi.ItemUtils
             _initializeTask = new AsyncLazy(InitializeSafely);
         }
 
-        public void OnConfigChange(IItemConfig newConfig, IEnumerable<ItemConfigChangedField> changedFields = null)
+        public virtual void OnConfigChange(IItemConfig newConfig, IEnumerable<ItemConfigChangedField> changedFields = null)
         {
             Config = newConfig;
         }
@@ -41,7 +41,6 @@ namespace SmartHomeApi.ItemUtils
         {
             return null;
         }
-
 
         public async Task Initialize()
         {
