@@ -1,7 +1,6 @@
 ﻿using System;
 using SmartHomeApi.Core.Interfaces;
 using SmartHomeApi.Core.Interfaces.Configuration;
-using SmartHomeApi.Core.Services;
 
 namespace SmartHomeApi.UnitTestsBase.Stubs
 {
@@ -50,11 +49,6 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
         public INotificationsProcessor GetNotificationsProcessor()
         {
             return new StubNotificationsProcessor();
-        }
-
-        public IUntrackedStatesProcessor GetUntrackedStatesProcessor()
-        {
-            throw new NotImplementedException();
         }
 
         public IUncachedStatesProcessor GetUncachedStatesProcessor()

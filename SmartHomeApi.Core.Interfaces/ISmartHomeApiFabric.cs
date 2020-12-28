@@ -13,7 +13,6 @@ namespace SmartHomeApi.Core.Interfaces
         IItemHelpersFabric GetItemHelpersFabric(string itemId, string itemType);
         IApiLogger GetApiLogger();
         INotificationsProcessor GetNotificationsProcessor();
-        IUntrackedStatesProcessor GetUntrackedStatesProcessor();
         IUncachedStatesProcessor GetUncachedStatesProcessor();
     }
 }

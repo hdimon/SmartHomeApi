@@ -21,10 +21,5 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
         public void NotifySubscribers(StateChangedEvent args)
         {
         }
-
-        public void NotifySubscribersAboutChanges(ApiManagerStateContainer oldStateContainer, ApiManagerStateContainer newStateContainer)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

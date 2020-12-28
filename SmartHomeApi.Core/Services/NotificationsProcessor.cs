@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Common.Utils;
 using Newtonsoft.Json;
 using SmartHomeApi.Core.Interfaces;
-using SmartHomeApi.Core.Interfaces.Configuration;
 
 namespace SmartHomeApi.Core.Services
 {
@@ -22,96 +21,6 @@ namespace SmartHomeApi.Core.Services
         {
             _fabric = fabric;
             _logger = fabric.GetApiLogger();
-        }
-
-        public void NotifySubscribersAboutChanges(ApiManagerStateContainer oldStateContainer,
-            ApiManagerStateContainer newStateContainer)
-        {
-            var newStates = newStateContainer.State.States;
-            var oldStates = oldStateContainer.State.States;
-
-            var addedItems = newStates.Keys.Except(oldStates.Keys).ToList();
-            var removedItems = oldStates.Keys.Except(newStates.Keys).ToList();
-            var updatedItems = newStates.Keys.Except(addedItems).ToList();
-
-            NotifySubscribersAboutRemovedItems(removedItems, oldStateContainer);
-            NotifySubscribersAboutAddedItems(addedItems, newStateContainer);
-            NotifySubscribersAboutUpdatedItems(updatedItems, oldStateContainer, newStateContainer);
-        }
-
-        private void NotifySubscribersAboutRemovedItems(List<string> removedItems,
-            ApiManagerStateContainer oldStateContainer)
-        {
-            foreach (var removedItem in removedItems)
-            {
-                var itemState = oldStateContainer.State.States[removedItem];
-
-                var trackedStates = GetOnlyTrackedStates(oldStateContainer.UntrackedStates, itemState);
-
-                foreach (var telemetryPair in trackedStates)
-                {
-                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueRemoved, itemState.ItemType,
-                        itemState.ItemId, telemetryPair.Key, telemetryPair.Value, null));
-                }
-            }
-        }
-
-        private void NotifySubscribersAboutAddedItems(List<string> addedItems,
-            ApiManagerStateContainer newStateContainer)
-        {
-            foreach (var addedItem in addedItems)
-            {
-                var itemState = newStateContainer.State.States[addedItem];
-
-                var trackedStates = GetOnlyTrackedStates(newStateContainer.UntrackedStates, itemState);
-
-                foreach (var telemetryPair in trackedStates)
-                {
-                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueAdded, itemState.ItemType,
-                        itemState.ItemId, telemetryPair.Key, null, telemetryPair.Value));
-                }
-            }
-        }
-
-        private void NotifySubscribersAboutUpdatedItems(List<string> updatedItems,
-            ApiManagerStateContainer oldStateContainer, ApiManagerStateContainer newStateContainer)
-        {
-            foreach (var updatedItem in updatedItems)
-            {
-                var newItemState = newStateContainer.State.States[updatedItem];
-                var oldItemState = oldStateContainer.State.States[updatedItem];
-
-                var newTelemetry = GetOnlyTrackedStates(newStateContainer.UntrackedStates, newItemState);
-                var oldTelemetry = GetOnlyTrackedStates(oldStateContainer.UntrackedStates, oldItemState);
-
-                var addedParameters = newTelemetry.Keys.Except(oldTelemetry.Keys).ToList();
-                var removedParameters = oldTelemetry.Keys.Except(newTelemetry.Keys).ToList();
-                var updatedParameters = newTelemetry.Keys.Except(addedParameters).ToList();
-
-                foreach (var removedParameter in removedParameters)
-                {
-                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueRemoved, newItemState.ItemType,
-                        newItemState.ItemId, removedParameter, oldTelemetry[removedParameter], null));
-                }
-
-                foreach (var addedParameter in addedParameters)
-                {
-                    NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueAdded, newItemState.ItemType,
-                        newItemState.ItemId, addedParameter, null, newTelemetry[addedParameter]));
-                }
-
-                foreach (var updatedParameter in updatedParameters)
-                {
-                    var areEqual = ObjectsAreEqual(oldTelemetry[updatedParameter], newTelemetry[updatedParameter]);
-
-                    if (!areEqual)
-                    {
-                        NotifySubscribers(new StateChangedEvent(StateChangedEventType.ValueUpdated, newItemState.ItemType,
-                            newItemState.ItemId, updatedParameter, oldTelemetry[updatedParameter],
-                            newTelemetry[updatedParameter]));
-                    }
-                }
-            }
         }
 
         public void RegisterSubscriber(IStateChangedSubscriber subscriber)
@@ -149,24 +58,6 @@ namespace SmartHomeApi.Core.Services
                 Task.Run(async () => await stateChangedSubscriber.Notify(args))
                     .ContinueWith(t => { _logger.Error(t.Exception); }, TaskContinuationOptions.OnlyOnFaulted);
             }
-        }
-
-        private Dictionary<string, object> GetOnlyTrackedStates(Dictionary<string, AppSettingItemInfo> untrackedStates,
-            IItemState itemState)
-        {
-            if (!untrackedStates.ContainsKey(itemState.ItemId))
-                return itemState.States;
-
-            var untrackedFields = untrackedStates[itemState.ItemId];
-
-            if (!untrackedFields.ApplyOnlyEnumeratedStates) //It means item is not tracked at all
-                return new Dictionary<string, object>();
-
-            if (!untrackedFields.States.Any())
-                return itemState.States;
-
-            return itemState.States.Where(p => !untrackedFields.States.Contains(p.Key))
-                            .ToDictionary(pair => pair.Key, pair => pair.Value);
         }
 
         private bool ObjectsAreEqual(object obj1, object obj2)

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using SmartHomeApi.Core.Interfaces;
 
 namespace SmartHomeApi.Core.Services
@@ -12,47 +13,48 @@ namespace SmartHomeApi.Core.Services
             _fabric = fabric;
         }
 
-        public void AddUncachedItemsFromConfig(ApiManagerStateContainer stateContainer)
+        public IStatesContainer FilterOutUncachedStates(IStatesContainer state)
         {
             var uncachedItems = _fabric.GetConfiguration().UncachedItems;
 
-            foreach (var uncachedItem in uncachedItems)
+            if (!uncachedItems.Any())
+                return state;
+
+            var itemsToRemove = new List<string>();
+
+            foreach (var (itemId, itemState) in state.States)
             {
-                if (string.IsNullOrWhiteSpace(uncachedItem.ItemId) ||
-                    stateContainer.UncachedStates.ContainsKey(uncachedItem.ItemId))
+                var uncachedItem = uncachedItems.FirstOrDefault(i => i.ItemId == itemId);
+
+                if (uncachedItem == null)
+                {
                     continue;
+                }
 
-                if (uncachedItem.ApplyOnlyEnumeratedStates && uncachedItem.States == null)
-                    uncachedItem.States = new List<string>();
-
-                stateContainer.UncachedStates.Add(uncachedItem.ItemId, uncachedItem);
-            }
-        }
-
-        public IItemState FilterOutUncachedStates(IItemState itemState, ApiManagerStateContainer stateContainer)
-        {
-            if (!stateContainer.UncachedStates.ContainsKey(itemState.ItemId))
-                return itemState;
-
-            var state = (IItemState)itemState.Clone();
-
-            var uncachedState = stateContainer.UncachedStates[itemState.ItemId];
-
-            //If ApplyOnlyEnumeratedStates = false then whole Item in uncached
-            if (!uncachedState.ApplyOnlyEnumeratedStates)
-                return null;
-
-            var cachedStates = new Dictionary<string, object>();
-
-            foreach (var stateState in state.States)
-            {
-                if (uncachedState.States.Contains(stateState.Key))
+                if (!uncachedItem.ApplyOnlyEnumeratedStates) //Skip whole item
+                {
+                    itemsToRemove.Add(itemId);
                     continue;
+                }
 
-                cachedStates.Add(stateState.Key, stateState.Value);
+                var parametersToRemove = new List<string>();
+
+                foreach (var (key, value) in itemState.States)
+                {
+                    if (uncachedItem.States.Contains(key))
+                        parametersToRemove.Add(key);
+                }
+
+                foreach (var key in parametersToRemove)
+                {
+                    itemState.States.Remove(key);
+                }
             }
 
-            state.States = cachedStates;
+            foreach (var itemId in itemsToRemove)
+            {
+                state.States.Remove(itemId);
+            }
 
             return state;
         }

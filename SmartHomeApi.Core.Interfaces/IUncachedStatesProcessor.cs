@@ -2,7 +2,6 @@
 {
     public interface IUncachedStatesProcessor
     {
-        void AddUncachedItemsFromConfig(ApiManagerStateContainer stateContainer);
-        IItemState FilterOutUncachedStates(IItemState itemState, ApiManagerStateContainer stateContainer);
+        IStatesContainer FilterOutUncachedStates(IStatesContainer state);
     }
 }

@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using SmartHomeApi.Core.Interfaces;
 using SmartHomeApi.Core.Interfaces.ExecuteCommandResults;
-using SmartHomeApi.Core.Models;
 
 namespace SmartHomeApi.Core.Services
 {
@@ -13,12 +12,8 @@ namespace SmartHomeApi.Core.Services
     {
         private readonly ISmartHomeApiFabric _fabric;
         private readonly IItemStatesProcessor _statesProcessor;
-        private ApiManagerStateContainer _stateContainer;
-        private Task _worker;
-        private readonly ReaderWriterLock _readerWriterLock = new ReaderWriterLock();
         private readonly IApiLogger _logger;
         private readonly INotificationsProcessor _notificationsProcessor;
-        private readonly IUntrackedStatesProcessor _untrackedStatesProcessor;
         private readonly IUncachedStatesProcessor _uncachedStatesProcessor;
         private readonly CancellationTokenSource _disposingCancellationTokenSource = new CancellationTokenSource();
 
@@ -32,11 +27,7 @@ namespace SmartHomeApi.Core.Services
             _statesProcessor = statesProcessor;
             _logger = _fabric.GetApiLogger();
             _notificationsProcessor = _fabric.GetNotificationsProcessor();
-            _untrackedStatesProcessor = _fabric.GetUntrackedStatesProcessor();
             _uncachedStatesProcessor = _fabric.GetUncachedStatesProcessor();
-
-            var state = CreateStatesContainer();
-            _stateContainer = new ApiManagerStateContainer(state);
         }
 
         public async Task Initialize()
@@ -53,8 +44,6 @@ namespace SmartHomeApi.Core.Services
             await Task.WhenAll(immediateItems.Select(GetItems));
 
             _logger.Info("Items with immediate initialization have been run.");
-
-            RunStatesCollectorWorker();
 
             IsInitialized = true;
 
@@ -136,55 +125,36 @@ namespace SmartHomeApi.Core.Services
 
         public async Task<IStatesContainer> GetState()
         {
-            var stateContainer = GetStateSafely();
+            var state = _statesProcessor.GetStatesContainer();
 
-            var state = (IStatesContainer)stateContainer.State.Clone();
-
-            var trState = new Dictionary<string, IItemState>();
-
-            foreach (var itemStatePair in state.States)
-            {
-                var st = _uncachedStatesProcessor.FilterOutUncachedStates(itemStatePair.Value, stateContainer);
-
-                if (st != null)
-                    trState.Add(itemStatePair.Key, st);
-            }
-
-            state.States = trState;
+            state = _uncachedStatesProcessor.FilterOutUncachedStates(state);
 
             return state;
         }
 
         public async Task<IItemState> GetState(string itemId)
         {
-            var stateContainer = GetStateSafely();
-
-            var state = stateContainer.State;
+            var state = _statesProcessor.GetStatesContainer();
 
             if (!state.States.ContainsKey(itemId))
-                return new ItemState(itemId, string.Empty);
+                return null;
 
             var itemState = state.States[itemId];
-
-            if (itemState == null)
-                return new ItemState(itemId, string.Empty);
 
             return itemState;
         }
 
         public async Task<object> GetState(string itemId, string parameter)
         {
-            var stateContainer = GetStateSafely();
+            var state = _statesProcessor.GetStatesContainer();
 
-            var state = stateContainer.State;
+            if (!state.States.ContainsKey(itemId)) 
+                return null;
 
-            if (state.States.ContainsKey(itemId))
-            {
-                var itemState = state.States[itemId];
+            var itemState = state.States[itemId];
 
-                if (itemState.States.ContainsKey(parameter))
-                    return itemState.States[parameter];
-            }
+            if (itemState.States.ContainsKey(parameter))
+                return itemState.States[parameter];
 
             return null;
         }
@@ -221,128 +191,6 @@ namespace SmartHomeApi.Core.Services
             }
 
             return result ?? new ExecuteCommandResultInternalError();
-        }
-
-        private IStatesContainer CreateStatesContainer()
-        {
-            return new ItemStatesContainer();
-        }
-
-        private ApiManagerStateContainer GetStateSafely()
-        {
-            _readerWriterLock.AcquireReaderLock(Timeout.Infinite);
-
-            ApiManagerStateContainer stateContainer = _stateContainer;
-
-            _readerWriterLock.ReleaseReaderLock();
-
-            return stateContainer;
-        }
-
-        private void RunStatesCollectorWorker()
-        {
-            if (_worker == null || _worker.IsCompleted)
-            {
-                _worker = Task.Factory.StartNew(CollectItemsStates).Unwrap().ContinueWith(
-                    t => { _logger.Error(t.Exception); },
-                    TaskContinuationOptions.OnlyOnFaulted);
-            }
-        }
-
-        private async Task CollectItemsStates()
-        {
-            while (!_disposingCancellationTokenSource.IsCancellationRequested)
-            {
-                await Task.Delay(250, _disposingCancellationTokenSource.Token);
-
-                try
-                {
-                    var apiState = _statesProcessor.GetStatesContainer();
-
-                    var state = CreateStatesContainer();
-                    var stateContainer = new ApiManagerStateContainer(state);
-
-                    var gettableItems = await GetGettableItems();
-                    _untrackedStatesProcessor.AddUntrackedItemsFromConfig(stateContainer);
-                    _uncachedStatesProcessor.AddUncachedItemsFromConfig(stateContainer);
-
-                    foreach (var item in gettableItems)
-                    {
-                        CollectItemState(item, stateContainer);
-                    }
-
-                    var oldStateContainer = GetStateSafely();
-
-                    //Temporary code, merge states
-                    foreach (var (itemId, states) in apiState.States)
-                    {
-                        /*if (!stateContainer.State.States.ContainsKey(itemId))
-                        {
-                            continue;
-                        }*/
-
-                        stateContainer.State.States[itemId] = states;
-                        //Also assign this state to oldStateContainer because otherwise it will initiate double notification
-                        if (oldStateContainer.State.States.ContainsKey(itemId))
-                            oldStateContainer.State.States[itemId] = states;
-                    }
-                    //Temporary code
-
-                    SetStateSafely(stateContainer);
-
-                    _notificationsProcessor.NotifySubscribersAboutChanges(oldStateContainer, _stateContainer);
-                }
-                catch (Exception e)
-                {
-                    _logger.Error(e, "Error when collecting items states.");
-                }
-            }
-        }
-
-        private void CollectItemState(IStateGettable item, ApiManagerStateContainer stateContainer)
-        {
-            IStatesContainer state = stateContainer.State;
-
-            try
-            {
-                var itemState = item.GetState();
-
-                if (itemState != null)
-                    state.States.Add(itemState.ItemId, itemState);
-            }
-            catch (Exception e)
-            {
-                _logger.Error(e, "Error when collecting items states.");
-            }
-        }
-
-        private void SetStateSafely(ApiManagerStateContainer stateContainer)
-        {
-            try
-            {
-                _readerWriterLock.AcquireWriterLock(Timeout.Infinite);
-
-                _stateContainer = stateContainer;
-            }
-            catch (Exception e)
-            {
-                _logger.Error(e, "Error when setting API state.");
-            }
-            finally
-            {
-                _readerWriterLock.ReleaseWriterLock();
-            }
-        }
-
-        private async Task<List<IStateGettable>> GetGettableItems()
-        {
-            var itemsLocator = _fabric.GetItemsLocator();
-            var items = await GetItems(itemsLocator);
-
-            var gettableItems = items.Where(d => d is IStateGettable).Cast<IStateGettable>()
-                                     .OrderBy(i => i.ItemType).ThenBy(i => i.ItemId).ToList();
-
-            return gettableItems;
         }
 
         public void RegisterSubscriber(IStateChangedSubscriber subscriber)
