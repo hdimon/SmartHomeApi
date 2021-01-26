@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>SmartHomeApi.ItemUtils</id>
-    <version>1.3.6</version>
+    <version>1.3.7</version>
     <authors>Dmitry Khlybov</authors>
     <owners>Dmitry Khlybov</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>

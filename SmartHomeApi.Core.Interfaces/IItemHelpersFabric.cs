@@ -5,6 +5,8 @@
         IItemStateStorageHelper GetItemStateStorageHelper();
         IJsonSerializer GetJsonSerializer();
         IApiLogger GetApiLogger();
+
+        IDateTimeOffsetProvider GetDateTimeOffsetProvider();
         IItemStateNew GetOrCreateItemState();
     }
 }

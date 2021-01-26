@@ -14,6 +14,7 @@ using SmartHomeApi.Core.Interfaces;
 using SmartHomeApi.Core.Interfaces.Configuration;
 using SmartHomeApi.Core.ItemHelpers;
 using SmartHomeApi.Core.Services;
+using SmartHomeApi.ItemUtils;
 
 namespace SmartHomeApi.WebApi
 {
@@ -46,6 +47,7 @@ namespace SmartHomeApi.WebApi
             services.AddTransient<IItemStateStorageHelper, ItemStateStorageHelper>();
             services.AddTransient<IJsonSerializer, NewtonsoftJsonSerializer>();
             services.AddTransient<IUncachedStatesProcessor, UncachedStatesProcessor>();
+            services.AddTransient<IDateTimeOffsetProvider, DateTimeOffsetProvider>();
 
             services.AddControllers();
 

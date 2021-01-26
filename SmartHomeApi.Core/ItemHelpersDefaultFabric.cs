@@ -41,6 +41,11 @@ namespace SmartHomeApi.Core
             return new ApiItemLogger(logger, _itemId);
         }
 
+        public IDateTimeOffsetProvider GetDateTimeOffsetProvider()
+        {
+            return _provider.GetService<IDateTimeOffsetProvider>();
+        }
+
         public IItemStateNew GetOrCreateItemState()
         {
             var statesProcessor = _provider.GetService<IItemStatesProcessor>();

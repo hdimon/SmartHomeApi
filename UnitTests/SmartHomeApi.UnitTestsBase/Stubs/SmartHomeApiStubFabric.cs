@@ -46,6 +46,11 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
             return new ApiStubLogger();
         }
 
+        public IDateTimeOffsetProvider GetDateTimeOffsetProvider()
+        {
+            return new FakeDateTimeOffsetProvider();
+        }
+
         public INotificationsProcessor GetNotificationsProcessor()
         {
             return new StubNotificationsProcessor();

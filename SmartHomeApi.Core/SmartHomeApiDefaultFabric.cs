@@ -61,6 +61,11 @@ namespace SmartHomeApi.Core
             return _provider.GetService<IApiLogger>();
         }
 
+        public IDateTimeOffsetProvider GetDateTimeOffsetProvider()
+        {
+            return _provider.GetService<IDateTimeOffsetProvider>();
+        }
+
         public INotificationsProcessor GetNotificationsProcessor()
         {
             return _provider.GetService<INotificationsProcessor>();

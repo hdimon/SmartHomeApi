@@ -12,6 +12,7 @@ namespace SmartHomeApi.Core.Interfaces
         IItemHelpersFabric GetItemHelpersFabric(string itemId);
         IItemHelpersFabric GetItemHelpersFabric(string itemId, string itemType);
         IApiLogger GetApiLogger();
+        IDateTimeOffsetProvider GetDateTimeOffsetProvider();
         INotificationsProcessor GetNotificationsProcessor();
         IUncachedStatesProcessor GetUncachedStatesProcessor();
     }
