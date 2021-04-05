@@ -48,10 +48,13 @@ namespace SmartHomeApi.Core.Services
                     return;
             }
 
-            var areEqual = ObjectsAreEqual(args.OldValue, args.NewValue);
+            if (args.EventType != StateChangedEventType.ValueSet) //All ValueSet notifications should be sent
+            {
+                var areEqual = ObjectsAreEqual(args.OldValue, args.NewValue);
 
-            if (areEqual)
-                return;
+                if (areEqual)
+                    return;
+            }
 
             foreach (var stateChangedSubscriber in _stateChangedSubscribers)
             {
