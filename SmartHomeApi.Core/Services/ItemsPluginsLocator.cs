@@ -33,6 +33,8 @@ namespace SmartHomeApi.Core.Services
         private readonly ConcurrentDictionary<string, PluginContainer> _knownPluginContainers =
             new ConcurrentDictionary<string, PluginContainer>();
 
+        public bool IsInitialized { get; private set; }
+
         public ItemsPluginsLocator(ISmartHomeApiFabric fabric)
         {
             var config = fabric.GetConfiguration();
@@ -59,6 +61,11 @@ namespace SmartHomeApi.Core.Services
             RunPluginsCollectorWorker();
 
             var unused = typeof(AverageValuesHelper); //Workaround to load dll
+        }
+
+        public async Task Initialize()
+        {
+            IsInitialized = true;
         }
 
         private void RunPluginsCollectorWorker()

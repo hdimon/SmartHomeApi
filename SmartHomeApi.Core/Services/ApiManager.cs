@@ -35,8 +35,12 @@ namespace SmartHomeApi.Core.Services
             _logger.Info("Starting ApiManager initialization...");
 
             await _fabric.GetItemsConfigsLocator().Initialize();
+            await _fabric.GetItemsPluginsLocator().Initialize();
 
             var locators = await _fabric.GetItemsPluginsLocator().GetItemsLocators();
+
+            //TODO Instead of ImmediateInitialization introduce InitialLoadPriority setting in Item config, group items by this and initialize them in groups
+
             var immediateItems = locators.Where(l => l.ImmediateInitialization).ToList();
 
             _logger.Info("Running items with immediate initialization...");

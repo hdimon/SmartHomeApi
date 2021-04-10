@@ -9,8 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartHomeApi.Core", "SmartH
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartHomeApi.Core.Interfaces", "SmartHomeApi.Core.Interfaces\SmartHomeApi.Core.Interfaces.csproj", "{318BE483-BCB9-4CE7-BF13-7DBD5D7029A2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartHomeApi.Core.UnitTests", "UnitTests\SmartHomeApi.Core.UnitTests\SmartHomeApi.Core.UnitTests.csproj", "{53A99F54-3144-4D30-AB57-F362BABDA065}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartHomeApi.ItemUtils", "SmartHomeApi.ItemUtils\SmartHomeApi.ItemUtils.csproj", "{22F1B451-67F7-47BC-A498-FD8FD008B446}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Utils", "Common.Utils\Common.Utils.csproj", "{2787CD55-0240-4489-AAEC-BA87F82664C4}"
@@ -18,6 +16,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{6B46741C-184D-490B-9A5E-F75057E84E11}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartHomeApi.UnitTestsBase", "UnitTests\SmartHomeApi.UnitTestsBase\SmartHomeApi.UnitTestsBase.csproj", "{CC67EAC1-A2F0-4C85-A6CC-BA5A27091C16}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartHomeApi.Core.UnitTests", "UnitTests\SmartHomeApi.Core.UnitTests\SmartHomeApi.Core.UnitTests.csproj", "{8642A062-B031-4A29-BE4C-079A21365DC0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StandardTestPlugin1", "UnitTests\StandardTestPlugin1\StandardTestPlugin1.csproj", "{3B00086D-C3E6-4E8E-9EC3-38604B4EC48A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,10 +39,6 @@ Global
 		{318BE483-BCB9-4CE7-BF13-7DBD5D7029A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{318BE483-BCB9-4CE7-BF13-7DBD5D7029A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{318BE483-BCB9-4CE7-BF13-7DBD5D7029A2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{53A99F54-3144-4D30-AB57-F362BABDA065}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{53A99F54-3144-4D30-AB57-F362BABDA065}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{53A99F54-3144-4D30-AB57-F362BABDA065}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{53A99F54-3144-4D30-AB57-F362BABDA065}.Release|Any CPU.Build.0 = Release|Any CPU
 		{22F1B451-67F7-47BC-A498-FD8FD008B446}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{22F1B451-67F7-47BC-A498-FD8FD008B446}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{22F1B451-67F7-47BC-A498-FD8FD008B446}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -53,12 +51,22 @@ Global
 		{CC67EAC1-A2F0-4C85-A6CC-BA5A27091C16}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC67EAC1-A2F0-4C85-A6CC-BA5A27091C16}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CC67EAC1-A2F0-4C85-A6CC-BA5A27091C16}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8642A062-B031-4A29-BE4C-079A21365DC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8642A062-B031-4A29-BE4C-079A21365DC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8642A062-B031-4A29-BE4C-079A21365DC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8642A062-B031-4A29-BE4C-079A21365DC0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B00086D-C3E6-4E8E-9EC3-38604B4EC48A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B00086D-C3E6-4E8E-9EC3-38604B4EC48A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B00086D-C3E6-4E8E-9EC3-38604B4EC48A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B00086D-C3E6-4E8E-9EC3-38604B4EC48A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{CC67EAC1-A2F0-4C85-A6CC-BA5A27091C16} = {6B46741C-184D-490B-9A5E-F75057E84E11}
+		{8642A062-B031-4A29-BE4C-079A21365DC0} = {6B46741C-184D-490B-9A5E-F75057E84E11}
+		{3B00086D-C3E6-4E8E-9EC3-38604B4EC48A} = {6B46741C-184D-490B-9A5E-F75057E84E11}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B0813504-E85A-4020-873B-D4DC655694B7}

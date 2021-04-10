@@ -11,11 +11,13 @@ namespace SmartHomeApi.Core.Interfaces.Configuration
         public int UnloadPluginsMaxTries { get; set; }
         public int UnloadPluginsTriesIntervalMS { get; set; }
         public string DataDirectoryPath { get; set; }
+        public int PluginsLoadingTimeMs { get; set; }
         public int? PluginsLocatorIntervalMs { get; set; }
         public int? ConfigsLocatorIntervalMs { get; set; }
         public int? ItemsLocatorIntervalMs { get; set; }
         public List<AppSettingItemInfo> UntrackedItems { get; set; } = new List<AppSettingItemInfo>();
         public List<AppSettingItemInfo> UncachedItems { get; set; } = new List<AppSettingItemInfo>();
+
         public object Clone()
         {
             var clone = new AppSettings();
@@ -26,6 +28,7 @@ namespace SmartHomeApi.Core.Interfaces.Configuration
             clone.UnloadPluginsTriesIntervalMS = UnloadPluginsTriesIntervalMS;
             clone.DataDirectoryPath = DataDirectoryPath;
             clone.PluginsLocatorIntervalMs = PluginsLocatorIntervalMs;
+            clone.PluginsLoadingTimeMs = PluginsLoadingTimeMs;
             clone.ConfigsLocatorIntervalMs = ConfigsLocatorIntervalMs;
             clone.ItemsLocatorIntervalMs = ItemsLocatorIntervalMs;
             clone.UntrackedItems = UntrackedItems.Select(i => (AppSettingItemInfo)i.Clone()).ToList();

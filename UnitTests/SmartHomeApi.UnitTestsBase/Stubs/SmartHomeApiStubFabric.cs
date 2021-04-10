@@ -6,9 +6,17 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
 {
     public class SmartHomeApiStubFabric : ISmartHomeApiFabric
     {
+        private readonly AppSettings _appSettings;
+        public SmartHomeApiStubFabric(){}
+
+        public SmartHomeApiStubFabric(AppSettings appSettings)
+        {
+            _appSettings = appSettings;
+        }
+
         public AppSettings GetConfiguration()
         {
-            return new AppSettings();
+            return _appSettings ?? new AppSettings();
         }
 
         public IItemsPluginsLocator GetItemsPluginsLocator()

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace SmartHomeApi.Core.Interfaces
 {
-    public interface IItemsPluginsLocator : IDisposable
+    public interface IItemsPluginsLocator : IDisposable, IInitializable
     {
         Task<IEnumerable<IItemsLocator>> GetItemsLocators();
     }
