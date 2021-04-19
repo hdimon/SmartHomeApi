@@ -157,7 +157,7 @@ namespace SmartHomeApi.WebApi.Controllers
                 }
                 default:
                 {
-                    if (_fabric.GetConfiguration().SoftPluginsLoading)
+                    if (_fabric.GetConfiguration().ItemsPluginsLocator.SoftPluginsLoading)
                     {
                         //Since plugin type is cached in Newtonsoft and it can't be fully disabled (see explanation in ApiDefaultContractResolver)
                         //then convert type to dynamic object. It allows to unload plugin.

@@ -33,6 +33,9 @@ namespace SmartHomeApi.Core.Services
         private readonly ConcurrentDictionary<string, PluginContainer> _knownPluginContainers =
             new ConcurrentDictionary<string, PluginContainer>();
 
+        public event EventHandler<ItemLocatorEventArgs> ItemLocatorAddedOrUpdated;
+        public event EventHandler<ItemLocatorEventArgs> ItemLocatorDeleted;
+
         public bool IsInitialized { get; private set; }
 
         public ItemsPluginsLocator(ISmartHomeApiFabric fabric)
@@ -47,11 +50,11 @@ namespace SmartHomeApi.Core.Services
 
             Directory.CreateDirectory(_tempPluginsDirectory);
 
-            _softPluginsLoading = config.SoftPluginsLoading;
+            _softPluginsLoading = config.ItemsPluginsLocator.SoftPluginsLoading;
             _unloadPluginsMaxTries =
-                config.UnloadPluginsMaxTries > 0 ? config.UnloadPluginsMaxTries : _unloadPluginsMaxTries;
-            _unloadPluginsTriesIntervalMS = config.UnloadPluginsTriesIntervalMS > 0
-                ? config.UnloadPluginsTriesIntervalMS
+                config.ItemsPluginsLocator.UnloadPluginsMaxTries > 0 ? config.ItemsPluginsLocator.UnloadPluginsMaxTries : _unloadPluginsMaxTries;
+            _unloadPluginsTriesIntervalMS = config.ItemsPluginsLocator.UnloadPluginsTriesIntervalMS > 0
+                ? config.ItemsPluginsLocator.UnloadPluginsTriesIntervalMS
                 : _unloadPluginsTriesIntervalMS;
             //_logger.Info($"SoftPluginsLoading = {config.SoftPluginsLoading}");
 
@@ -101,7 +104,8 @@ namespace SmartHomeApi.Core.Services
 
         private int GetWorkerInterval()
         {
-            return _fabric.GetConfiguration().PluginsLocatorIntervalMs ?? 1000;
+            //return _fabric.GetConfiguration().PluginsLocatorIntervalMs ?? 1000;
+            return 30000;
         }
 
         private async Task PluginsCollectorWorker()

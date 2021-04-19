@@ -7,12 +7,9 @@ namespace SmartHomeApi.Core.Interfaces.Configuration
     public class AppSettings : ICloneable
     {
         public string ApiCulture { get; set; }
-        public bool SoftPluginsLoading { get; set; }
-        public int UnloadPluginsMaxTries { get; set; }
-        public int UnloadPluginsTriesIntervalMS { get; set; }
         public string DataDirectoryPath { get; set; }
-        public int PluginsLoadingTimeMs { get; set; }
-        public int? PluginsLocatorIntervalMs { get; set; }
+        public ItemsPluginsLocatorSettings ItemsPluginsLocator { get; set; } = new ItemsPluginsLocatorSettings();
+
         public int? ConfigsLocatorIntervalMs { get; set; }
         public int? ItemsLocatorIntervalMs { get; set; }
         public List<AppSettingItemInfo> UntrackedItems { get; set; } = new List<AppSettingItemInfo>();
@@ -23,12 +20,8 @@ namespace SmartHomeApi.Core.Interfaces.Configuration
             var clone = new AppSettings();
 
             clone.ApiCulture = ApiCulture;
-            clone.SoftPluginsLoading = SoftPluginsLoading;
-            clone.UnloadPluginsMaxTries = UnloadPluginsMaxTries;
-            clone.UnloadPluginsTriesIntervalMS = UnloadPluginsTriesIntervalMS;
+            clone.ItemsPluginsLocator = (ItemsPluginsLocatorSettings)ItemsPluginsLocator.Clone();
             clone.DataDirectoryPath = DataDirectoryPath;
-            clone.PluginsLocatorIntervalMs = PluginsLocatorIntervalMs;
-            clone.PluginsLoadingTimeMs = PluginsLoadingTimeMs;
             clone.ConfigsLocatorIntervalMs = ConfigsLocatorIntervalMs;
             clone.ItemsLocatorIntervalMs = ItemsLocatorIntervalMs;
             clone.UntrackedItems = UntrackedItems.Select(i => (AppSettingItemInfo)i.Clone()).ToList();

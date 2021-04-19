@@ -34,8 +34,9 @@ namespace SmartHomeApi.Core.Services
         {
             _logger.Info("Starting ApiManager initialization...");
 
-            await _fabric.GetItemsConfigsLocator().Initialize();
+            //First collect all initial plugins and then item configs
             await _fabric.GetItemsPluginsLocator().Initialize();
+            await _fabric.GetItemsConfigsLocator().Initialize();
 
             var locators = await _fabric.GetItemsPluginsLocator().GetItemsLocators();
 

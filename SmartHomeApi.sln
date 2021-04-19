@@ -19,7 +19,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartHomeApi.UnitTestsBase"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartHomeApi.Core.UnitTests", "UnitTests\SmartHomeApi.Core.UnitTests\SmartHomeApi.Core.UnitTests.csproj", "{8642A062-B031-4A29-BE4C-079A21365DC0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StandardTestPlugin1", "UnitTests\StandardTestPlugin1\StandardTestPlugin1.csproj", "{3B00086D-C3E6-4E8E-9EC3-38604B4EC48A}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestPlugins", "TestPlugins", "{4362E278-7DBC-43A6-A540-264848D56E7A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StandardTestPluginWithDependency1", "UnitTests\TestPlugins\StandardTestPluginWithDependency1\StandardTestPluginWithDependency1.csproj", "{59396893-C322-4022-8902-7064C0CF6A5A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StandardTestPlugin1", "UnitTests\TestPlugins\StandardTestPlugin1\StandardTestPlugin1.csproj", "{0B1BDC10-131C-406C-9AA3-FD2EC47451B1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PluginWithLocatorConstructorTimeout", "UnitTests\TestPlugins\PluginWithLocatorConstructorTimeout\PluginWithLocatorConstructorTimeout.csproj", "{47867898-EA4A-47A7-946C-25A863099B5B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,10 +61,18 @@ Global
 		{8642A062-B031-4A29-BE4C-079A21365DC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8642A062-B031-4A29-BE4C-079A21365DC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8642A062-B031-4A29-BE4C-079A21365DC0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3B00086D-C3E6-4E8E-9EC3-38604B4EC48A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3B00086D-C3E6-4E8E-9EC3-38604B4EC48A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3B00086D-C3E6-4E8E-9EC3-38604B4EC48A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3B00086D-C3E6-4E8E-9EC3-38604B4EC48A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59396893-C322-4022-8902-7064C0CF6A5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59396893-C322-4022-8902-7064C0CF6A5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59396893-C322-4022-8902-7064C0CF6A5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59396893-C322-4022-8902-7064C0CF6A5A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B1BDC10-131C-406C-9AA3-FD2EC47451B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B1BDC10-131C-406C-9AA3-FD2EC47451B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B1BDC10-131C-406C-9AA3-FD2EC47451B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B1BDC10-131C-406C-9AA3-FD2EC47451B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47867898-EA4A-47A7-946C-25A863099B5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47867898-EA4A-47A7-946C-25A863099B5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47867898-EA4A-47A7-946C-25A863099B5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47867898-EA4A-47A7-946C-25A863099B5B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -66,7 +80,10 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{CC67EAC1-A2F0-4C85-A6CC-BA5A27091C16} = {6B46741C-184D-490B-9A5E-F75057E84E11}
 		{8642A062-B031-4A29-BE4C-079A21365DC0} = {6B46741C-184D-490B-9A5E-F75057E84E11}
-		{3B00086D-C3E6-4E8E-9EC3-38604B4EC48A} = {6B46741C-184D-490B-9A5E-F75057E84E11}
+		{4362E278-7DBC-43A6-A540-264848D56E7A} = {6B46741C-184D-490B-9A5E-F75057E84E11}
+		{59396893-C322-4022-8902-7064C0CF6A5A} = {4362E278-7DBC-43A6-A540-264848D56E7A}
+		{0B1BDC10-131C-406C-9AA3-FD2EC47451B1} = {4362E278-7DBC-43A6-A540-264848D56E7A}
+		{47867898-EA4A-47A7-946C-25A863099B5B} = {4362E278-7DBC-43A6-A540-264848D56E7A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B0813504-E85A-4020-873B-D4DC655694B7}

@@ -19,6 +19,21 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="InputTestData\PluginWithLocatorConstructorTimeout\PluginWithLocatorConstructorTimeout.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="InputTestData\StandardTestPlugin1Changed\StandardTestPlugin1.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="InputTestData\StandardTestPluginWithDependency1\Newtonsoft.Json.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="InputTestData\StandardTestPluginWithDependency1\StandardTestPluginWithDependency1.deps.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="InputTestData\StandardTestPluginWithDependency1\StandardTestPluginWithDependency1.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="SmartHomeApiDataTest\Readme.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

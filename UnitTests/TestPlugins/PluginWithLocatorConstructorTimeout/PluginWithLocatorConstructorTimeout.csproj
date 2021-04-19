@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\SmartHomeApi.ItemUtils\SmartHomeApi.ItemUtils.csproj" />
+    <ProjectReference Include="..\..\..\SmartHomeApi.ItemUtils\SmartHomeApi.ItemUtils.csproj" />
   </ItemGroup>
 
 </Project>
