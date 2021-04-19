@@ -13,7 +13,7 @@ using SmartHomeApi.ItemUtils;
 
 namespace SmartHomeApi.Core.Services
 {
-    public class ItemsPluginsLocator : IItemsPluginsLocator
+    public class ItemsPluginsLocator_Old : IItemsPluginsLocator
     {
         private readonly string _pluginsDirectory;
         private readonly string _tempPluginsDirectory;
@@ -38,7 +38,7 @@ namespace SmartHomeApi.Core.Services
 
         public bool IsInitialized { get; private set; }
 
-        public ItemsPluginsLocator(ISmartHomeApiFabric fabric)
+        public ItemsPluginsLocator_Old(ISmartHomeApiFabric fabric)
         {
             var config = fabric.GetConfiguration();
 
