@@ -32,8 +32,11 @@ namespace SmartHomeApi.Core.UnitTests
         private string _inputTestDataFolder;
 
         [SetUp]
-        public void SetUp()
+        public async Task SetUp()
         {
+            //Wait a bit in order to free files after previous test
+            await Task.Delay(2000);
+
             _inputTestDataFolder = Path.Join(GetDataFolderPath(), InputTestDataFolder);
             _appSettings = new AppSettings();
             _appSettings.DataDirectoryPath = Path.Combine(GetDataFolderPath(), DataFolder);
@@ -43,7 +46,7 @@ namespace SmartHomeApi.Core.UnitTests
 
         private IItemsPluginsLocator GetPluginLocator(ISmartHomeApiFabric fabric)
         {
-            return new ItemsPluginsLocator_New(fabric);
+            return new ItemsPluginsLocator(fabric);
         }
 
         private string GetDataFolderPath()
@@ -610,6 +613,69 @@ namespace SmartHomeApi.Core.UnitTests
             itemLocators = await pluginLocator.GetItemsLocators();
 
             Assert.AreEqual(0, itemLocators.Count());
+
+            pluginLocator.Dispose();
+        }
+
+        [Test]
+        public async Task DeleteDllAndAddAgainTest()
+        {
+            var pluginsPath = Path.Join(_appSettings.DataDirectoryPath, PluginsFolder);
+            Directory.CreateDirectory(pluginsPath);
+
+            FileHelper.Copy(Path.Join(_inputTestDataFolder, StandardTestPlugin1Folder),
+                Path.Join(pluginsPath, StandardTestPlugin1Folder));
+
+            _appSettings.ItemsPluginsLocator.PluginsUnloadingAttemptsIntervalMs = 100;
+            _appSettings.ItemsPluginsLocator.UnloadPluginsTriesIntervalMS = 100;
+            _appSettings.ItemsPluginsLocator.UnloadPluginsMaxTries = 10;
+            var fabric = new SmartHomeApiStubFabric(_appSettings);
+            var pluginLocator = GetPluginLocator(fabric);
+            await pluginLocator.Initialize();
+
+            var tcs = new TaskCompletionSource<bool>();
+            var addedTcs = new TaskCompletionSource<bool>();
+
+            pluginLocator.ItemLocatorDeleted += (sender, args) =>
+            {
+                tcs.SetResult(true);
+            };
+
+            pluginLocator.ItemLocatorAddedOrUpdated += (sender, args) =>
+            {
+                addedTcs.SetResult(true);
+            };
+
+            var itemLocators = await pluginLocator.GetItemsLocators();
+
+            Assert.AreEqual(1, itemLocators.Count());
+
+            File.Delete(Path.Join(pluginsPath, StandardTestPlugin1Folder, StandardTestPlugin1DllName));
+
+            var ct = new CancellationTokenSource(25000);
+            ct.Token.Register(() => tcs.TrySetResult(false));
+
+            var result = await tcs.Task;
+
+            Assert.IsTrue(result);
+
+            itemLocators = await pluginLocator.GetItemsLocators();
+
+            Assert.AreEqual(0, itemLocators.Count());
+
+            File.Copy(Path.Join(_inputTestDataFolder, StandardTestPlugin1Folder, StandardTestPlugin1DllName),
+                Path.Join(pluginsPath, StandardTestPlugin1Folder, StandardTestPlugin1DllName), true);
+
+            ct = new CancellationTokenSource(10000);
+            ct.Token.Register(() => addedTcs.TrySetResult(false));
+
+            result = await addedTcs.Task;
+
+            Assert.IsTrue(result);
+
+            itemLocators = await pluginLocator.GetItemsLocators();
+
+            Assert.AreEqual(1, itemLocators.Count());
 
             pluginLocator.Dispose();
         }

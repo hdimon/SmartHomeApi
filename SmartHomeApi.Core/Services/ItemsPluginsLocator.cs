@@ -14,7 +14,7 @@ using SmartHomeApi.ItemUtils;
 
 namespace SmartHomeApi.Core.Services
 {
-    public class ItemsPluginsLocator_New : IItemsPluginsLocator
+    public class ItemsPluginsLocator : IItemsPluginsLocator
     {
         private const int PluginsUnloadingAttemptsIntervalMSDefault = 1000;
         private const int ItemLocatorConstructorTimeoutMSDefault = 5000;
@@ -41,7 +41,7 @@ namespace SmartHomeApi.Core.Services
 
         public bool IsInitialized { get; private set; }
 
-        public ItemsPluginsLocator_New(ISmartHomeApiFabric fabric)
+        public ItemsPluginsLocator(ISmartHomeApiFabric fabric)
         {
             var unused = typeof(AverageValuesHelper); //Workaround to load dll
 

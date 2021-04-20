@@ -37,9 +37,6 @@ namespace SmartHomeApi.Core
             _watcher.Changed += WatcherOnChanged;
             _watcher.Deleted += WatcherOnDeleted;
 
-            //Since actually we support only .dll (even though "List<string> librariesExtensions" passed)
-            //and _watcher.Filter does not support multiple extensions then now we create only one FileWatcher for .dll
-            _watcher.Filter = "*.dll";
             _watcher.IncludeSubdirectories = true;
             _watcher.EnableRaisingEvents = true;
         }
@@ -79,9 +76,6 @@ namespace SmartHomeApi.Core
                 if (!_directories.TryGetValue(pluginDirectoryPath, out var directoryProcessed))
                     return null;
 
-                if (directoryProcessed.EventType != EventType.Deleted)
-                    return null;
-
                 eventArg.PluginDirectoryName = directoryInfo.Name;
                 eventArg.PluginDirectoryInfo = directoryInfo;
 
@@ -104,7 +98,12 @@ namespace SmartHomeApi.Core
             _directories.TryRemove(pluginDirectoryPath, out _);
 
             if (raiseEvent)
-                OnPluginAddedOrUpdated(eventArg);
+            {
+                if (eventArg.DllFiles.Any())
+                    OnPluginAddedOrUpdated(eventArg);
+                else
+                    OnPluginDeleted(eventArg);
+            }
 
             return eventArg;
         }
@@ -141,7 +140,7 @@ namespace SmartHomeApi.Core
         {
             try
             {
-                var pluginDirectoryPath = Path.GetDirectoryName(e.FullPath);
+                var pluginDirectoryPath = IsDirectory(e.FullPath) ? e.FullPath : Path.GetDirectoryName(e.FullPath);
 
                 if (pluginDirectoryPath == null)
                     return;
@@ -191,6 +190,25 @@ namespace SmartHomeApi.Core
             var pluginsLoadingTimeMs = _fabric.GetConfiguration().ItemsPluginsLocator.PluginsLoadingTimeMs;
 
             return pluginsLoadingTimeMs == 0 ? PluginsLoadingTimeMsDefault : pluginsLoadingTimeMs;
+        }
+
+        private bool IsDirectory(string path)
+        {
+            if (path == null)
+                throw new ArgumentNullException();
+
+            path = path.Trim();
+
+            if (Directory.Exists(path))
+                return true;
+
+            if (File.Exists(path))
+                return false;
+
+            if (new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }.Any(x => path.EndsWith(x)))
+                return true;
+
+            return string.IsNullOrWhiteSpace(Path.GetExtension(path));
         }
 
         private class DirectoryProcessed
