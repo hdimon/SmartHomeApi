@@ -56,5 +56,9 @@ namespace SmartHomeApi.Core.Services
 
             return $"[{_itemId}] {message}";
         }
+
+        public void Dispose()
+        {
+        }
     }
 }

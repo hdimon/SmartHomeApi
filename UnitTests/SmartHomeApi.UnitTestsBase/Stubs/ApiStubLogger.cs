@@ -32,5 +32,9 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
         public void Debug(string message)
         {
         }
+
+        public void Dispose()
+        {
+        }
     }
 }

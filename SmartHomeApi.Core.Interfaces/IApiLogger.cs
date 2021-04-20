@@ -2,7 +2,7 @@
 
 namespace SmartHomeApi.Core.Interfaces
 {
-    public interface IApiLogger
+    public interface IApiLogger : IDisposable
     {
         void Prompt(string message);
         void Info(string message);
