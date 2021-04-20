@@ -52,5 +52,10 @@ namespace SmartHomeApi.Core.Services
         {
             _logger.Debug(message);
         }
+
+        public void Dispose()
+        {
+            _logger?.Dispose();
+        }
     }
 }
