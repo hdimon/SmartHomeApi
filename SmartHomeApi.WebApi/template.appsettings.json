@@ -1,9 +1,10 @@
 {
     "AppSettings": {
         "ApiCulture": "en-US",
-        "SoftPluginsLoading": true,
         "DataDirectoryPath": "C:\\SmartHomeApiData",
-        "PluginsLocatorIntervalMs": 5000,
+        "ItemsPluginsLocator": {
+            "SoftPluginsLoading": true
+        },
         "ConfigsLocatorIntervalMs": 5000,
         "ItemsLocatorIntervalMs": 5000,
         "UntrackedItems": [
