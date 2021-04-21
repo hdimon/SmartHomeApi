@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Common.Utils;
 using Newtonsoft.Json;
@@ -13,6 +14,7 @@ namespace SmartHomeApi.Core.Services
         private readonly ISmartHomeApiFabric _fabric;
         private readonly IApiLogger _logger;
         private readonly List<IStateChangedSubscriber> _stateChangedSubscribers = new List<IStateChangedSubscriber>();
+        private readonly ReaderWriterLockSlim RwLock = new ReaderWriterLockSlim();
 
         public string ItemType => null;
         public string ItemId => null;
@@ -25,12 +27,38 @@ namespace SmartHomeApi.Core.Services
 
         public void RegisterSubscriber(IStateChangedSubscriber subscriber)
         {
-            _stateChangedSubscribers.Add(subscriber);
+            try
+            {
+                RwLock.EnterWriteLock();
+
+                _stateChangedSubscribers.Add(subscriber);
+            }
+            catch (Exception e)
+            {
+                _logger.Error(e);
+            }
+            finally
+            {
+                RwLock.ExitWriteLock();
+            }
         }
 
         public void UnregisterSubscriber(IStateChangedSubscriber subscriber)
         {
-            _stateChangedSubscribers.Remove(subscriber);
+            try
+            {
+                RwLock.EnterWriteLock();
+
+                _stateChangedSubscribers.Remove(subscriber);
+            }
+            catch (Exception e)
+            {
+                _logger.Error(e);
+            }
+            finally
+            {
+                RwLock.ExitWriteLock();
+            }
         }
 
         public void NotifySubscribers(StateChangedEvent args)
@@ -56,10 +84,23 @@ namespace SmartHomeApi.Core.Services
                     return;
             }
 
-            foreach (var stateChangedSubscriber in _stateChangedSubscribers)
+            try
             {
-                Task.Run(async () => await stateChangedSubscriber.Notify(args))
-                    .ContinueWith(t => { _logger.Error(t.Exception); }, TaskContinuationOptions.OnlyOnFaulted);
+                RwLock.EnterReadLock();
+
+                foreach (var stateChangedSubscriber in _stateChangedSubscribers)
+                {
+                    Task.Run(async () => await stateChangedSubscriber.Notify(args))
+                        .ContinueWith(t => { _logger.Error(t.Exception); }, TaskContinuationOptions.OnlyOnFaulted);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.Error(e);
+            }
+            finally
+            {
+                RwLock.ExitReadLock();
             }
         }
 
