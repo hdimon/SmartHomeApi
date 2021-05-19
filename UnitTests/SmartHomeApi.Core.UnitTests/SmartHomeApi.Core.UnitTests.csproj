@@ -34,6 +34,24 @@
     <None Update="InputTestData\StandardTestPluginWithDependency1\StandardTestPluginWithDependency1.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="InputTestData\TestConfigs\InvalidConfigWithoutItemType.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="InputTestData\TestConfigs\InvalidConfigWithoutItemId.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="InputTestData\TestConfigs\InvalidConfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="InputTestData\TestConfigs\TestItem2.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="InputTestData\TestConfigs\TestItem1Changed.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="InputTestData\TestConfigs\TestItem1.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="SmartHomeApiDataTest\Readme.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -9,6 +9,7 @@ namespace SmartHomeApi.Core.Interfaces.Configuration
         public string ApiCulture { get; set; }
         public string DataDirectoryPath { get; set; }
         public ItemsPluginsLocatorSettings ItemsPluginsLocator { get; set; } = new ItemsPluginsLocatorSettings();
+        public ItemsConfigsLocatorSettings ItemsConfigsLocator { get; set; } = new ItemsConfigsLocatorSettings();
 
         public int? ConfigsLocatorIntervalMs { get; set; }
         public int? ItemsLocatorIntervalMs { get; set; }
@@ -21,6 +22,7 @@ namespace SmartHomeApi.Core.Interfaces.Configuration
 
             clone.ApiCulture = ApiCulture;
             clone.ItemsPluginsLocator = (ItemsPluginsLocatorSettings)ItemsPluginsLocator.Clone();
+            clone.ItemsConfigsLocator = (ItemsConfigsLocatorSettings)ItemsConfigsLocator.Clone();
             clone.DataDirectoryPath = DataDirectoryPath;
             clone.ConfigsLocatorIntervalMs = ConfigsLocatorIntervalMs;
             clone.ItemsLocatorIntervalMs = ItemsLocatorIntervalMs;
