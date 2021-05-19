@@ -305,7 +305,8 @@ namespace SmartHomeApi.Core.Services
 
                 var deletedPlugin = await DeletePlugin(existingPlugin);
 
-                EmitOnBeforeItemLocatorDeletedEvent(deletedPlugin.Plugin.Locators);
+                if (deletedPlugin != null)
+                    EmitOnBeforeItemLocatorDeletedEvent(deletedPlugin.Plugin.Locators);
 
                 var deletedItemsLocators = await UnloadPlugins(new List<DeletingPluginContainer> { deletedPlugin });
                 await LoadPlugin(existingPlugin, deletedItemsLocators);
@@ -502,7 +503,8 @@ namespace SmartHomeApi.Core.Services
             {
                 var deletedPlugin = await DeletePlugin(pluginContainer);
 
-                EmitOnBeforeItemLocatorDeletedEvent(deletedPlugin.Plugin.Locators);
+                if (deletedPlugin != null)
+                    EmitOnBeforeItemLocatorDeletedEvent(deletedPlugin.Plugin.Locators);
 
                 var deletedItemsLocators = await UnloadPlugins(new List<DeletingPluginContainer> { deletedPlugin });
 
