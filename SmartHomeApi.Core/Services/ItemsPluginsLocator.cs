@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 using Common.Utils;
 using SmartHomeApi.Core.Interfaces;
 using SmartHomeApi.Core.Interfaces.Configuration;
+using SmartHomeApi.Core.Interfaces.ItemsLocators;
+using SmartHomeApi.Core.Interfaces.ItemsLocatorsBridges;
+using SmartHomeApi.Core.ItemsLocatorsBridges;
 using SmartHomeApi.ItemUtils;
 
 namespace SmartHomeApi.Core.Services
@@ -37,6 +40,7 @@ namespace SmartHomeApi.Core.Services
             _locators = new ConcurrentDictionary<string, IItemsLocator>();
 
         public event EventHandler<ItemLocatorEventArgs> ItemLocatorAddedOrUpdated;
+        public event EventHandler<ItemLocatorEventArgs> BeforeItemLocatorDeleted;
         public event EventHandler<ItemLocatorEventArgs> ItemLocatorDeleted;
 
         public bool IsInitialized { get; private set; }
@@ -108,6 +112,12 @@ namespace SmartHomeApi.Core.Services
         private void OnItemLocatorDeleted(ItemLocatorEventArgs e)
         {
             Task.Run(() => ItemLocatorDeleted?.Invoke(this, e)).ContinueWith(t => { _logger.Error(t.Exception); },
+                TaskContinuationOptions.OnlyOnFaulted);
+        }
+
+        private void OnBeforeItemLocatorDeleted(ItemLocatorEventArgs e)
+        {
+            Task.Run(() => BeforeItemLocatorDeleted?.Invoke(this, e)).ContinueWith(t => { _logger.Error(t.Exception); },
                 TaskContinuationOptions.OnlyOnFaulted);
         }
 
@@ -231,8 +241,10 @@ namespace SmartHomeApi.Core.Services
                         continue;
                     }
 
-                    _locators.TryAdd(instance.ItemType, instance);
-                    locators.Add(instance);
+                    var bridge = GetItemsLocatorBridge(instance);
+
+                    _locators.TryAdd(instance.ItemType, bridge);
+                    locators.Add(bridge);
 
                     _logger.Info($"ItemLocator {instance.ItemType} has been created");
                 }
@@ -263,6 +275,14 @@ namespace SmartHomeApi.Core.Services
             _logger.Info($"Plugin {tempPlugin.PluginDirectoryName} has been processed");
         }
 
+        private IStandardItemsLocatorBridge GetItemsLocatorBridge(IItemsLocator locator)
+        {
+            if (locator is IStandardItemsLocator standard)
+                return new StandardItemsLocatorBridge(standard);
+
+            return new DeprecatedItemsLocatorBridge(locator);
+        }
+
         private async Task UpdatePlugin(PluginContainer pluginContainer)
         {
             if (!_pluginContainers.ContainsKey(pluginContainer.PluginDirectoryName))
@@ -284,6 +304,9 @@ namespace SmartHomeApi.Core.Services
                 _logger.Info($"Plugin {existingPlugin.PluginDirectoryName} was changed, try to reload it...");
 
                 var deletedPlugin = await DeletePlugin(existingPlugin);
+
+                EmitOnBeforeItemLocatorDeletedEvent(deletedPlugin.Plugin.Locators);
+
                 var deletedItemsLocators = await UnloadPlugins(new List<DeletingPluginContainer> { deletedPlugin });
                 await LoadPlugin(existingPlugin, deletedItemsLocators);
 
@@ -294,6 +317,15 @@ namespace SmartHomeApi.Core.Services
                 DeleteTempPlugin(existingPlugin);
 
                 _logger.Error(e);
+            }
+        }
+
+        private void EmitOnBeforeItemLocatorDeletedEvent(List<IItemsLocator> locators)
+        {
+            foreach (var locator in locators)
+            {
+                var eventArgs = new ItemLocatorEventArgs { ItemType = locator.ItemType };
+                OnBeforeItemLocatorDeleted(eventArgs);
             }
         }
 
@@ -469,6 +501,9 @@ namespace SmartHomeApi.Core.Services
             try
             {
                 var deletedPlugin = await DeletePlugin(pluginContainer);
+
+                EmitOnBeforeItemLocatorDeletedEvent(deletedPlugin.Plugin.Locators);
+
                 var deletedItemsLocators = await UnloadPlugins(new List<DeletingPluginContainer> { deletedPlugin });
 
                 foreach (var deletedItemsLocator in deletedItemsLocators)

@@ -7,6 +7,9 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
     public class SmartHomeApiStubFabric : ISmartHomeApiFabric
     {
         private readonly AppSettings _appSettings;
+
+        public IItemsPluginsLocator ItemsPluginsLocator { get; set; }
+
         public SmartHomeApiStubFabric(){}
 
         public SmartHomeApiStubFabric(AppSettings appSettings)
@@ -21,7 +24,7 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
 
         public IItemsPluginsLocator GetItemsPluginsLocator()
         {
-            throw new NotImplementedException();
+            return ItemsPluginsLocator;
         }
 
         public IItemsLocator GetItemsLocator()
