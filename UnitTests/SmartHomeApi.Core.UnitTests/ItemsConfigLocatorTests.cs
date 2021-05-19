@@ -69,7 +69,7 @@ namespace SmartHomeApi.Core.UnitTests
 
         private IItemsConfigLocator GetConfigLocator(ISmartHomeApiFabric fabric)
         {
-            return new ItemsConfigLocator_New(fabric);
+            return new ItemsConfigLocator(fabric);
         }
 
         private IStandardItemsLocatorBridge GetStandardItemsLocatorBridge(IItemsLocator itemsLocator)

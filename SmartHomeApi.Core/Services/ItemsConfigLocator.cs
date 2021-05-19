@@ -11,7 +11,7 @@ using SmartHomeApi.Core.Interfaces.ItemsLocatorsBridges;
 
 namespace SmartHomeApi.Core.Services
 {
-    public class ItemsConfigLocator_New : IItemsConfigLocator
+    public class ItemsConfigLocator : IItemsConfigLocator
     {
         private const int ConfigsLoadingDelayMsDefault = 500;
 
@@ -36,7 +36,7 @@ namespace SmartHomeApi.Core.Services
 
         public bool IsInitialized { get; private set; }
 
-        public ItemsConfigLocator_New(ISmartHomeApiFabric fabric)
+        public ItemsConfigLocator(ISmartHomeApiFabric fabric)
         {
             _fabric = fabric;
             _logger = _fabric.GetApiLogger();
