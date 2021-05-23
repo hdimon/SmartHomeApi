@@ -90,8 +90,8 @@ namespace SmartHomeApi.Core.Services
 
                 foreach (var stateChangedSubscriber in _stateChangedSubscribers)
                 {
-                    Task.Run(async () => await stateChangedSubscriber.Notify(args))
-                        .ContinueWith(t => { _logger.Error(t.Exception); }, TaskContinuationOptions.OnlyOnFaulted);
+                    stateChangedSubscriber.Notify(args).ContinueWith(t => { _logger.Error(t.Exception); },
+                        TaskContinuationOptions.OnlyOnFaulted);
                 }
             }
             catch (Exception e)

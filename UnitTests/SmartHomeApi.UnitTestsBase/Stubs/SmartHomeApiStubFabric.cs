@@ -7,12 +7,16 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
     public class SmartHomeApiStubFabric : ISmartHomeApiFabric
     {
         private readonly AppSettings _appSettings;
+        private readonly IApiLogger _logger;
 
         public IItemsPluginsLocator ItemsPluginsLocator { get; set; }
 
-        public SmartHomeApiStubFabric(){}
+        public SmartHomeApiStubFabric()
+        {
+            _logger = new ApiStubLogger();
+        }
 
-        public SmartHomeApiStubFabric(AppSettings appSettings)
+        public SmartHomeApiStubFabric(AppSettings appSettings) : this()
         {
             _appSettings = appSettings;
         }
@@ -39,7 +43,7 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
 
         public IApiManager GetApiManager()
         {
-            throw new NotImplementedException();
+            return new ApiManagerStub();
         }
 
         public IItemHelpersFabric GetItemHelpersFabric(string itemId)
@@ -54,7 +58,7 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
 
         public IApiLogger GetApiLogger()
         {
-            return new ApiStubLogger();
+            return _logger;
         }
 
         public IDateTimeOffsetProvider GetDateTimeOffsetProvider()
