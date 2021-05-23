@@ -37,6 +37,11 @@ namespace SmartHomeApi.ItemUtils
             return new SetValueResult();
         }
 
+        public virtual async Task<ExecuteCommandResultAbstract> Execute(ExecuteCommand command)
+        {
+            return new ExecuteCommandResultNotFound();
+        }
+
         public virtual IItemState GetState()
         {
             return null;
@@ -45,6 +50,21 @@ namespace SmartHomeApi.ItemUtils
         public async Task Initialize()
         {
             await _initializeTask.Value;
+        }
+
+        protected virtual async Task InitializeItem()
+        {
+        }
+
+        protected override async Task ProcessNotification(StateChangedEvent args)
+        {
+
+        }
+
+        protected void SubscribeOnNotifications()
+        {
+            //Uncomment after migrating plugins to using this new method
+            //Manager.RegisterSubscriber(this);
         }
 
         private async Task InitializeSafely()
@@ -62,20 +82,6 @@ namespace SmartHomeApi.ItemUtils
             }
 
             IsInitialized = true;
-        }
-
-        protected virtual async Task InitializeItem()
-        {
-        }
-
-        protected override async Task ProcessNotification(StateChangedEvent args)
-        {
-            
-        }
-
-        public virtual async Task<ExecuteCommandResultAbstract> Execute(ExecuteCommand command)
-        {
-            return new ExecuteCommandResultNotFound();
-        }
+        }       
     }
 }
