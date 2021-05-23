@@ -14,7 +14,7 @@ namespace SmartHomeApi.Core.Services
         private readonly ISmartHomeApiFabric _fabric;
         private readonly IApiLogger _logger;
         private readonly List<IStateChangedSubscriber> _stateChangedSubscribers = new List<IStateChangedSubscriber>();
-        private readonly ReaderWriterLockSlim RwLock = new ReaderWriterLockSlim();
+        private readonly ReaderWriterLockSlim RwLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
         public string ItemType => null;
         public string ItemId => null;
