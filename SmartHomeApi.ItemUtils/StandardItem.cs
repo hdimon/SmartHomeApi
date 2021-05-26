@@ -63,8 +63,8 @@ namespace SmartHomeApi.ItemUtils
 
         protected void SubscribeOnNotifications()
         {
-            //Uncomment after migrating plugins to using this new method
-            //Manager.RegisterSubscriber(this);
+            Manager.RegisterSubscriber(this);
+            Logger.Info("Subscribed on notifications.");
         }
 
         private async Task InitializeSafely()

@@ -22,8 +22,6 @@ namespace SmartHomeApi.ItemUtils
             Manager = manager;
             HelpersFabric = helpersFabric;
             Logger = helpersFabric.GetApiLogger();
-
-            Manager.RegisterSubscriber(this);
         }
 
         public async Task Notify(StateChangedEvent args)
