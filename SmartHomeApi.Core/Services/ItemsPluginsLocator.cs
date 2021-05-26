@@ -178,9 +178,9 @@ namespace SmartHomeApi.Core.Services
             }
             catch (Exception e)
             {
-                DeleteTempPlugin(pluginContainer);
-
                 _logger.Error(e);
+
+                DeleteTempPlugin(pluginContainer);
             }
         }
 
@@ -379,10 +379,17 @@ namespace SmartHomeApi.Core.Services
 
         private void DeleteTempPlugin(PluginContainer plugin)
         {
-            var tempPluginDirectoryPath = GetPluginPath(plugin);
+            try
+            {
+                var tempPluginDirectoryPath = GetPluginPath(plugin);
 
-            if (Directory.Exists(tempPluginDirectoryPath))
-                Directory.Delete(tempPluginDirectoryPath, true);
+                if (Directory.Exists(tempPluginDirectoryPath))
+                    Directory.Delete(tempPluginDirectoryPath, true);
+            }
+            catch (Exception e)
+            {
+                _logger.Error($"Error during temp directory deleting: {e}");
+            }
         }
 
         private string GetPluginPath(PluginContainer plugin)
@@ -502,10 +509,6 @@ namespace SmartHomeApi.Core.Services
             try
             {
                 var deletedPlugin = await DeletePlugin(pluginContainer);
-
-                if (deletedPlugin != null)
-                    EmitOnBeforeItemLocatorDeletedEvent(deletedPlugin.Plugin.Locators);
-
                 var deletedItemsLocators = await UnloadPlugins(new List<DeletingPluginContainer> { deletedPlugin });
 
                 foreach (var deletedItemsLocator in deletedItemsLocators)
