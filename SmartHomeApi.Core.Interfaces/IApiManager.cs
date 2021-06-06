@@ -5,7 +5,7 @@ using SmartHomeApi.Core.Interfaces.ExecuteCommandResults;
 
 namespace SmartHomeApi.Core.Interfaces
 {
-    public interface IApiManager : IInitializable, IDisposable, IStateChangedNotifier
+    public interface IApiManager : IInitializable, IAsyncDisposable, IStateChangedNotifier
     {
         Task<ISetValueResult> SetValue(string itemId, string parameter, object value);
         Task<ISetValueResult> Increase(string itemId, string parameter);

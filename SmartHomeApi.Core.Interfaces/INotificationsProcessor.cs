@@ -1,6 +1,8 @@
-﻿namespace SmartHomeApi.Core.Interfaces
+﻿using System;
+
+namespace SmartHomeApi.Core.Interfaces
 {
-    public interface INotificationsProcessor : IStateChangedNotifier
+    public interface INotificationsProcessor : IStateChangedNotifier, IAsyncDisposable
     {
     }
 }

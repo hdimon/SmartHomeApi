@@ -10,6 +10,7 @@ namespace SmartHomeApi.Core.Services
 {
     public class ApiManager : IApiManager
     {
+        private bool _disposed;
         private readonly ISmartHomeApiFabric _fabric;
         private readonly IItemStatesProcessor _statesProcessor;
         private readonly IApiLogger _logger;
@@ -38,7 +39,15 @@ namespace SmartHomeApi.Core.Services
             await _fabric.GetItemsPluginsLocator().Initialize();
             await _fabric.GetItemsConfigsLocator().Initialize();
 
+            //
             var locators = await _fabric.GetItemsPluginsLocator().GetItemsLocators();
+
+            //Temp
+            foreach (var itemsLocator in locators)
+            {
+                await itemsLocator.Initialize();
+            }
+            //Temp
 
             //TODO Instead of ImmediateInitialization introduce InitialLoadPriority setting in Item config, group items by this and initialize them in groups
 
@@ -49,6 +58,7 @@ namespace SmartHomeApi.Core.Services
             await Task.WhenAll(immediateItems.Select(GetItems));
 
             _logger.Info("Items with immediate initialization have been run.");
+            //
 
             IsInitialized = true;
 
@@ -67,20 +77,26 @@ namespace SmartHomeApi.Core.Services
             return itemsList;
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
+            if (_disposed)
+                return;
+
             _logger.Info("Disposing ApiManager...");
 
             _disposingCancellationTokenSource.Cancel();
 
+            var notificationsProcessor = _fabric.GetNotificationsProcessor();
             var pluginsLocator = _fabric.GetItemsPluginsLocator();
             var configLocator = _fabric.GetItemsConfigsLocator();
 
+            await notificationsProcessor.DisposeAsync();
             pluginsLocator.Dispose();
-
             configLocator.Dispose();
 
             _logger.Info("ApiManager has been disposed.");
+
+            _disposed = true;
         }
 
         public async Task<ISetValueResult> SetValue(string itemId, string parameter, object value)

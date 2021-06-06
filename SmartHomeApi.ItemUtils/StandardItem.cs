@@ -11,8 +11,8 @@ namespace SmartHomeApi.ItemUtils
     {
         private readonly AsyncLazy _initializeTask;
 
-        public string ItemId { get; }
-        public string ItemType { get; }
+        public override string ItemId { get; }
+        public override string ItemType { get; }
 
         public IItemConfig Config { get; private set; }
         public bool IsInitialized { get; set; }
@@ -82,6 +82,6 @@ namespace SmartHomeApi.ItemUtils
             }
 
             IsInitialized = true;
-        }       
+        }
     }
 }

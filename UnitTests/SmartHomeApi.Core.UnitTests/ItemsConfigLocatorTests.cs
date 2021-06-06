@@ -118,13 +118,16 @@ namespace SmartHomeApi.Core.UnitTests
         [Test]
         public async Task OneInitialConfigTest()
         {
+            var fabric = new SmartHomeApiStubFabric(_appSettings);
+
             var configsPath = Path.Join(_appSettings.DataDirectoryPath, ConfigsFolder);
             Directory.CreateDirectory(configsPath);
 
             File.Copy(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
 
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
-            var itemsLocator = new TestItem1ItemLocator();
+            var itemsLocator = new TestItem1ItemLocator(fabric);
+            await itemsLocator.Initialize();
 
             var tcs = new TaskCompletionSource<bool>();
             itemsLocator.OnConfigAdded += async config => { tcs.SetResult(true); };
@@ -132,7 +135,7 @@ namespace SmartHomeApi.Core.UnitTests
             var itemsLocatorWrapper = GetStandardItemsLocatorBridge(itemsLocator);
 
             pluginsLocator.AddLocator(itemsLocatorWrapper);
-            var fabric = new SmartHomeApiStubFabric(_appSettings);
+            
             fabric.ItemsPluginsLocator = pluginsLocator;
 
             var configLocator = GetConfigLocator(fabric);
@@ -156,6 +159,8 @@ namespace SmartHomeApi.Core.UnitTests
         [Test]
         public async Task TwoTheSameInitialConfigsTest()
         {
+            var fabric = new SmartHomeApiStubFabric(_appSettings);
+
             var configsPath = Path.Join(_appSettings.DataDirectoryPath, ConfigsFolder);
             Directory.CreateDirectory(configsPath);
 
@@ -163,7 +168,8 @@ namespace SmartHomeApi.Core.UnitTests
             File.Copy(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1CopyConfigName));
 
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
-            var itemsLocator = new TestItem1ItemLocator();
+            var itemsLocator = new TestItem1ItemLocator(fabric);
+            await itemsLocator.Initialize();
 
             int counter = 0;
             var tcs = new TaskCompletionSource<bool>();
@@ -176,7 +182,7 @@ namespace SmartHomeApi.Core.UnitTests
             var itemsLocatorWrapper = GetStandardItemsLocatorBridge(itemsLocator);
 
             pluginsLocator.AddLocator(itemsLocatorWrapper);
-            var fabric = new SmartHomeApiStubFabric(_appSettings);
+            
             fabric.ItemsPluginsLocator = pluginsLocator;
 
             var configLocator = GetConfigLocator(fabric);
@@ -201,11 +207,14 @@ namespace SmartHomeApi.Core.UnitTests
         [Test]
         public async Task AddOneConfigTest()
         {
+            var fabric = new SmartHomeApiStubFabric(_appSettings);
+
             var configsPath = Path.Join(_appSettings.DataDirectoryPath, ConfigsFolder);
             Directory.CreateDirectory(configsPath);
 
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
-            var itemsLocator = new TestItem1ItemLocator();
+            var itemsLocator = new TestItem1ItemLocator(fabric);
+            await itemsLocator.Initialize();
 
             var tcs = new TaskCompletionSource<bool>();
             itemsLocator.OnConfigAdded = async config => { tcs.SetResult(true); };
@@ -213,7 +222,7 @@ namespace SmartHomeApi.Core.UnitTests
             var itemsLocatorWrapper = GetStandardItemsLocatorBridge(itemsLocator);
 
             pluginsLocator.AddLocator(itemsLocatorWrapper);
-            var fabric = new SmartHomeApiStubFabric(_appSettings);
+            
             fabric.ItemsPluginsLocator = pluginsLocator;
 
             var configLocator = GetConfigLocator(fabric);
@@ -239,11 +248,13 @@ namespace SmartHomeApi.Core.UnitTests
         [Test]
         public async Task AddOneConfigAndDeleteBeforeProcessingTest()
         {
+            var fabric = new SmartHomeApiStubFabric(_appSettings);
+
             var configsPath = Path.Join(_appSettings.DataDirectoryPath, ConfigsFolder);
             Directory.CreateDirectory(configsPath);
 
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
-            var itemsLocator = new TestItem1ItemLocator();
+            var itemsLocator = new TestItem1ItemLocator(fabric);
 
             var tcs = new TaskCompletionSource<bool>();
             itemsLocator.OnConfigAdded = async config => { tcs.SetResult(true); };
@@ -251,7 +262,7 @@ namespace SmartHomeApi.Core.UnitTests
             var itemsLocatorWrapper = GetStandardItemsLocatorBridge(itemsLocator);
 
             pluginsLocator.AddLocator(itemsLocatorWrapper);
-            var fabric = new SmartHomeApiStubFabric(_appSettings);
+            
             fabric.ItemsPluginsLocator = pluginsLocator;
 
             var configLocator = GetConfigLocator(fabric);
@@ -283,13 +294,16 @@ namespace SmartHomeApi.Core.UnitTests
         [Test]
         public async Task UpdateOneConfigTest()
         {
+            var fabric = new SmartHomeApiStubFabric(_appSettings);
+
             int eventsCounter = 0;
 
             var configsPath = Path.Join(_appSettings.DataDirectoryPath, ConfigsFolder);
             Directory.CreateDirectory(configsPath);
 
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
-            var itemsLocator = new TestItem1ItemLocator();
+            var itemsLocator = new TestItem1ItemLocator(fabric);
+            await itemsLocator.Initialize();
 
             var tcs = new TaskCompletionSource<bool>();
             var tcs1 = new TaskCompletionSource<bool>();
@@ -314,7 +328,7 @@ namespace SmartHomeApi.Core.UnitTests
             var itemsLocatorWrapper = GetStandardItemsLocatorBridge(itemsLocator);
 
             pluginsLocator.AddLocator(itemsLocatorWrapper);
-            var fabric = new SmartHomeApiStubFabric(_appSettings);
+            
             fabric.ItemsPluginsLocator = pluginsLocator;
 
             var configLocator = GetConfigLocator(fabric);
@@ -359,13 +373,16 @@ namespace SmartHomeApi.Core.UnitTests
         [Test]
         public async Task UpdateOneConfigWithTheSameWithoutChangesTest()
         {
+            var fabric = new SmartHomeApiStubFabric(_appSettings);
+
             int eventsCounter = 0;
 
             var configsPath = Path.Join(_appSettings.DataDirectoryPath, ConfigsFolder);
             Directory.CreateDirectory(configsPath);
 
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
-            var itemsLocator = new TestItem1ItemLocator();
+            var itemsLocator = new TestItem1ItemLocator(fabric);
+            await itemsLocator.Initialize();
 
             var tcs = new TaskCompletionSource<bool>();
             var tcs1 = new TaskCompletionSource<bool>();
@@ -384,7 +401,7 @@ namespace SmartHomeApi.Core.UnitTests
             var itemsLocatorWrapper = GetStandardItemsLocatorBridge(itemsLocator);
 
             pluginsLocator.AddLocator(itemsLocatorWrapper);
-            var fabric = new SmartHomeApiStubFabric(_appSettings);
+            
             fabric.ItemsPluginsLocator = pluginsLocator;
 
             var configLocator = GetConfigLocator(fabric);
@@ -429,13 +446,16 @@ namespace SmartHomeApi.Core.UnitTests
         [Test]
         public async Task DeleteInitialConfigTest()
         {
+            var fabric = new SmartHomeApiStubFabric(_appSettings);
+
             var configsPath = Path.Join(_appSettings.DataDirectoryPath, ConfigsFolder);
             Directory.CreateDirectory(configsPath);
 
             File.Copy(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
 
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
-            var itemsLocator = new TestItem1ItemLocator();
+            var itemsLocator = new TestItem1ItemLocator(fabric);
+            await itemsLocator.Initialize();
 
             var tcs = new TaskCompletionSource<bool>();
 
@@ -445,7 +465,7 @@ namespace SmartHomeApi.Core.UnitTests
             var itemsLocatorWrapper = GetStandardItemsLocatorBridge(itemsLocator);
 
             pluginsLocator.AddLocator(itemsLocatorWrapper);
-            var fabric = new SmartHomeApiStubFabric(_appSettings);
+            
             fabric.ItemsPluginsLocator = pluginsLocator;
 
             var configLocator = GetConfigLocator(fabric);
@@ -475,11 +495,14 @@ namespace SmartHomeApi.Core.UnitTests
         [Test]
         public async Task AddOneConfigAndThenDeleteTest()
         {
+            var fabric = new SmartHomeApiStubFabric(_appSettings);
+
             var configsPath = Path.Join(_appSettings.DataDirectoryPath, ConfigsFolder);
             Directory.CreateDirectory(configsPath);
 
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
-            var itemsLocator = new TestItem1ItemLocator();
+            var itemsLocator = new TestItem1ItemLocator(fabric);
+            await itemsLocator.Initialize();
 
             var tcs = new TaskCompletionSource<bool>();
             var tcs1 = new TaskCompletionSource<bool>();
@@ -489,7 +512,7 @@ namespace SmartHomeApi.Core.UnitTests
             var itemsLocatorWrapper = GetStandardItemsLocatorBridge(itemsLocator);
 
             pluginsLocator.AddLocator(itemsLocatorWrapper);
-            var fabric = new SmartHomeApiStubFabric(_appSettings);
+            
             fabric.ItemsPluginsLocator = pluginsLocator;
 
             var configLocator = GetConfigLocator(fabric);
@@ -545,7 +568,8 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(0, itemConfigs.Count);
 
-            var itemsLocator = new TestItem1ItemLocator();
+            var itemsLocator = new TestItem1ItemLocator(fabric);
+            await itemsLocator.Initialize();
 
             var tcs = new TaskCompletionSource<bool>();
             itemsLocator.OnConfigAdded += async config => { tcs.SetResult(true); };
@@ -590,7 +614,8 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(0, itemConfigs.Count);
 
-            var itemsLocator = new TestItem1ItemLocator();
+            var itemsLocator = new TestItem1ItemLocator(fabric);
+            await itemsLocator.Initialize();
 
             var tcs = new TaskCompletionSource<bool>();
             var tcs1 = new TaskCompletionSource<bool>();
@@ -673,7 +698,8 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(0, itemConfigs.Count);
 
-            var itemsLocator = new TestItem1ItemLocator();
+            var itemsLocator = new TestItem1ItemLocator(fabric);
+            await itemsLocator.Initialize();
 
             var tcs = new TaskCompletionSource<bool>();
             var tcs1 = new TaskCompletionSource<bool>();
@@ -738,13 +764,15 @@ namespace SmartHomeApi.Core.UnitTests
         [Test]
         public async Task OneInitialConfigWithInvalidJsonTest()
         {
+            var fabric = new SmartHomeApiStubFabric(_appSettings);
+
             var configsPath = Path.Join(_appSettings.DataDirectoryPath, ConfigsFolder);
             Directory.CreateDirectory(configsPath);
 
             File.Copy(Path.Join(_inputTestDataFolder, InvalidConfigName), Path.Join(configsPath, InvalidConfigName));
 
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
-            var itemsLocator = new TestItem1ItemLocator();
+            var itemsLocator = new TestItem1ItemLocator(fabric);
 
             var tcs = new TaskCompletionSource<bool>();
             itemsLocator.OnConfigAdded += async config => { tcs.SetResult(true); };
@@ -752,7 +780,7 @@ namespace SmartHomeApi.Core.UnitTests
             var itemsLocatorWrapper = GetStandardItemsLocatorBridge(itemsLocator);
 
             pluginsLocator.AddLocator(itemsLocatorWrapper);
-            var fabric = new SmartHomeApiStubFabric(_appSettings);
+            
             fabric.ItemsPluginsLocator = pluginsLocator;
 
             var configLocator = GetConfigLocator(fabric);
@@ -778,6 +806,8 @@ namespace SmartHomeApi.Core.UnitTests
         [Test]
         public async Task OneInitialConfigUpdateWithInvalidJsonTest()
         {
+            var fabric = new SmartHomeApiStubFabric(_appSettings);
+
             int eventsCounter = 0;
 
             var configsPath = Path.Join(_appSettings.DataDirectoryPath, ConfigsFolder);
@@ -786,7 +816,8 @@ namespace SmartHomeApi.Core.UnitTests
             File.Copy(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
 
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
-            var itemsLocator = new TestItem1ItemLocator();
+            var itemsLocator = new TestItem1ItemLocator(fabric);
+            await itemsLocator.Initialize();
 
             var tcs = new TaskCompletionSource<bool>();
             itemsLocator.OnConfigAdded += async config =>
@@ -809,7 +840,7 @@ namespace SmartHomeApi.Core.UnitTests
             var itemsLocatorWrapper = GetStandardItemsLocatorBridge(itemsLocator);
 
             pluginsLocator.AddLocator(itemsLocatorWrapper);
-            var fabric = new SmartHomeApiStubFabric(_appSettings);
+            
             fabric.ItemsPluginsLocator = pluginsLocator;
 
             var configLocator = GetConfigLocator(fabric);
@@ -841,6 +872,8 @@ namespace SmartHomeApi.Core.UnitTests
         [Test]
         public async Task OneInitialInvalidConfigWithoutItemIdTest()
         {
+            var fabric = new SmartHomeApiStubFabric(_appSettings);
+
             var configsPath = Path.Join(_appSettings.DataDirectoryPath, ConfigsFolder);
             Directory.CreateDirectory(configsPath);
 
@@ -848,7 +881,7 @@ namespace SmartHomeApi.Core.UnitTests
                 Path.Join(configsPath, InvalidConfigWithoutItemIdName));
 
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
-            var itemsLocator = new TestItem1ItemLocator();
+            var itemsLocator = new TestItem1ItemLocator(fabric);
 
             var tcs = new TaskCompletionSource<bool>();
             itemsLocator.OnConfigAdded += async config => { tcs.SetResult(true); };
@@ -856,7 +889,7 @@ namespace SmartHomeApi.Core.UnitTests
             var itemsLocatorWrapper = GetStandardItemsLocatorBridge(itemsLocator);
 
             pluginsLocator.AddLocator(itemsLocatorWrapper);
-            var fabric = new SmartHomeApiStubFabric(_appSettings);
+            
             fabric.ItemsPluginsLocator = pluginsLocator;
 
             var configLocator = GetConfigLocator(fabric);
@@ -882,6 +915,8 @@ namespace SmartHomeApi.Core.UnitTests
         [Test]
         public async Task OneInitialInvalidConfigWithoutItemTypeTest()
         {
+            var fabric = new SmartHomeApiStubFabric(_appSettings);
+
             var configsPath = Path.Join(_appSettings.DataDirectoryPath, ConfigsFolder);
             Directory.CreateDirectory(configsPath);
 
@@ -889,7 +924,7 @@ namespace SmartHomeApi.Core.UnitTests
                 Path.Join(configsPath, InvalidConfigWithoutItemTypeName));
 
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
-            var itemsLocator = new TestItem1ItemLocator();
+            var itemsLocator = new TestItem1ItemLocator(fabric);
 
             var tcs = new TaskCompletionSource<bool>();
             itemsLocator.OnConfigAdded += async config => { tcs.SetResult(true); };
@@ -897,7 +932,7 @@ namespace SmartHomeApi.Core.UnitTests
             var itemsLocatorWrapper = GetStandardItemsLocatorBridge(itemsLocator);
 
             pluginsLocator.AddLocator(itemsLocatorWrapper);
-            var fabric = new SmartHomeApiStubFabric(_appSettings);
+            
             fabric.ItemsPluginsLocator = pluginsLocator;
 
             var configLocator = GetConfigLocator(fabric);
@@ -925,13 +960,16 @@ namespace SmartHomeApi.Core.UnitTests
         {
             int eventsCounter = 0;
 
+            var fabric = new SmartHomeApiStubFabric(_appSettings);
+
             var configsPath = Path.Join(_appSettings.DataDirectoryPath, ConfigsFolder);
             Directory.CreateDirectory(configsPath);
 
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
 
             //Create the first locator
-            var itemsLocator1 = new TestItem1ItemLocator();
+            var itemsLocator1 = new TestItem1ItemLocator(fabric);
+            await itemsLocator1.Initialize();
 
             var tcs = new TaskCompletionSource<bool>();
             var tcs1 = new TaskCompletionSource<bool>();
@@ -966,7 +1004,8 @@ namespace SmartHomeApi.Core.UnitTests
             pluginsLocator.AddLocator(itemsLocatorWrapper1);
 
             //Create the second locator
-            var itemsLocator2 = new TestItem2ItemLocator();
+            var itemsLocator2 = new TestItem2ItemLocator(fabric);
+            await itemsLocator2.Initialize();
             var tcs2 = new TaskCompletionSource<bool>();
 
             itemsLocator2.OnConfigAdded += async config =>
@@ -988,7 +1027,6 @@ namespace SmartHomeApi.Core.UnitTests
 
             pluginsLocator.AddLocator(itemsLocatorWrapper2);
 
-            var fabric = new SmartHomeApiStubFabric(_appSettings);
             fabric.ItemsPluginsLocator = pluginsLocator;
 
             var configLocator = GetConfigLocator(fabric);
@@ -1044,6 +1082,8 @@ namespace SmartHomeApi.Core.UnitTests
         [Test]
         public async Task RemoveInitialItemsLocatorAndThenAddAgainTest()
         {
+            var fabric = new SmartHomeApiStubFabric(_appSettings);
+
             int eventsCounter = 0;
 
             var configsPath = Path.Join(_appSettings.DataDirectoryPath, ConfigsFolder);
@@ -1052,7 +1092,8 @@ namespace SmartHomeApi.Core.UnitTests
             File.Copy(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
 
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
-            var itemsLocator = new TestItem1ItemLocator();
+            var itemsLocator = new TestItem1ItemLocator(fabric);
+            await itemsLocator.Initialize();
 
             var tcs = new TaskCompletionSource<bool>();
             var tcs1 = new TaskCompletionSource<bool>();
@@ -1078,7 +1119,7 @@ namespace SmartHomeApi.Core.UnitTests
             var itemsLocatorWrapper = GetStandardItemsLocatorBridge(itemsLocator);
 
             pluginsLocator.AddLocator(itemsLocatorWrapper);
-            var fabric = new SmartHomeApiStubFabric(_appSettings);
+            
             fabric.ItemsPluginsLocator = pluginsLocator;
 
             var configLocator = GetConfigLocator(fabric);
