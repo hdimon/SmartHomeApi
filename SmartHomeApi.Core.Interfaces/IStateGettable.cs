@@ -1,9 +1,7 @@
 ﻿namespace SmartHomeApi.Core.Interfaces
 {
-    public interface IStateGettable
+    public interface IStateGettable : IItem
     {
-        string ItemId { get; }
-        string ItemType { get; }
         IItemState GetState();
     }
 }

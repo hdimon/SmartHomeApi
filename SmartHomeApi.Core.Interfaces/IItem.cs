@@ -2,6 +2,7 @@
 {
     public interface IItem
     {
-        
+        string ItemId { get; }
+        string ItemType { get; }
     }
 }

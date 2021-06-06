@@ -10,31 +10,20 @@ using SmartHomeApi.Core.Interfaces;
 
 namespace SmartHomeApi.ItemUtils
 {
-    public abstract class StateChangedSubscriberAbstract : IStateChangedSubscriber, IDisposable
+    public class CommandsHelper
     {
-        protected readonly IApiManager Manager;
-        protected readonly IItemHelpersFabric HelpersFabric;
-        protected readonly IApiLogger Logger;
-        protected CancellationTokenSource DisposingCancellationTokenSource = new CancellationTokenSource();
+        private readonly IApiManager _apiManager;
+        private readonly IApiLogger _logger;
+        private readonly CancellationTokenSource _ctSource;
 
-        public virtual string ItemId { get; }
-        public virtual string ItemType { get; }
-
-        protected StateChangedSubscriberAbstract(IApiManager manager, IItemHelpersFabric helpersFabric)
+        public CommandsHelper(IApiManager apiManager, IApiLogger logger, CancellationTokenSource ctSource)
         {
-            Manager = manager;
-            HelpersFabric = helpersFabric;
-            Logger = helpersFabric.GetApiLogger();
+            _apiManager = apiManager;
+            _logger = logger;
+            _ctSource = ctSource;
         }
 
-        public async Task Notify(StateChangedEvent args)
-        {
-            await ProcessNotification(args);
-        }
-
-        protected abstract Task ProcessNotification(StateChangedEvent args);
-
-        protected void CancelTasks(string itemType, ConcurrentQueue<CancellationTokenSource> cancellationTokenSources)
+        protected void CancelTasks(ConcurrentQueue<CancellationTokenSource> cancellationTokenSources)
         {
             int emergencyCounter = 0;
 
@@ -44,12 +33,11 @@ namespace SmartHomeApi.ItemUtils
                 {
                     if (emergencyCounter > 1000)
                     {
-                        Logger.Error("Emergency exit on cancelling tasks.");
+                        _logger.Error("Emergency exit on cancelling tasks.");
                         return;
                     }
 
-                    CancellationTokenSource source;
-                    if (cancellationTokenSources.TryDequeue(out source))
+                    if (cancellationTokenSources.TryDequeue(out var source))
                         source.Cancel();
 
                     emergencyCounter++;
@@ -57,17 +45,16 @@ namespace SmartHomeApi.ItemUtils
             }
             catch (Exception e)
             {
-                Logger.Error(e);
+                _logger.Error(e);
             }
         }
 
-        private bool IsCancellationRequested(string itemType, CancellationToken cancellationToken,
-            StateChangedEvent args)
+        private bool IsCancellationRequested(CancellationToken cancellationToken, StateChangedEvent args)
         {
             var isCancellationRequested = cancellationToken.IsCancellationRequested;
 
             if (isCancellationRequested)
-                Logger.Warning($"Commands execution has been aborted. Event: {args}.");
+                _logger.Warning($"Commands execution has been aborted. Event: {args}.");
 
             return isCancellationRequested;
         }
@@ -78,11 +65,11 @@ namespace SmartHomeApi.ItemUtils
         {
             try
             {
-                CancelTasks(itemType, ctSources);
+                CancelTasks(ctSources);
 
                 await _semaphoreSlim.WaitAsync();
 
-                CancelTasks(itemType, ctSources);
+                CancelTasks(ctSources);
 
                 var cancellationTokenSource = new CancellationTokenSource();
                 ctSources.Enqueue(cancellationTokenSource);
@@ -92,25 +79,22 @@ namespace SmartHomeApi.ItemUtils
             }
             finally
             {
-                CancelTasks(itemType, ctSources);
+                CancelTasks(ctSources);
                 _semaphoreSlim.Release();
             }
         }
 
-        protected async Task ExecuteCommands(string itemType, IList<SetValueCommand> commands,
-            StateChangedEvent args, int maxTries, int failoverActionIntervalSeconds,
-            CancellationToken cancellationToken)
+        protected async Task ExecuteCommands(string itemType, IList<SetValueCommand> commands, StateChangedEvent args,
+            int maxTries, int failoverActionIntervalSeconds, CancellationToken cancellationToken)
         {
             if (commands == null)
                 return;
 
-            using var linkedTokenSource =
-                CancellationTokenSource.CreateLinkedTokenSource(DisposingCancellationTokenSource.Token,
-                    cancellationToken);
+            using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(_ctSource.Token, cancellationToken);
 
             var cToken = linkedTokenSource.Token;
 
-            if (IsCancellationRequested(itemType, cToken, args))
+            if (IsCancellationRequested(cToken, args))
                 return;
 
             var commandsToRun = commands;
@@ -119,40 +103,40 @@ namespace SmartHomeApi.ItemUtils
             {
                 async Task ExecuteCommandsAction()
                 {
-                    if (IsCancellationRequested(itemType, cToken, args))
+                    if (IsCancellationRequested(cToken, args))
                         return;
 
                     var results = await Task
                                         .WhenAll(commandsToRun.Select(c =>
-                                            Task.Run(() => Manager.SetValue(c.ItemId, c.Parameter, c.Value))))
+                                            Task.Run(() => _apiManager.SetValue(c.ItemId, c.Parameter, c.Value))))
                                         .ConfigureAwait(false);
 
-                    if (results == null || results.All(r => r.Success))
+                    if (results.All(r => r.Success))
                         return;
 
                     var failed = results.Where(r => !r.Success).Select(r => r.ItemId).ToList();
 
                     commandsToRun = commandsToRun.Where(t => failed.Contains(t.ItemId)).ToList();
 
-                    Logger.Warning(GetFailedExecutionMessage(failoverActionIntervalSeconds, commandsToRun));
+                    _logger.Warning(GetFailedExecutionMessage(failoverActionIntervalSeconds, commandsToRun));
 
-                    if (IsCancellationRequested(itemType, cToken, args))
+                    if (IsCancellationRequested(cToken, args))
                         return;
 
                     throw new Exception(GetFailedExecutionMessage(commandsToRun));
                 }
 
-                await AsyncHelpers.RetryOnFault(ExecuteCommandsAction, maxTries,
-                                      () => Task.Delay(failoverActionIntervalSeconds * 1000, cToken))
-                                  .ConfigureAwait(false);
+                await AsyncHelpers
+                      .RetryOnFault(ExecuteCommandsAction, maxTries,
+                          () => Task.Delay(failoverActionIntervalSeconds * 1000, cToken)).ConfigureAwait(false);
             }
             catch (TaskCanceledException)
             {
-                Logger.Warning($"Commands execution has been aborted. Event: {args}.");
+                _logger.Warning($"Commands execution has been aborted. Event: {args}.");
             }
             catch (Exception e)
             {
-                Logger.Error(e.Message);
+                _logger.Error(e.Message);
             }
         }
 
@@ -196,19 +180,6 @@ namespace SmartHomeApi.ItemUtils
             command.Value = value;
 
             return command;
-        }
-
-        public virtual void Dispose()
-        {
-            try
-            {
-                Manager.UnregisterSubscriber(this);
-                DisposingCancellationTokenSource.Cancel();
-            }
-            catch (Exception e)
-            {
-                Logger.Error(e);
-            }
         }
     }
 }

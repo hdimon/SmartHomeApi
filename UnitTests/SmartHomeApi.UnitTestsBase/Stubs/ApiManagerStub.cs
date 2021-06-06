@@ -15,7 +15,7 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
             throw new NotImplementedException();
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
             throw new NotImplementedException();
         }
