@@ -11,6 +11,7 @@ namespace SmartHomeApi.Core.Services
 {
     public class NotificationsProcessor : INotificationsProcessor
     {
+        private bool _disposed;
         private readonly ISmartHomeApiFabric _fabric;
         private readonly IApiLogger _logger;
         private readonly List<IStateChangedSubscriber> _stateChangedSubscribers = new List<IStateChangedSubscriber>();
@@ -63,6 +64,9 @@ namespace SmartHomeApi.Core.Services
 
         public void NotifySubscribers(StateChangedEvent args)
         {
+            if (_disposed)
+                return;
+
             var untrackedItems = _fabric.GetConfiguration().UntrackedItems;
 
             var untrackedItem = untrackedItems.FirstOrDefault(i => i.ItemId == args.ItemId);
@@ -140,6 +144,16 @@ namespace SmartHomeApi.Core.Services
             var isEqual = comparer.Compare(type, obj1, obj2);
 
             return isEqual;
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (_disposed)
+                return;
+
+            _logger.Info("NotificationsProcessor has been disposed.");
+
+            _disposed = true;
         }
     }
 }

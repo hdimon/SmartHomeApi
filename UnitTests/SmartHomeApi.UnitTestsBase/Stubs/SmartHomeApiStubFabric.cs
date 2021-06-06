@@ -10,6 +10,7 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
         private readonly IApiLogger _logger;
 
         public IItemsPluginsLocator ItemsPluginsLocator { get; set; }
+        public IItemsConfigLocator ItemsConfigLocator { get; set; }
 
         public SmartHomeApiStubFabric()
         {
@@ -36,9 +37,14 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
             throw new NotImplementedException();
         }
 
-        public IItemsConfigLocator GetItemsConfigsLocator()
+        public IApiItemsLocator GetApiItemsLocator()
         {
             throw new NotImplementedException();
+        }
+
+        public IItemsConfigLocator GetItemsConfigsLocator()
+        {
+            return ItemsConfigLocator;
         }
 
         public IApiManager GetApiManager()
@@ -53,7 +59,7 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
 
         public IItemHelpersFabric GetItemHelpersFabric(string itemId, string itemType)
         {
-            throw new NotImplementedException();
+            return new ItemHelpersStubFabric(itemId, itemType, this);
         }
 
         public IApiLogger GetApiLogger()
