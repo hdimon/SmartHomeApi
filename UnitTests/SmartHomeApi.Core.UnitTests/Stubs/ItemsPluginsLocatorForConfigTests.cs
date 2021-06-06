@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using SmartHomeApi.Core.Interfaces;
+using SmartHomeApi.Core.Interfaces.ItemsLocatorsBridges;
 
 namespace SmartHomeApi.Core.UnitTests.Stubs
 {
     class ItemsPluginsLocatorForConfigTests : IItemsPluginsLocator
     {
-        public List<IItemsLocator> ItemsLocators { get; set; } = new List<IItemsLocator>();
+        public List<IStandardItemsLocatorBridge> ItemsLocators { get; set; } = new List<IStandardItemsLocatorBridge>();
         public bool IsInitialized { get; private set; }
 
         public async Task Initialize()
@@ -19,7 +20,7 @@ namespace SmartHomeApi.Core.UnitTests.Stubs
         public event EventHandler<ItemLocatorEventArgs> BeforeItemLocatorDeleted;
         public event EventHandler<ItemLocatorEventArgs> ItemLocatorDeleted;
 
-        public async Task<IEnumerable<IItemsLocator>> GetItemsLocators()
+        public async Task<IEnumerable<IStandardItemsLocatorBridge>> GetItemsLocators()
         {
             return ItemsLocators;
         }
@@ -29,14 +30,14 @@ namespace SmartHomeApi.Core.UnitTests.Stubs
 
         }
 
-        public void AddLocator(IItemsLocator locator)
+        public void AddLocator(IStandardItemsLocatorBridge locator)
         {
             ItemsLocators.Add(locator);
 
             ItemLocatorAddedOrUpdated?.Invoke(this, new ItemLocatorEventArgs { ItemType = locator.ItemType });
         }
 
-        public void RemoveLocator(IItemsLocator locator)
+        public void RemoveLocator(IStandardItemsLocatorBridge locator)
         {
             var ev = new ItemLocatorEventArgs { ItemType = locator.ItemType };
 

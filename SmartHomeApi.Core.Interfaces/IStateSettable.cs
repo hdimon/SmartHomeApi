@@ -2,10 +2,8 @@
 
 namespace SmartHomeApi.Core.Interfaces
 {
-    public interface IStateSettable
+    public interface IStateSettable : IItem
     {
-        string ItemId { get; }
-        string ItemType { get; }
         Task<ISetValueResult> SetValue(string parameter, object value);
     }
 }

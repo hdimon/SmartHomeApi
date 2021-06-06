@@ -35,6 +35,11 @@ namespace SmartHomeApi.Core
             return _provider.GetService<IItemsLocator>();
         }
 
+        public IApiItemsLocator GetApiItemsLocator()
+        {
+            return _provider.GetService<IApiItemsLocator>();
+        }
+
         public IItemsConfigLocator GetItemsConfigsLocator()
         {
             return _provider.GetService<IItemsConfigLocator>();

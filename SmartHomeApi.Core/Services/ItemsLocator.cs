@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using SmartHomeApi.Core.Interfaces;
 
@@ -22,7 +23,14 @@ namespace SmartHomeApi.Core.Services
 
         public async Task<IEnumerable<IItem>> GetItems()
         {
-            var locators = await _fabric.GetItemsPluginsLocator().GetItemsLocators();
+            var locators = (await _fabric.GetItemsPluginsLocator().GetItemsLocators()).ToList();
+
+            //Temp
+            foreach (var itemsLocator in locators)
+            {
+                await itemsLocator.Initialize();
+            }
+            //Temp
 
             var items = new List<IItem>();
 

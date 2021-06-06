@@ -14,6 +14,10 @@ namespace SmartHomeApi.Core.UnitTests.Stubs.TestItem2Plugin
         public Func<IItemConfig, Task> OnConfigUpdated;
         public Func<string, Task> OnConfigDeleted;
 
+        public TestItem2ItemLocator(ISmartHomeApiFabric fabric) : base(fabric)
+        {
+        }
+
         public override async Task ConfigAdded(IItemConfig config)
         {
             await base.ConfigAdded(config);
@@ -33,6 +37,11 @@ namespace SmartHomeApi.Core.UnitTests.Stubs.TestItem2Plugin
             await base.ConfigDeleted(itemId);
 
             await OnConfigDeleted(itemId);
+        }
+
+        protected override IItem ItemFactory(IItemConfig config)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -15,6 +15,7 @@ namespace SmartHomeApi.Core.Services
     {
         private const int ConfigsLoadingDelayMsDefault = 500;
 
+        private bool _disposed;
         private readonly ISmartHomeApiFabric _fabric;
         private readonly IApiLogger _logger;
         private string _configsDirectory;
@@ -79,11 +80,16 @@ namespace SmartHomeApi.Core.Services
 
         public void Dispose()
         {
+            if (_disposed)
+                return;
+
             try
             {
                 _watcher?.Dispose();
                 _fabric.GetItemsPluginsLocator().ItemLocatorAddedOrUpdated -= OnItemLocatorAddedOrUpdated;
                 _fabric.GetItemsPluginsLocator().ItemLocatorDeleted -= OnBeforeItemLocatorDeleted;
+
+                _disposed = true;
             }
             catch (Exception)
             {
@@ -418,7 +424,7 @@ namespace SmartHomeApi.Core.Services
         {
             var bridge = await GetBridge(container);
 
-            if (bridge == null)
+            if (bridge == null || !ItemsLocatorIsInitialized(bridge))
                 return;
 
             _ = Task.Run(async () => await bridge.ConfigAdded(container.ItemConfig))
@@ -429,7 +435,7 @@ namespace SmartHomeApi.Core.Services
         {
             var bridge = await GetBridge(container);
 
-            if (bridge == null)
+            if (bridge == null || !ItemsLocatorIsInitialized(bridge))
                 return;
 
             if (!string.IsNullOrEmpty(previousConfigContent))
@@ -447,7 +453,7 @@ namespace SmartHomeApi.Core.Services
         {
             var bridge = await GetBridge(container);
 
-            if (bridge == null)
+            if (bridge == null || !ItemsLocatorIsInitialized(bridge))
                 return;
 
             _ = Task.Run(async () => await bridge.ConfigDeleted(container.ItemConfig.ItemId))
@@ -461,21 +467,23 @@ namespace SmartHomeApi.Core.Services
 
             if (locator == null)
             {
-                _logger.Error($"Config of {container.ItemConfig.ItemType} type has been processed but ItemLocator " +
+                _logger.Error($"Config of {container.ItemConfig.ItemType} type has been processed but ItemsLocator " +
                               "of this type does not exist.");
                 return null;
             }
 
-            var bridge = locator as IStandardItemsLocatorBridge;
+            return locator;
+        }
 
-            if (bridge == null)
+        private bool ItemsLocatorIsInitialized(IStandardItemsLocatorBridge bridge)
+        {
+            if (!bridge.IsInitialized)
             {
-                _logger.Error($"ItemLocator of {locator.ItemType} type implements deprecated interface " +
-                              "so can't notify it about added config file.");
-                return null;
+                _logger.Warning($"ItemsLocator of {bridge.ItemType} has not been initialized yet so can't notify it about config changes.");
+                return false;
             }
 
-            return bridge;
+            return true;
         }
 
         private class ConfigContainer

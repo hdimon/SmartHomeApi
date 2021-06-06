@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using SmartHomeApi.Core.Interfaces;
 
 namespace SmartHomeApi.UnitTestsBase.Stubs
@@ -19,6 +20,10 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
         }
 
         public void NotifySubscribers(StateChangedEvent args)
+        {
+        }
+
+        public async ValueTask DisposeAsync()
         {
         }
     }
