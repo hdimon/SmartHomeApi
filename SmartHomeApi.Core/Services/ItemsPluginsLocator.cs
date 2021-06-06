@@ -24,6 +24,7 @@ namespace SmartHomeApi.Core.Services
         private const int UnloadPluginsMaxTriesDefault = 5;
         private const int UnloadPluginsTriesIntervalMSDefault = 500;
 
+        private bool _disposed;
         private string _pluginsDirectory;
         private string _tempPluginsDirectory;
         private readonly ISmartHomeApiFabric _fabric;
@@ -36,8 +37,8 @@ namespace SmartHomeApi.Core.Services
         private readonly ConcurrentDictionary<string, PluginContainer> _pluginContainers =
             new ConcurrentDictionary<string, PluginContainer>();
 
-        private readonly ConcurrentDictionary<string, IItemsLocator>
-            _locators = new ConcurrentDictionary<string, IItemsLocator>();
+        private readonly ConcurrentDictionary<string, IStandardItemsLocatorBridge>
+            _locators = new ConcurrentDictionary<string, IStandardItemsLocatorBridge>();
 
         public event EventHandler<ItemLocatorEventArgs> ItemLocatorAddedOrUpdated;
         public event EventHandler<ItemLocatorEventArgs> BeforeItemLocatorDeleted;
@@ -71,13 +72,16 @@ namespace SmartHomeApi.Core.Services
             IsInitialized = true;
         }
 
-        public async Task<IEnumerable<IItemsLocator>> GetItemsLocators()
+        public async Task<IEnumerable<IStandardItemsLocatorBridge>> GetItemsLocators()
         {
             return _locators.Values;
         }
 
         public void Dispose()
         {
+            if (_disposed)
+                return;
+
             _fileWatcher?.Dispose();
 
             _disposingCancellationTokenSource.Cancel();
@@ -87,6 +91,8 @@ namespace SmartHomeApi.Core.Services
             DeletePlugins(_pluginContainers.Values.ToList()).Wait();
 
             _logger.Info("ItemsPluginsLocator has been disposed.");
+
+            _disposed = true;
         }
 
         private void EnsureDirectories(AppSettings config)

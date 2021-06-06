@@ -6,7 +6,7 @@ using SmartHomeApi.Core.Interfaces;
 
 namespace SmartHomeApi.Core.Services
 {
-    public class ApiManagerService : IHostedService, IDisposable
+    public class ApiManagerService : IHostedService, IAsyncDisposable
     {
         private readonly IApiManager _apiManager;
 
@@ -22,12 +22,12 @@ namespace SmartHomeApi.Core.Services
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            _apiManager.Dispose();
+            await _apiManager.DisposeAsync();
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            _apiManager.Dispose();
+            await _apiManager.DisposeAsync();
         }
     }
 }

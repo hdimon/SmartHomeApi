@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using SmartHomeApi.Core.Interfaces.ItemsLocatorsBridges;
 
 namespace SmartHomeApi.Core.Interfaces
 {
@@ -10,6 +11,6 @@ namespace SmartHomeApi.Core.Interfaces
         event EventHandler<ItemLocatorEventArgs> BeforeItemLocatorDeleted;
         event EventHandler<ItemLocatorEventArgs> ItemLocatorDeleted;
 
-        Task<IEnumerable<IItemsLocator>> GetItemsLocators();
+        Task<IEnumerable<IStandardItemsLocatorBridge>> GetItemsLocators();
     }
 }

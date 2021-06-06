@@ -2,9 +2,8 @@
 
 namespace SmartHomeApi.Core.Interfaces
 {
-    public interface IConfigurable
+    public interface IConfigurable : IItem
     {
-        string ItemType { get; }
         IItemConfig Config { get; }
         void OnConfigChange(IItemConfig newConfig, IEnumerable<ItemConfigChangedField> changedFields = null);
     }
