@@ -104,5 +104,173 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(1, logger.Logs.Count);
         }
+
+        [Test]
+        public async Task CheckBooleanEquality()
+        {
+            var counter = 0;
+            var fabric = new SmartHomeApiStubFabric();
+
+            var processor = GetProcessor(fabric);
+
+            var itemId = "ItemId";
+            var itemType = "ItemType";
+            var helpersFabric = new ItemHelpersStubFabric(itemId, itemType, fabric);
+            var config = new TestItem1Config(itemId, itemType);
+            var item = new TestItem1(fabric.GetApiManager(), helpersFabric, config);
+            var tcs1 = new TaskCompletionSource<bool>();
+            var tcs2 = new TaskCompletionSource<bool>();
+            var tcs3 = new TaskCompletionSource<bool>();
+            var tcs4 = new TaskCompletionSource<bool>();
+            var tcs5 = new TaskCompletionSource<bool>();
+            var tcs6 = new TaskCompletionSource<bool>();
+
+            item.OnProcessNotification = async args =>
+            {
+                if (counter == 0)
+                {
+                    tcs1.SetResult(true);
+                    counter++;
+                }
+                else if (counter == 1)
+                {
+                    tcs2.SetResult(true);
+                    counter++;
+                }
+                else if (counter == 2)
+                {
+                    tcs3.SetResult(true);
+                    counter++;
+                }
+                else if (counter == 3)
+                {
+                    tcs4.SetResult(true);
+                    counter++;
+                }
+                else if (counter == 4)
+                {
+                    tcs5.SetResult(true);
+                    counter++;
+                }
+                else if (counter == 5)
+                {
+                    tcs6.SetResult(true);
+                    counter++;
+                }
+            };
+
+            processor.RegisterSubscriber(item);
+
+            var ct = new CancellationTokenSource(500);
+            ct.Token.Register(() => tcs1.TrySetResult(false));
+
+            var ev = new StateChangedEvent(StateChangedEventType.ValueUpdated, "Test", "Id", "Parameter", null, null);
+            processor.NotifySubscribers(ev);
+
+            var result = await tcs1.Task;
+            Assert.IsFalse(result);
+
+
+            ct = new CancellationTokenSource(500);
+            ct.Token.Register(() => tcs2.TrySetResult(false));
+
+            ev = new StateChangedEvent(StateChangedEventType.ValueUpdated, "Test", "Id", "Parameter", null, false);
+            processor.NotifySubscribers(ev);
+
+            result = await tcs2.Task;
+            Assert.IsFalse(result);
+
+
+            ct = new CancellationTokenSource(500);
+            ct.Token.Register(() => tcs3.TrySetResult(false));
+
+            ev = new StateChangedEvent(StateChangedEventType.ValueUpdated, "Test", "Id", "Parameter", null, true);
+            processor.NotifySubscribers(ev);
+
+            result = await tcs3.Task;
+            Assert.IsFalse(result);
+
+
+            ct = new CancellationTokenSource(500);
+            ct.Token.Register(() => tcs4.TrySetResult(false));
+
+            ev = new StateChangedEvent(StateChangedEventType.ValueUpdated, "Test", "Id", "Parameter", true, false);
+            processor.NotifySubscribers(ev);
+
+            result = await tcs4.Task;
+            Assert.IsFalse(result);
+
+
+            ct = new CancellationTokenSource(500);
+            ct.Token.Register(() => tcs5.TrySetResult(false));
+
+            ev = new StateChangedEvent(StateChangedEventType.ValueUpdated, "Test", "Id", "Parameter", true, true);
+            processor.NotifySubscribers(ev);
+
+            result = await tcs5.Task;
+            Assert.IsFalse(result);
+
+
+            ct = new CancellationTokenSource(500);
+            ct.Token.Register(() => tcs6.TrySetResult(false));
+
+            ev = new StateChangedEvent(StateChangedEventType.ValueUpdated, "Test", "Id", "Parameter", false, false);
+            processor.NotifySubscribers(ev);
+
+            result = await tcs6.Task;
+            Assert.IsFalse(result);
+        }
+
+        [Test]
+        public async Task CheckIntegerEquality()
+        {
+            var counter = 0;
+            var fabric = new SmartHomeApiStubFabric();
+
+            var processor = GetProcessor(fabric);
+
+            var itemId = "ItemId";
+            var itemType = "ItemType";
+            var helpersFabric = new ItemHelpersStubFabric(itemId, itemType, fabric);
+            var config = new TestItem1Config(itemId, itemType);
+            var item = new TestItem1(fabric.GetApiManager(), helpersFabric, config);
+            var tcs1 = new TaskCompletionSource<bool>();
+            var tcs2 = new TaskCompletionSource<bool>();
+
+            item.OnProcessNotification = async args =>
+            {
+                if (counter == 0)
+                {
+                    tcs1.SetResult(true);
+                    counter++;
+                }
+                else if (counter == 1)
+                {
+                    tcs2.SetResult(true);
+                    counter++;
+                }
+            };
+
+            processor.RegisterSubscriber(item);
+
+            var ct = new CancellationTokenSource(500);
+            ct.Token.Register(() => tcs1.TrySetResult(false));
+
+            var ev = new StateChangedEvent(StateChangedEventType.ValueUpdated, "Test", "Id", "Parameter", null, 0);
+            processor.NotifySubscribers(ev);
+
+            var result = await tcs1.Task;
+            Assert.IsTrue(result);
+
+
+            ct = new CancellationTokenSource(500);
+            ct.Token.Register(() => tcs2.TrySetResult(false));
+
+            ev = new StateChangedEvent(StateChangedEventType.ValueUpdated, "Test", "Id", "Parameter", null, 5);
+            processor.NotifySubscribers(ev);
+
+            result = await tcs2.Task;
+            Assert.IsTrue(result);
+        }
     }
 }

@@ -107,16 +107,17 @@ namespace SmartHomeApi.Core.Services
         private bool ObjectsAreEqual(object obj1, object obj2)
         {
             //TODO test this method. Maybe it's faster just to serialize objects.
-            Type type;
+            //If one of values is null but another not then they are not equal
+            if (obj1 == null && obj2 != null || obj1 != null && obj2 == null)
+                return false;
 
-            if (obj1 != null)
-                type = obj1.GetType();
-            else if (obj2 != null)
-                type = obj2.GetType();
-            else //Both are null => no changes
+            //If both are null then they are equal
+            if (obj1 == null)
                 return true;
 
-            if (obj1 != null && obj2 != null && obj1.GetType() != obj2.GetType())
+            var type = obj1.GetType();
+
+            if (type != obj2.GetType())
                 return false;
 
             //TODO change that to working with any reference type but not only dictionary
@@ -133,7 +134,7 @@ namespace SmartHomeApi.Core.Services
 
             if (obj1IsDict || obj2IsDict)
                 return false;
-
+            
             var comparer = new ObjectsComparer.Comparer();
 
             var isEqual = comparer.Compare(type, obj1, obj2);
