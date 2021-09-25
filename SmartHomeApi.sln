@@ -25,7 +25,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StandardTestPluginWithDepen
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StandardTestPlugin1", "UnitTests\TestPlugins\StandardTestPlugin1\StandardTestPlugin1.csproj", "{0B1BDC10-131C-406C-9AA3-FD2EC47451B1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PluginWithLocatorConstructorTimeout", "UnitTests\TestPlugins\PluginWithLocatorConstructorTimeout\PluginWithLocatorConstructorTimeout.csproj", "{47867898-EA4A-47A7-946C-25A863099B5B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PluginWithLocatorConstructorTimeout", "UnitTests\TestPlugins\PluginWithLocatorConstructorTimeout\PluginWithLocatorConstructorTimeout.csproj", "{47867898-EA4A-47A7-946C-25A863099B5B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DB1DB58B-1410-4980-8600-F5C267AF4D18}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
