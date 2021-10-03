@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+	  <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
+	  <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="template.appsettings.Development.json" />
+    <Content Remove="sample.web.config" />
     <Content Remove="template.appsettings.json" />
   </ItemGroup>
 
@@ -46,12 +48,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="template.appsettings.Development.json">
+    <None Include="sample.web.config" />
+    <EmbeddedResource Include="template.appsettings.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-    <None Include="template.appsettings.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
