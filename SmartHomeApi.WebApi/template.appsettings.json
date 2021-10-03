@@ -43,6 +43,12 @@
     },
     "AllowedHosts": "*",
     "Serilog": {
+        "Using": [
+            "Serilog",
+            "Serilog.Settings.Configuration",
+            "Serilog.Sinks.Console",
+            "Serilog.Sinks.File"
+        ],
         "WriteTo": [
             {
                 "MinimumLevel": "Debug",

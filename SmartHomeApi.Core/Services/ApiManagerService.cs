@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
@@ -10,8 +11,33 @@ namespace SmartHomeApi.Core.Services
     {
         private readonly IApiManager _apiManager;
 
-        public ApiManagerService(IApiManager itemManager)
+        public ApiManagerService(IApiManager itemManager, IApiLogger logger)
         {
+            string assemblyVersion = null;
+
+            try
+            {
+                var assembly = Assembly.GetEntryAssembly();
+                var versionAttribute = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+                assemblyVersion = versionAttribute.InformationalVersion;
+
+                /*string[] names = assembly.GetManifestResourceNames();
+                string file = null;
+
+                using (var stream = assembly.GetManifestResourceStream(names[0]))
+                {
+                    using (var reader = new StreamReader(stream))
+                    {
+                        file = reader.ReadToEnd();
+                    }
+                }*/
+            }
+            catch (Exception e)
+            {
+                logger.Error(e);
+            }
+
+            logger.Info($"SmartHomeApi service [{assemblyVersion}] is running...");
             _apiManager = itemManager;
         }
 
