@@ -1,0 +1,24 @@
+name: 'Prerelease Number Generator'
+description: 'Generate sequential prerelease numbers for branch'
+author: 'Dmitry Khlybov'
+runs:
+  using: 'node12'
+  main: 'main.js'
+inputs:
+  token:
+    description: 'GitHub Token to create and delete refs (GITHUB_TOKEN)'
+    required: false # Not required when getting the stored build number for later jobs, only in the first jobs when it's generated
+  prefix:
+    description: 'Prefix which is scope where prerelease numbers are sequential and unique inside'
+    required: true
+  prerelease_type:
+    description: 'Prerelease type (alpha, betta, preview, cr, etc..) which is scope where prerelease numbers are sequential and unique inside'
+    required: true
+
+outputs:
+  prerelease_number:
+    description: 'Generated prerelease number'
+
+branding:
+  icon: 'hash'
+  color: 'green'

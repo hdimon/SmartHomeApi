@@ -1,0 +1,309 @@
+name: Publish
+
+# Controls when the workflow will run
+on:
+  workflow_dispatch:
+    inputs:
+      version-suffix:
+        description: 'Release type (alpha, beta, preview, cr, release)'
+        required: true
+      
+      force-publish:
+        description: 'Force publish for release and rc if tests failed'
+        default: 'false'
+        required: true
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  check_data:
+    runs-on: ubuntu-latest
+    outputs:
+      match: ${{ steps.check-suffix.outputs.match }}
+      mode: ${{ steps.set-mode.outputs.mode }}
+      branch-name: ${{ steps.get-branch-name.outputs.branch_name }}
+      branch-type: ${{ steps.parse-branch.outputs.group1 }}
+      solution-major-version: ${{ steps.parse-solution-version.outputs.group1 }}
+      solution-minor-version: ${{ steps.parse-solution-version.outputs.group2 }}
+      solution-patch-version: ${{ steps.parse-solution-version.outputs.group3 }}
+      branch-major-version: ${{ steps.parse-branch.outputs.group2 }}
+      branch-minor-version: ${{ steps.parse-branch.outputs.group3 }}
+      prerelease-number: ${{ steps.generate-prerelease-number.outputs.prerelease_number }}
+      release-tag: ${{ steps.set-release-tag-output-variable.outputs.release-tag }}
+    steps:
+      - uses: actions/checkout@v2
+            
+      - name: Get branch name
+        id: get-branch-name
+        run: echo "##[set-output name=branch_name;]${GITHUB_REF##*/}"
+        
+      - id: get-version_string-based-on-solution
+        uses: sandersaares-actions/make-version-string@master
+        with:
+          assemblyInfoPath: SharedAssemblyInfo.cs
+          primaryBranch: ${{steps.get-branch-name.outputs.branch_name}}
+          
+      - name: Solution version string
+        run: echo Solution version string is ${{ steps.get-version_string-based-on-solution.outputs.versionstring }}
+        
+      - uses: actions-ecosystem/action-regex-match@v2
+        name: Parse solution version string
+        id: parse-solution-version
+        with:
+          text: ${{ steps.get-version_string-based-on-solution.outputs.versionstring }}
+          regex: '^([0-9]+)\.([0-9]+)\.([0-9]+)\.[0-9]+-.*$'
+          
+      - name: Validate Solution version string
+        if: ${{ steps.parse-solution-version.outputs.match == '' }}
+        run: | 
+          echo Solution version string ${{ steps.get-version_string-based-on-solution.outputs.versionstring }} is invalid
+          exit 1
+      
+      - uses: actions-ecosystem/action-regex-match@v2
+        name: Parse branch
+        id: parse-branch
+        with:
+          text: ${{ github.ref }}
+          regex: '^refs\/heads\/(dev|release)-([0-9]+)\.([0-9])+$'
+          
+      - name: Branch type is invalid
+        if: ${{ steps.parse-branch.outputs.match == '' }}
+        run: exit 1
+          
+      - name: Branch type
+        run: echo running on branch type ${{ steps.parse-branch.outputs.group1 }} 
+      
+      - name: Validate solution version matches branch version
+        if: ${{ !(steps.parse-solution-version.outputs.group1 == steps.parse-branch.outputs.group2 && steps.parse-solution-version.outputs.group2 == steps.parse-branch.outputs.group3) }}
+        run: | 
+          echo Solution version ${{steps.parse-solution-version.outputs.group1}}.${{steps.parse-solution-version.outputs.group2}} does not match branch version ${{steps.parse-branch.outputs.group2}}.${{steps.parse-branch.outputs.group3}}
+          exit 1
+      
+      - uses: actions-ecosystem/action-regex-match@v2
+        name: Check version suffix ${{ github.event.inputs.version-suffix }}
+        id: check-suffix
+        with:
+          text: ${{ github.event.inputs.version-suffix }}
+          regex: '^(alpha|beta|preview|cr|release)$'
+             
+      - name: Release type is invalid
+        if: ${{ steps.check-suffix.outputs.match == '' }}
+        run: exit 1
+        
+      - name: Release type
+        run: echo Release type is ${{ steps.check-suffix.outputs.group1 }}
+        
+      - name: Set mode
+        id: set-mode
+        run: echo "::set-output name=mode::${{ steps.check-suffix.outputs.group1 }}"
+        
+      - name: Invalid combination of branch type and release type
+        if: ${{ steps.parse-branch.outputs.group1 == 'dev' && (steps.set-mode.outputs.mode == 'cr' || steps.set-mode.outputs.mode == 'release')
+          || steps.parse-branch.outputs.group1 == 'release' && (steps.set-mode.outputs.mode == 'alpha' 
+          || steps.set-mode.outputs.mode == 'beta' || steps.set-mode.outputs.mode == 'preview') }}
+        run: exit 1
+        
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.x
+          
+      - name: Restore dependencies
+        run: dotnet restore
+      
+      - name: Test build
+        if: false
+        run: dotnet build -p:Version=${{steps.parse-solution-version.outputs.group1}}.${{steps.parse-solution-version.outputs.group2}}.${{steps.parse-solution-version.outputs.group3}}.${{github.run_number}} ./SmartHomeApi.WebApi/SmartHomeApi.WebApi.csproj --configuration Release --no-restore
+      
+      - name: Tests
+        if: false
+        continue-on-error: ${{ github.event.inputs.force-publish == 'true' || steps.set-mode.outputs.mode == 'alpha' || steps.set-mode.outputs.mode == 'beta' }}
+        run: dotnet test --configuration Release --verbosity normal --no-restore
+      
+      #If we are at this point it means all checks passed and everything can be published
+      - uses: ./.github/actions/prerelease-number
+        if: ${{ steps.set-mode.outputs.mode != 'release' }}
+        name: Generate prerelease number
+        id: generate-prerelease-number
+        with:
+          token: ${{secrets.github_token}}
+          prefix: ${{steps.parse-solution-version.outputs.group1}}.${{steps.parse-solution-version.outputs.group2}}.${{steps.parse-solution-version.outputs.group3}}
+          prerelease_type: ${{steps.set-mode.outputs.mode}}
+      
+      - name: Show workflow data
+        run: |
+          echo running on branch ${{ steps.get-branch-name.outputs.branch_name }}
+          echo running on branch type ${{ steps.parse-branch.outputs.group1 }}
+          echo Solution major version is ${{ steps.parse-solution-version.outputs.group1 }}
+          echo Solution minor version is ${{ steps.parse-solution-version.outputs.group2 }}
+          echo Solution patch version is ${{ steps.parse-solution-version.outputs.group3 }}
+          echo Branch major version is ${{ steps.parse-branch.outputs.group2 }}
+          echo Branch minor version is ${{ steps.parse-branch.outputs.group3 }}
+          echo Version suffix is ${{ github.event.inputs.version-suffix }}
+          echo Version mode is ${{ steps.set-mode.outputs.mode }}
+          echo Prerelease number is ${{ steps.generate-prerelease-number.outputs.prerelease_number }}
+          
+      - name: Set tag name for prerelease versions
+        if: ${{ steps.set-mode.outputs.mode != 'release' }}
+        run: |
+          echo "RELEASE_TAG=${{steps.parse-solution-version.outputs.group1}}.${{steps.parse-solution-version.outputs.group2}}.${{steps.parse-solution-version.outputs.group3}}-${{steps.set-mode.outputs.mode}}-${{steps.generate-prerelease-number.outputs.prerelease_number}}" >> $GITHUB_ENV
+        #run: echo "::set-output name=release-tag::${{steps.parse-branch.outputs.group1}}-${{steps.parse-solution-version.outputs.group1}}.${{steps.parse-solution-version.outputs.group2}}.${{steps.parse-solution-version.outputs.group3}}-${{steps.set-mode.outputs.mode}}-${{steps.generate-prerelease-number.outputs.prerelease_number}}"
+        
+      - name: Set tag name for release version
+        if: ${{ steps.set-mode.outputs.mode == 'release' }}
+        run: |
+          echo "RELEASE_TAG=${{steps.parse-solution-version.outputs.group1}}.${{steps.parse-solution-version.outputs.group2}}.${{steps.parse-solution-version.outputs.group3}}" >> $GITHUB_ENV
+        #run: echo "::set-output name=release-tag::${{steps.parse-solution-version.outputs.group1}}.${{steps.parse-solution-version.outputs.group2}}.${{steps.parse-solution-version.outputs.group3}}"
+     
+      - name: Set Release tag output variable
+        id: set-release-tag-output-variable
+        run: echo "::set-output name=release-tag::${{env.RELEASE_TAG}}"
+        
+      - name: Show Release tag
+        run: echo Release tag is ${{ steps.set-release-tag-output-variable.outputs.release-tag }}
+        
+  build:
+    needs: [check_data]
+    if: ${{ needs.check_data.outputs.mode != '' }}
+    #Windows because in ubuntu single file publish does not set versions of .exe file (https://github.com/dotnet/core/issues/4964).
+    runs-on: windows-latest
+
+    strategy:
+        matrix:
+          #RIDs: [win-x64, win-x86, linux-x64, linux-arm, linux-arm64]
+          RIDs: [win-x64]
+    
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.x
+                         
+      - name: Restore dependencies
+        #if: false
+        env:
+          RID: ${{ matrix.RIDs }}
+        run: dotnet restore -r ${{env.RID}}
+        
+      - name: Update AssemblyFileVersion in SharedAssemblyInfo.cs
+        uses: mingjun97/file-regex-replace@v1
+        with:
+          regex: 'System.Reflection.AssemblyFileVersion\("(.*)"\)'
+          flags: g
+          replacement: 'System.Reflection.AssemblyFileVersion("${{needs.check_data.outputs.solution-major-version}}.${{needs.check_data.outputs.solution-minor-version}}.${{needs.check_data.outputs.solution-patch-version}}.${{github.run_number}}")'
+          include: 'SharedAssemblyInfo.cs'
+          exclude: '.^'
+          encoding: 'utf8'
+          
+      - name: Update AssemblyVersion in SharedAssemblyInfo.cs
+        uses: mingjun97/file-regex-replace@v1
+        with:
+          regex: 'System.Reflection.AssemblyVersion\("(.*)"\)'
+          flags: g
+          replacement: 'System.Reflection.AssemblyVersion("${{needs.check_data.outputs.solution-major-version}}.${{needs.check_data.outputs.solution-minor-version}}.${{needs.check_data.outputs.solution-patch-version}}.${{github.run_number}}")'
+          include: 'SharedAssemblyInfo.cs'
+          exclude: '.^'
+          encoding: 'utf8'
+
+      - name: Update AssemblyInformationalVersion in SharedAssemblyInfo.cs
+        uses: mingjun97/file-regex-replace@v1
+        with:
+          regex: 'System.Reflection.AssemblyInformationalVersion\("(.*)"\)'
+          flags: g
+          replacement: 'System.Reflection.AssemblyInformationalVersion("${{needs.check_data.outputs.release-tag}}")'
+          include: 'SharedAssemblyInfo.cs'
+          exclude: '.^'
+          encoding: 'utf8'
+      
+      - name: Show SharedAssemblyInfo
+        run: cat SharedAssemblyInfo.cs
+      
+      - name: Build in Release mode
+        #if: false
+        env:
+          RID: ${{ matrix.RIDs }}
+        run: dotnet publish ./SmartHomeApi.WebApi/SmartHomeApi.WebApi.csproj -c Release -r ${{env.RID}} /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true --self-contained true --no-restore
+      
+      - name: Build in Debug mode
+        #if: false
+        env:
+          RID: ${{ matrix.RIDs }}
+        run: dotnet publish ./SmartHomeApi.WebApi/SmartHomeApi.WebApi.csproj -c Debug -r ${{env.RID}} /p:PublishSingleFile=true --self-contained true --no-restore
+      
+      - name: Restore dependencies
+        if: false
+        run: dotnet restore
+      
+      - name: Build nuget dlls
+        if: false
+        run: dotnet build -p:Version=${{needs.check_data.outputs.solution-major-version}}.${{needs.check_data.outputs.solution-minor-version}}.${{needs.check_data.outputs.solution-patch-version}}.${{github.run_number}} ./SmartHomeApi.WebApi/SmartHomeApi.WebApi.csproj --configuration Release
+      
+      - name: Pack nuget package
+        if: false
+        run: dotnet pack SmartHomeApi.ItemUtils/SmartHomeApi.ItemUtils.csproj --no-build --no-dependencies -p:NuspecProperties="version=${{needs.check_data.outputs.release-tag}}" -p:NuspecFile=./NugetPackage/SmartHomeApi.ItemUtils.nuspec /p:OutputPath=./NugetPackage/ --verbosity normal
+            
+      - name: Publish the package to nuget
+        if: false
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.NUGET_TOKEN }}
+        run: dotnet nuget push SmartHomeApi.ItemUtils/NugetPackage/SmartHomeApi.ItemUtils.${{needs.check_data.outputs.release-tag}}.nupkg -k ${{env.NUGET_AUTH_TOKEN}} -s https://api.nuget.org/v3/index.json
+      
+      - name: Create Release
+        #if: false
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          prerelease: ${{ needs.check_data.outputs.mode != 'release' }}
+          tag_name: ${{needs.check_data.outputs.release-tag}}
+          #fail_on_unmatched_files: true
+          
+      - name: Zip release builds
+        env:
+          RID: ${{ matrix.RIDs }}
+        run: 7z a ${{needs.check_data.outputs.release-tag}}_${{env.RID}}.zip ./SmartHomeApi.WebApi/bin/Release/net5.0/${{env.RID}}/publish/*
+        
+      - name: Zip debug builds
+        env:
+          RID: ${{ matrix.RIDs }}
+        run: 7z a ${{needs.check_data.outputs.release-tag}}_${{env.RID}}-debug.zip ./SmartHomeApi.WebApi/bin/Debug/net5.0/${{env.RID}}/publish/*
+
+      - name: Upload Release Build Artifacts
+        uses: actions/upload-artifact@v2
+        env:
+          RID: ${{ matrix.RIDs }}
+        with:
+          if-no-files-found: error
+          name: ${{needs.check_data.outputs.release-tag}}_${{env.RID}}
+          path: ./SmartHomeApi.WebApi/bin/Release/net5.0/${{env.RID}}/publish/
+          
+      - name: Upload Debug Build Artifacts
+        uses: actions/upload-artifact@v2
+        env:
+          RID: ${{ matrix.RIDs }}
+        with:
+          if-no-files-found: error
+          name: ${{needs.check_data.outputs.release-tag}}_${{env.RID}}-debug
+          path: ./SmartHomeApi.WebApi/bin/Debug/net5.0/${{env.RID}}/publish/
+          
+      - name: Upload Release Assets
+        id: upload-release-assets
+        uses: dwenegar/upload-release-assets@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RID: ${{ matrix.RIDs }}
+        with:
+          release_id: ${{ steps.create_release.outputs.id }}
+          assets_path: ${{needs.check_data.outputs.release-tag}}_${{env.RID}}.zip
+          
+      - name: Upload Debug Assets
+        #if: false #It's enough to have debug build in 
+        id: upload-debug-assets
+        uses: dwenegar/upload-release-assets@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RID: ${{ matrix.RIDs }}
+        with:
+          release_id: ${{ steps.create_release.outputs.id }}
+          assets_path: ${{needs.check_data.outputs.release-tag}}_${{env.RID}}-debug.zip
