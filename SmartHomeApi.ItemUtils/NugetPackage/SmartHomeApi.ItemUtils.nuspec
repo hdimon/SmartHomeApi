@@ -3,21 +3,22 @@
   <metadata>
     <id>SmartHomeApi.ItemUtils</id>
     <version>$version$</version>
-    <authors>Dmitry Khlybov</authors>
-    <owners>Dmitry Khlybov</owners>
+    <authors>hdimon</authors>
+	<projectUrl>https://github.com/hdimon/SmartHomeApi</projectUrl>
+	<license type="expression">Apache-2.0</license>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
 	<title>SDK for creating own SmartHomeApi plugins.</title>
     <description>SDK for creating own SmartHomeApi plugins.</description>
 	<summary>SDK for creating own SmartHomeApi plugins.</summary>
     <tags>SmartHomeApi, Plugin</tags>
 	<dependencies>
-      <group targetFramework=".NETCoreApp3.1">
+      <group targetFramework="net5.0">
       </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="..\bin\Release\netcoreapp3.1\Common.Utils.dll" target="lib\netcoreapp3.1" />
-	<file src="..\bin\Release\netcoreapp3.1\SmartHomeApi.Core.Interfaces.dll" target="lib\netcoreapp3.1" />
-	<file src="..\bin\Release\netcoreapp3.1\SmartHomeApi.ItemUtils.dll" target="lib\netcoreapp3.1" />
+    <file src="..\bin\Release\net5.0\Common.Utils.dll" target="lib\net5.0" />
+	<file src="..\bin\Release\net5.0\SmartHomeApi.Core.Interfaces.dll" target="lib\net5.0" />
+	<file src="..\bin\Release\net5.0\SmartHomeApi.ItemUtils.dll" target="lib\net5.0" />
   </files>
 </package>
