@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Common.Utils;
 using NUnit.Framework;
 using SmartHomeApi.Core.Interfaces;
 using SmartHomeApi.Core.Interfaces.Configuration;
@@ -38,7 +39,7 @@ namespace SmartHomeApi.Core.UnitTests
         public async Task SetUp()
         {
             //Wait a bit in order to free files after previous test
-            await Task.Delay(2000);
+            //await Task.Delay(2000);
 
             _inputTestDataFolder = Path.Join(GetDataFolderPath(), InputTestDataFolder, TestConfigsFolder);
             _appSettings = new AppSettings();
@@ -123,7 +124,7 @@ namespace SmartHomeApi.Core.UnitTests
             var configsPath = Path.Join(_appSettings.DataDirectoryPath, ConfigsFolder);
             Directory.CreateDirectory(configsPath);
 
-            File.Copy(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
+            await CopyFile(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
 
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
             var itemsLocator = new TestItem1ItemLocator(fabric);
@@ -164,8 +165,8 @@ namespace SmartHomeApi.Core.UnitTests
             var configsPath = Path.Join(_appSettings.DataDirectoryPath, ConfigsFolder);
             Directory.CreateDirectory(configsPath);
 
-            File.Copy(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
-            File.Copy(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1CopyConfigName));
+            await CopyFile(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
+            await CopyFile(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1CopyConfigName));
 
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
             var itemsLocator = new TestItem1ItemLocator(fabric);
@@ -228,7 +229,7 @@ namespace SmartHomeApi.Core.UnitTests
             var configLocator = GetConfigLocator(fabric);
             await configLocator.Initialize();
 
-            File.Copy(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
+            await CopyFile(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
 
             var ct = new CancellationTokenSource(2000);
             ct.Token.Register(() => tcs.TrySetCanceled());
@@ -268,7 +269,7 @@ namespace SmartHomeApi.Core.UnitTests
             var configLocator = GetConfigLocator(fabric);
             await configLocator.Initialize();
 
-            File.Copy(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
+            await CopyFile(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
 
             await Task.Delay(10);
 
@@ -334,7 +335,7 @@ namespace SmartHomeApi.Core.UnitTests
             var configLocator = GetConfigLocator(fabric);
             await configLocator.Initialize();
 
-            File.Copy(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
+            await CopyFile(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
 
             var ct = new CancellationTokenSource(2000);
             ct.Token.Register(() => tcs.TrySetCanceled());
@@ -351,8 +352,7 @@ namespace SmartHomeApi.Core.UnitTests
             var itemConfig = (TestItem1Config)itemConfigs.First();
             Assert.IsNull(itemConfig.TestString);
 
-            File.Copy(Path.Join(_inputTestDataFolder, TestItem1ChangedConfigName), Path.Join(configsPath, TestItem1ConfigName),
-                true);
+            await CopyFile(Path.Join(_inputTestDataFolder, TestItem1ChangedConfigName), Path.Join(configsPath, TestItem1ConfigName), true);
 
             ct = new CancellationTokenSource(2000);
             ct.Token.Register(() => tcs1.TrySetCanceled());
@@ -407,7 +407,7 @@ namespace SmartHomeApi.Core.UnitTests
             var configLocator = GetConfigLocator(fabric);
             await configLocator.Initialize();
 
-            File.Copy(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
+            await CopyFile(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
 
             var ct = new CancellationTokenSource(2000);
             ct.Token.Register(() => tcs.TrySetCanceled());
@@ -424,7 +424,8 @@ namespace SmartHomeApi.Core.UnitTests
             var itemConfig = (TestItem1Config)itemConfigs.First();
             Assert.IsNull(itemConfig.TestString);
 
-            File.Copy(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName), true);
+            await CopyFile(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName),
+                true);
 
             ct = new CancellationTokenSource(2000);
             ct.Token.Register(() => tcs1.TrySetResult(false));
@@ -451,7 +452,7 @@ namespace SmartHomeApi.Core.UnitTests
             var configsPath = Path.Join(_appSettings.DataDirectoryPath, ConfigsFolder);
             Directory.CreateDirectory(configsPath);
 
-            File.Copy(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
+            await CopyFile(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
 
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
             var itemsLocator = new TestItem1ItemLocator(fabric);
@@ -518,7 +519,7 @@ namespace SmartHomeApi.Core.UnitTests
             var configLocator = GetConfigLocator(fabric);
             await configLocator.Initialize();
 
-            File.Copy(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
+            await CopyFile(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
 
             var ct = new CancellationTokenSource(2000);
             ct.Token.Register(() => tcs.TrySetCanceled());
@@ -555,7 +556,7 @@ namespace SmartHomeApi.Core.UnitTests
             var configsPath = Path.Join(_appSettings.DataDirectoryPath, ConfigsFolder);
             Directory.CreateDirectory(configsPath);
 
-            File.Copy(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
+            await CopyFile(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
 
             var fabric = new SmartHomeApiStubFabric(_appSettings);
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
@@ -601,7 +602,7 @@ namespace SmartHomeApi.Core.UnitTests
             var configsPath = Path.Join(_appSettings.DataDirectoryPath, ConfigsFolder);
             Directory.CreateDirectory(configsPath);
 
-            File.Copy(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
+            await CopyFile(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
 
             var fabric = new SmartHomeApiStubFabric(_appSettings);
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
@@ -656,8 +657,8 @@ namespace SmartHomeApi.Core.UnitTests
             var itemConfig = (TestItem1Config)itemConfigs.First();
             Assert.IsNull(itemConfig.TestString);
 
-            File.Copy(Path.Join(_inputTestDataFolder, TestItem1ChangedConfigName), Path.Join(configsPath, TestItem1ConfigName),
-                true);
+            await CopyFile(Path.Join(_inputTestDataFolder, TestItem1ChangedConfigName),
+                Path.Join(configsPath, TestItem1ConfigName), true);
 
             ct = new CancellationTokenSource(2000);
             ct.Token.Register(() => tcs1.TrySetCanceled());
@@ -685,7 +686,7 @@ namespace SmartHomeApi.Core.UnitTests
             var configsPath = Path.Join(_appSettings.DataDirectoryPath, ConfigsFolder);
             Directory.CreateDirectory(configsPath);
 
-            File.Copy(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
+            await CopyFile(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
 
             var fabric = new SmartHomeApiStubFabric(_appSettings);
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
@@ -740,7 +741,7 @@ namespace SmartHomeApi.Core.UnitTests
             var itemConfig = (TestItem1Config)itemConfigs.First();
             Assert.IsNull(itemConfig.TestString);
 
-            File.Copy(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName),
+            await CopyFile(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName),
                 true);
 
             ct = new CancellationTokenSource(2000);
@@ -769,7 +770,7 @@ namespace SmartHomeApi.Core.UnitTests
             var configsPath = Path.Join(_appSettings.DataDirectoryPath, ConfigsFolder);
             Directory.CreateDirectory(configsPath);
 
-            File.Copy(Path.Join(_inputTestDataFolder, InvalidConfigName), Path.Join(configsPath, InvalidConfigName));
+            await CopyFile(Path.Join(_inputTestDataFolder, InvalidConfigName), Path.Join(configsPath, InvalidConfigName));
 
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
             var itemsLocator = new TestItem1ItemLocator(fabric);
@@ -813,7 +814,7 @@ namespace SmartHomeApi.Core.UnitTests
             var configsPath = Path.Join(_appSettings.DataDirectoryPath, ConfigsFolder);
             Directory.CreateDirectory(configsPath);
 
-            File.Copy(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
+            await CopyFile(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
 
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
             var itemsLocator = new TestItem1ItemLocator(fabric);
@@ -858,7 +859,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(1, itemConfigs.Count);
 
-            File.Copy(Path.Join(_inputTestDataFolder, InvalidConfigName), Path.Join(configsPath, TestItem1ConfigName), true);
+            await CopyFile(Path.Join(_inputTestDataFolder, InvalidConfigName), Path.Join(configsPath, TestItem1ConfigName), true);
 
             await Task.Delay(1000);
 
@@ -877,7 +878,7 @@ namespace SmartHomeApi.Core.UnitTests
             var configsPath = Path.Join(_appSettings.DataDirectoryPath, ConfigsFolder);
             Directory.CreateDirectory(configsPath);
 
-            File.Copy(Path.Join(_inputTestDataFolder, InvalidConfigWithoutItemIdName),
+            await CopyFile(Path.Join(_inputTestDataFolder, InvalidConfigWithoutItemIdName),
                 Path.Join(configsPath, InvalidConfigWithoutItemIdName));
 
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
@@ -920,7 +921,7 @@ namespace SmartHomeApi.Core.UnitTests
             var configsPath = Path.Join(_appSettings.DataDirectoryPath, ConfigsFolder);
             Directory.CreateDirectory(configsPath);
 
-            File.Copy(Path.Join(_inputTestDataFolder, InvalidConfigWithoutItemTypeName),
+            await CopyFile(Path.Join(_inputTestDataFolder, InvalidConfigWithoutItemTypeName),
                 Path.Join(configsPath, InvalidConfigWithoutItemTypeName));
 
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
@@ -1032,7 +1033,8 @@ namespace SmartHomeApi.Core.UnitTests
             var configLocator = GetConfigLocator(fabric);
             await configLocator.Initialize();
 
-            File.Copy(Path.Join(_inputTestDataFolder, TestItem1ChangedConfigName), Path.Join(configsPath, TestItem1ConfigName));
+            await CopyFile(Path.Join(_inputTestDataFolder, TestItem1ChangedConfigName),
+                Path.Join(configsPath, TestItem1ConfigName));
 
             var ct = new CancellationTokenSource(2000);
             ct.Token.Register(() => tcs.TrySetCanceled());
@@ -1049,7 +1051,8 @@ namespace SmartHomeApi.Core.UnitTests
             var itemConfig = (TestItem1Config)itemConfigs.First();
             Assert.AreEqual("Test", itemConfig.TestString);
 
-            File.Copy(Path.Join(_inputTestDataFolder, TestItem2ConfigName), Path.Join(configsPath, TestItem1ConfigName), true);
+            await CopyFile(Path.Join(_inputTestDataFolder, TestItem2ConfigName), Path.Join(configsPath, TestItem1ConfigName),
+                true);
 
             ct = new CancellationTokenSource(2000);
             ct.Token.Register(() => tcs1.TrySetCanceled());
@@ -1089,7 +1092,7 @@ namespace SmartHomeApi.Core.UnitTests
             var configsPath = Path.Join(_appSettings.DataDirectoryPath, ConfigsFolder);
             Directory.CreateDirectory(configsPath);
 
-            File.Copy(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
+            await CopyFile(Path.Join(_inputTestDataFolder, TestItem1ConfigName), Path.Join(configsPath, TestItem1ConfigName));
 
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
             var itemsLocator = new TestItem1ItemLocator(fabric);
@@ -1163,6 +1166,14 @@ namespace SmartHomeApi.Core.UnitTests
             Assert.AreEqual(1, itemConfigs.Count);
 
             configLocator.Dispose();
+        }
+
+        private async Task CopyFile(string sourcePath, string destinationPath, bool overwrite = false)
+        {
+            await AsyncHelpers.RetryOnFault(async () =>
+            {
+                File.Copy(sourcePath, destinationPath, overwrite);
+            }, 3, () => Task.Delay(1000));
         }
     }
 }

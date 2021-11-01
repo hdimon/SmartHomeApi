@@ -357,9 +357,9 @@ namespace SmartHomeApi.Core.UnitTests
             };
             locatorBridge.ItemDeleted += (sender, args) =>
             {
-                counter++;
+                bridgeCounter++;
 
-                if (counter == 2)
+                if (bridgeCounter == 2)
                     bridgeTcs1.SetResult(true);
                 else
                 {
@@ -394,10 +394,10 @@ namespace SmartHomeApi.Core.UnitTests
             ct = new CancellationTokenSource(2000);
             ct.Token.Register(() => tcs1.TrySetResult(false));
             bridgeCt = new CancellationTokenSource(2000);
-            bridgeCt.Token.Register(() => bridgeTcs.TrySetResult(false));
+            bridgeCt.Token.Register(() => bridgeTcs1.TrySetResult(false));
 
             res = await tcs1.Task;
-            bridgeRes = await bridgeTcs.Task;
+            bridgeRes = await bridgeTcs1.Task;
 
             Assert.IsTrue(res);
             Assert.IsTrue(bridgeRes);

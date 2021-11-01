@@ -35,7 +35,7 @@ namespace SmartHomeApi.Core.UnitTests
         public async Task SetUp()
         {
             //Wait a bit in order to free files after previous test
-            await Task.Delay(2000);
+            //await Task.Delay(2000);
 
             _inputTestDataFolder = Path.Join(GetDataFolderPath(), InputTestDataFolder);
             _appSettings = new AppSettings();
