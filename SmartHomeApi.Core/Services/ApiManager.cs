@@ -14,6 +14,7 @@ namespace SmartHomeApi.Core.Services
         private readonly ISmartHomeApiFabric _fabric;
         private readonly IItemStatesProcessor _statesProcessor;
         private readonly IApiLogger _logger;
+        private readonly IApiItemsLocator _apiItemsLocator;
         private readonly INotificationsProcessor _notificationsProcessor;
         private readonly IUncachedStatesProcessor _uncachedStatesProcessor;
         private readonly CancellationTokenSource _disposingCancellationTokenSource = new CancellationTokenSource();
@@ -27,6 +28,7 @@ namespace SmartHomeApi.Core.Services
             _fabric = fabric;
             _statesProcessor = statesProcessor;
             _logger = _fabric.GetApiLogger();
+            _apiItemsLocator = _fabric.GetApiItemsLocator();
             _notificationsProcessor = _fabric.GetNotificationsProcessor();
             _uncachedStatesProcessor = _fabric.GetUncachedStatesProcessor();
         }
@@ -38,43 +40,11 @@ namespace SmartHomeApi.Core.Services
             //First collect all initial plugins and then item configs
             await _fabric.GetItemsPluginsLocator().Initialize();
             await _fabric.GetItemsConfigsLocator().Initialize();
-
-            //
-            var locators = await _fabric.GetItemsPluginsLocator().GetItemsLocators();
-
-            //Temp
-            foreach (var itemsLocator in locators)
-            {
-                await itemsLocator.Initialize();
-            }
-            //Temp
-
-            //TODO Instead of ImmediateInitialization introduce InitialLoadPriority setting in Item config, group items by this and initialize them in groups
-
-            var immediateItems = locators.Where(l => l.ImmediateInitialization).ToList();
-
-            _logger.Info("Running items with immediate initialization...");
-
-            await Task.WhenAll(immediateItems.Select(GetItems));
-
-            _logger.Info("Items with immediate initialization have been run.");
-            //
+            await _apiItemsLocator.Initialize();
 
             IsInitialized = true;
 
             _logger.Info("ApiManager initialized.");
-        }
-
-        private async Task<IEnumerable<IItem>> GetItems(IItemsLocator locator)
-        {
-            var items = await locator.GetItems();
-            var itemsList = items.ToList();
-
-            await Task.WhenAll(itemsList
-                               .Where(item => item is IInitializable initializable && !initializable.IsInitialized)
-                               .Select(item => ((IInitializable)item).Initialize()));
-
-            return itemsList;
         }
 
         public async ValueTask DisposeAsync()
@@ -90,6 +60,7 @@ namespace SmartHomeApi.Core.Services
             var pluginsLocator = _fabric.GetItemsPluginsLocator();
             var configLocator = _fabric.GetItemsConfigsLocator();
 
+            await _apiItemsLocator.DisposeAsync();
             await notificationsProcessor.DisposeAsync();
             pluginsLocator.Dispose();
             configLocator.Dispose();
@@ -101,8 +72,7 @@ namespace SmartHomeApi.Core.Services
 
         public async Task<ISetValueResult> SetValue(string itemId, string parameter, object value)
         {
-            var itemsLocator = _fabric.GetItemsLocator();
-            var items = await GetItems(itemsLocator);
+            var items = await _apiItemsLocator.GetItems();
 
             var item = items.FirstOrDefault(i => i is IStateSettable it && it.ItemId == itemId);
 
@@ -150,7 +120,7 @@ namespace SmartHomeApi.Core.Services
 
             state = _uncachedStatesProcessor.FilterOutUncachedStates(state);
 
-            return state;
+            return await Task.FromResult(state);
         }
 
         public async Task<IItemState> GetState(string itemId)
@@ -162,7 +132,7 @@ namespace SmartHomeApi.Core.Services
 
             var itemState = state.States[itemId];
 
-            return itemState;
+            return await Task.FromResult(itemState);
         }
 
         public async Task<object> GetState(string itemId, string parameter)
@@ -175,23 +145,21 @@ namespace SmartHomeApi.Core.Services
             var itemState = state.States[itemId];
 
             if (itemState.States.ContainsKey(parameter))
-                return itemState.States[parameter];
+                return await Task.FromResult(itemState.States[parameter]);
 
             return null;
         }
 
         public async Task<IList<IItem>> GetItems()
         {
-            var itemsLocator = _fabric.GetItemsLocator();
-            var items = await GetItems(itemsLocator);
+            var items = await _apiItemsLocator.GetItems();
 
             return items.ToList();
         }
 
         public async Task<ExecuteCommandResultAbstract> Execute(ExecuteCommand command)
         {
-            var itemsLocator = _fabric.GetItemsLocator();
-            var items = await GetItems(itemsLocator);
+            var items = await _apiItemsLocator.GetItems();
 
             var item = items.FirstOrDefault(i => i is IExecutable it && it.ItemId == command.ItemId);
 

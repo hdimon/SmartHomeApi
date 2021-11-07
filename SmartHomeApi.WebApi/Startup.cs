@@ -36,7 +36,6 @@ namespace SmartHomeApi.WebApi
             services.AddSingleton<AppSettings>();
             services.AddSingleton<ISmartHomeApiFabric, SmartHomeApiDefaultFabric>();
             services.AddSingleton<IItemsPluginsLocator, ItemsPluginsLocator>();
-            services.AddSingleton<IItemsLocator, ItemsLocator>();
             services.AddSingleton<IApiItemsLocator, ApiItemsLocator>();
             services.AddSingleton<IApiManager, ApiManager>();
             services.AddSingleton<IItemsConfigLocator, ItemsConfigLocator>();

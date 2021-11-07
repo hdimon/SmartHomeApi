@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using SmartHomeApi.Core.Interfaces;
 using SmartHomeApi.Core.Interfaces.ItemsLocatorsBridges;
@@ -32,6 +33,14 @@ namespace SmartHomeApi.Core.UnitTests.Stubs
 
         public void AddLocator(IStandardItemsLocatorBridge locator)
         {
+            var existingLocator = ItemsLocators.FirstOrDefault(p => p.ItemType == locator.ItemType);
+
+            if (existingLocator != null)
+            {
+                BeforeItemLocatorDeleted?.Invoke(this, new ItemLocatorEventArgs { ItemType = existingLocator.ItemType });
+                ItemsLocators.Remove(existingLocator);
+            }
+
             ItemsLocators.Add(locator);
 
             ItemLocatorAddedOrUpdated?.Invoke(this, new ItemLocatorEventArgs { ItemType = locator.ItemType });

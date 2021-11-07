@@ -7,7 +7,6 @@ namespace SmartHomeApi.Core.Interfaces
     {
         AppSettings GetConfiguration();
         IItemsPluginsLocator GetItemsPluginsLocator();
-        IItemsLocator GetItemsLocator();
         IApiItemsLocator GetApiItemsLocator();
         IItemsConfigLocator GetItemsConfigsLocator();
         IApiManager GetApiManager();
