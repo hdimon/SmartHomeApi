@@ -22,7 +22,10 @@ namespace SmartHomeApi.ItemUtils
         public bool IsInitialized { get; private set; }
 
         public event EventHandler<ItemEventArgs> ItemAdded;
+
+        #pragma warning disable 67
         public event EventHandler<ItemEventArgs> ItemDeleted;
+        #pragma warning restore 67
 
         protected NonConfigItemsLocatorAbstract(ISmartHomeApiFabric fabric)
         {
