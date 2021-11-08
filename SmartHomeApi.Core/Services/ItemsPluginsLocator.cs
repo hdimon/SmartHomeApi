@@ -111,20 +111,17 @@ namespace SmartHomeApi.Core.Services
 
         private void OnItemLocatorAddedOrUpdated(ItemLocatorEventArgs e)
         {
-            Task.Run(() => ItemLocatorAddedOrUpdated?.Invoke(this, e)).ContinueWith(t => { _logger.Error(t.Exception); },
-                TaskContinuationOptions.OnlyOnFaulted);
+            ItemLocatorAddedOrUpdated?.Invoke(this, e);
         }
 
         private void OnItemLocatorDeleted(ItemLocatorEventArgs e)
         {
-            Task.Run(() => ItemLocatorDeleted?.Invoke(this, e)).ContinueWith(t => { _logger.Error(t.Exception); },
-                TaskContinuationOptions.OnlyOnFaulted);
+            ItemLocatorDeleted?.Invoke(this, e);
         }
 
         private void OnBeforeItemLocatorDeleted(ItemLocatorEventArgs e)
         {
-            Task.Run(() => BeforeItemLocatorDeleted?.Invoke(this, e)).ContinueWith(t => { _logger.Error(t.Exception); },
-                TaskContinuationOptions.OnlyOnFaulted);
+            BeforeItemLocatorDeleted?.Invoke(this, e);
         }
 
         private async void FileWatcherOnPluginAddedOrUpdated(object sender, PluginEventArgs e)
