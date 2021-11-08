@@ -12,18 +12,20 @@ namespace SmartHomeApi.Core.UnitTests.Stubs
         public List<IStandardItemsLocatorBridge> ItemsLocators { get; set; } = new List<IStandardItemsLocatorBridge>();
         public bool IsInitialized { get; private set; }
 
-        public async Task Initialize()
+        public Task Initialize()
         {
             IsInitialized = true;
+
+            return Task.CompletedTask;
         }
 
         public event EventHandler<ItemLocatorEventArgs> ItemLocatorAddedOrUpdated;
         public event EventHandler<ItemLocatorEventArgs> BeforeItemLocatorDeleted;
         public event EventHandler<ItemLocatorEventArgs> ItemLocatorDeleted;
 
-        public async Task<IEnumerable<IStandardItemsLocatorBridge>> GetItemsLocators()
+        public Task<IEnumerable<IStandardItemsLocatorBridge>> GetItemsLocators()
         {
-            return ItemsLocators;
+            return Task.FromResult<IEnumerable<IStandardItemsLocatorBridge>>(ItemsLocators);
         }
 
         public void Dispose()

@@ -134,8 +134,9 @@ namespace SmartHomeApi.Core.UnitTests
                 var res4 = "10,5".GetAsObject(ValueDataType.Integer, culture);
                 Assert.Fail();
             }
-            catch (Exception e)
+            catch (Exception)
             {
+                // ignored
             }
 
             try
@@ -143,8 +144,9 @@ namespace SmartHomeApi.Core.UnitTests
                 var res5 = "10.0".GetAsObject(ValueDataType.Integer, culture);
                 Assert.Fail();
             }
-            catch (Exception e)
+            catch (Exception)
             {
+                // ignored
             }
 
             culture = CultureInfo.GetCultureInfo("en-EN");
@@ -160,8 +162,9 @@ namespace SmartHomeApi.Core.UnitTests
                 var res104 = "10.5".GetAsObject(ValueDataType.Integer, culture);
                 Assert.Fail();
             }
-            catch (Exception e)
+            catch (Exception)
             {
+                // ignored
             }
 
             try
@@ -169,8 +172,9 @@ namespace SmartHomeApi.Core.UnitTests
                 var res105 = "10,0".GetAsObject(ValueDataType.Integer, culture);
                 Assert.AreEqual(100, res105);
             }
-            catch (Exception e)
+            catch (Exception)
             {
+                // ignored
             }
         }
 
@@ -192,8 +196,9 @@ namespace SmartHomeApi.Core.UnitTests
                 var res4 = "10.5".GetAsObject(ValueDataType.Double, culture);
                 Assert.Fail();
             }
-            catch (Exception e)
+            catch (Exception)
             {
+                // ignored
             }
 
             culture = CultureInfo.GetCultureInfo("en-EN");
@@ -212,8 +217,9 @@ namespace SmartHomeApi.Core.UnitTests
                 var res104 = "10,5".GetAsObject(ValueDataType.Double, culture);
                 Assert.AreEqual(105d, res104);
             }
-            catch (Exception e)
+            catch (Exception)
             {
+                // ignored
             }
         }
 
@@ -235,8 +241,9 @@ namespace SmartHomeApi.Core.UnitTests
                 var res4 = "10.5".GetAsObject(ValueDataType.Decimal, culture);
                 Assert.Fail();
             }
-            catch (Exception e)
+            catch (Exception)
             {
+                // ignored
             }
 
             culture = CultureInfo.GetCultureInfo("en-EN");
@@ -255,8 +262,9 @@ namespace SmartHomeApi.Core.UnitTests
                 var res104 = "10,5".GetAsObject(ValueDataType.Decimal, culture);
                 Assert.AreEqual(105m, res104);
             }
-            catch (Exception e)
+            catch (Exception)
             {
+                // ignored
             }
         }
 
@@ -317,8 +325,9 @@ namespace SmartHomeApi.Core.UnitTests
                 var res2 = "11/27/2020 2:35:44 AM".GetAsObject(ValueDataType.DateTime, culture);
                 Assert.Fail();
             }
-            catch (Exception e)
+            catch (Exception)
             {
+                // ignored
             }
 
             culture = CultureInfo.GetCultureInfo("en-EN");
@@ -331,8 +340,9 @@ namespace SmartHomeApi.Core.UnitTests
                 var res102 = "27.11.2020 2:35:44".GetAsObject(ValueDataType.DateTime, culture);
                 Assert.Fail();
             }
-            catch (Exception e)
+            catch (Exception)
             {
+                // ignored
             }
         }
 
@@ -350,8 +360,9 @@ namespace SmartHomeApi.Core.UnitTests
                 var res2 = "2:35:44 AM".GetAsObject(ValueDataType.TimeSpan, culture);
                 Assert.Fail();
             }
-            catch (Exception e)
+            catch (Exception)
             {
+                // ignored
             }
 
             try
@@ -359,8 +370,9 @@ namespace SmartHomeApi.Core.UnitTests
                 var res3 = "27.11.2020 2:35:44".GetAsObject(ValueDataType.TimeSpan, culture);
                 Assert.Fail();
             }
-            catch (Exception e)
+            catch (Exception)
             {
+                // ignored
             }
 
 
@@ -374,8 +386,9 @@ namespace SmartHomeApi.Core.UnitTests
                 var res102 = "2:35:44 AM".GetAsObject(ValueDataType.TimeSpan, culture);
                 Assert.Fail();
             }
-            catch (Exception e)
+            catch (Exception)
             {
+                // ignored
             }
         }
 

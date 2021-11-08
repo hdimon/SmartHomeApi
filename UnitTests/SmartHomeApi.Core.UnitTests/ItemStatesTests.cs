@@ -18,7 +18,7 @@ namespace SmartHomeApi.Core.UnitTests
                 var state = processor.GetOrCreateItemState("", itemType);
                 Assert.Fail();
             }
-            catch (ArgumentNullException e)
+            catch (ArgumentNullException)
             {
             }
 
@@ -27,7 +27,7 @@ namespace SmartHomeApi.Core.UnitTests
                 var state = processor.GetOrCreateItemState("   ", itemType);
                 Assert.Fail();
             }
-            catch (ArgumentNullException e)
+            catch (ArgumentNullException)
             {
             }
 
@@ -36,7 +36,7 @@ namespace SmartHomeApi.Core.UnitTests
                 var state = processor.GetOrCreateItemState(null, itemType);
                 Assert.Fail();
             }
-            catch (ArgumentNullException e)
+            catch (ArgumentNullException)
             {
             }
 

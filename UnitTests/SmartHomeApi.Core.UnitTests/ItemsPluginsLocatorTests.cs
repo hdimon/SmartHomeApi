@@ -32,7 +32,7 @@ namespace SmartHomeApi.Core.UnitTests
         private string _inputTestDataFolder;
 
         [SetUp]
-        public async Task SetUp()
+        public Task SetUp()
         {
             //Wait a bit in order to free files after previous test
             //await Task.Delay(2000);
@@ -42,6 +42,8 @@ namespace SmartHomeApi.Core.UnitTests
             _appSettings.DataDirectoryPath = Path.Combine(GetDataFolderPath(), DataFolder);
 
             CleanDirectory(_appSettings.DataDirectoryPath);
+
+            return Task.CompletedTask;
         }
 
         private IItemsPluginsLocator GetPluginLocator(ISmartHomeApiFabric fabric)

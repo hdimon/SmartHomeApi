@@ -83,10 +83,7 @@ namespace SmartHomeApi.Core.UnitTests
             var item = new TestItem1(fabric.GetApiManager(), helpersFabric, config);
             var tcs = new TaskCompletionSource<bool>();
 
-            item.OnProcessNotification = async args =>
-            {
-                throw new Exception();
-            };
+            item.OnProcessNotification = args => throw new Exception();
 
             var ct = new CancellationTokenSource(500);
             ct.Token.Register(() => tcs.TrySetResult(true));
@@ -125,7 +122,7 @@ namespace SmartHomeApi.Core.UnitTests
             var tcs5 = new TaskCompletionSource<bool>();
             var tcs6 = new TaskCompletionSource<bool>();
 
-            item.OnProcessNotification = async args =>
+            item.OnProcessNotification = args =>
             {
                 if (counter == 0)
                 {
@@ -157,6 +154,8 @@ namespace SmartHomeApi.Core.UnitTests
                     tcs6.TrySetResult(true);
                     counter++;
                 }
+
+                return Task.CompletedTask;
             };
 
             processor.RegisterSubscriber(item);
@@ -237,7 +236,7 @@ namespace SmartHomeApi.Core.UnitTests
             var tcs1 = new TaskCompletionSource<bool>();
             var tcs2 = new TaskCompletionSource<bool>();
 
-            item.OnProcessNotification = async args =>
+            item.OnProcessNotification = args =>
             {
                 if (counter == 0)
                 {
@@ -249,6 +248,8 @@ namespace SmartHomeApi.Core.UnitTests
                     tcs2.TrySetResult(true);
                     counter++;
                 }
+
+                return Task.CompletedTask;
             };
 
             processor.RegisterSubscriber(item);

@@ -23,8 +23,9 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
         {
         }
 
-        public async ValueTask DisposeAsync()
+        public ValueTask DisposeAsync()
         {
+            return ValueTask.CompletedTask;
         }
     }
 }

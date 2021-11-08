@@ -5,9 +5,9 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
 {
     public class ItemStateStorageStubHelper : IItemStateStorageHelper
     {
-        public async Task SaveState(object state, string fileNamePattern)
+        public Task SaveState(object state, string fileNamePattern)
         {
-            
+            return Task.CompletedTask;
         }
 
         public T RestoreState<T>(string fileNamePattern)

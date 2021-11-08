@@ -11,18 +11,20 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
 
         public bool IsInitialized { get; private set; }
 
-        public async Task Initialize()
+        public Task Initialize()
         {
             IsInitialized = true;
+
+            return Task.CompletedTask;
         }
 
         public void Dispose()
         {
         }
 
-        public async Task<List<IItemConfig>> GetItemsConfigs(string itemType)
+        public Task<List<IItemConfig>> GetItemsConfigs(string itemType)
         {
-            return Configs.Where(c => c.ItemType == itemType).ToList();
+            return Task.FromResult(Configs.Where(c => c.ItemType == itemType).ToList());
         }
     }
 }

@@ -26,21 +26,22 @@ namespace SmartHomeApi.Core.UnitTests.Stubs.ApiItemsLocatorTestStubs
             Logger = fabric.GetApiLogger();
         }
 
-        public async Task<IEnumerable<IItem>> GetItems()
+        public Task<IEnumerable<IItem>> GetItems()
         {
-            return _items;
+            return Task.FromResult<IEnumerable<IItem>>(_items);
         }
 
         public bool IsInitialized { get; }
 
-        public async Task Initialize()
+        public Task Initialize()
         {
+            return Task.CompletedTask;
         }
 
         public event EventHandler<ItemEventArgs> ItemAdded;
         public event EventHandler<ItemEventArgs> ItemDeleted;
 
-        public async Task ConfigAdded(IItemConfig config)
+        public Task ConfigAdded(IItemConfig config)
         {
             var item = new TestItem(Fabric.GetApiManager(), Fabric.GetItemHelpersFabric(config.ItemId, config.ItemType), config);
 
@@ -48,6 +49,8 @@ namespace SmartHomeApi.Core.UnitTests.Stubs.ApiItemsLocatorTestStubs
 
             _ = Task.Run(() => ItemAdded?.Invoke(this, new ItemEventArgs(config.ItemId, config.ItemType)))
                     .ContinueWith(t => { Logger.Error(t.Exception); }, TaskContinuationOptions.OnlyOnFaulted);
+
+            return Task.CompletedTask;
         }
 
         public Task ConfigUpdated(IItemConfig config)
@@ -55,13 +58,15 @@ namespace SmartHomeApi.Core.UnitTests.Stubs.ApiItemsLocatorTestStubs
             throw new NotImplementedException();
         }
 
-        public async Task ConfigDeleted(string itemId)
+        public Task ConfigDeleted(string itemId)
         {
             var item = _items.First(i => i.ItemId == itemId);
             _items.Remove(item);
 
             _ = Task.Run(() => ItemDeleted?.Invoke(this, new ItemEventArgs(item.ItemId, item.ItemType)))
                     .ContinueWith(t => { Logger.Error(t.Exception); }, TaskContinuationOptions.OnlyOnFaulted);
+
+            return Task.CompletedTask;
         }
 
         public void Dispose()
