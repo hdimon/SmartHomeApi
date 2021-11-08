@@ -32,9 +32,9 @@ namespace SmartHomeApi.ItemUtils
             _initializeTask = new AsyncLazy(InitializeSafely);
         }
 
-        public async Task<IEnumerable<IItem>> GetItems()
+        public Task<IEnumerable<IItem>> GetItems()
         {
-            return _items;
+            return Task.FromResult<IEnumerable<IItem>>(_items);
         }
 
         public async Task Initialize()
@@ -42,20 +42,22 @@ namespace SmartHomeApi.ItemUtils
             await _initializeTask.Value;
         }
 
-
-        public async Task ConfigAdded(IItemConfig config)
+        public Task ConfigAdded(IItemConfig config)
         {
             //NonConfigItemsLocator does not have config so should not accept it even if config has been created
+            return Task.CompletedTask;
         }
 
-        public async Task ConfigUpdated(IItemConfig config)
+        public Task ConfigUpdated(IItemConfig config)
         {
             //NonConfigItemsLocator does not have config so should not accept it even if config has been created
+            return Task.CompletedTask;
         }
 
-        public async Task ConfigDeleted(string itemId)
+        public Task ConfigDeleted(string itemId)
         {
             //NonConfigItemsLocator does not have config so should not accept it even if config has been created
+            return Task.CompletedTask;
         }
 
         public void Dispose()

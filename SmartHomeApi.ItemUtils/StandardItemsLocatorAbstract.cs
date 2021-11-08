@@ -36,13 +36,13 @@ namespace SmartHomeApi.ItemUtils
             _initializeTask = new AsyncLazy(InitializeSafely);
         }
 
-        public virtual async Task<IEnumerable<IItem>> GetItems()
+        public virtual Task<IEnumerable<IItem>> GetItems()
         {
             _rwLock.EnterReadLock();
 
             try
             {
-                return _items.ToImmutableList();
+                return Task.FromResult<IEnumerable<IItem>>(_items.ToImmutableList());
             }
             finally
             {
@@ -64,26 +64,30 @@ namespace SmartHomeApi.ItemUtils
             _rwLock.Dispose();
         }
 
-        public virtual async Task ConfigAdded(IItemConfig config)
+        public virtual Task ConfigAdded(IItemConfig config)
         {
             if (!IsInitialized)
-                return;
+                return Task.CompletedTask;
 
             AddOrUpdateItem(config);
+
+            return Task.CompletedTask;
         }
 
-        public virtual async Task ConfigUpdated(IItemConfig config)
+        public virtual Task ConfigUpdated(IItemConfig config)
         {
             if (!IsInitialized)
-                return;
+                return Task.CompletedTask;
 
             AddOrUpdateItem(config);
+
+            return Task.CompletedTask;
         }
 
-        public virtual async Task ConfigDeleted(string itemId)
+        public virtual Task ConfigDeleted(string itemId)
         {
             if (!IsInitialized)
-                return;
+                return Task.CompletedTask;
 
             _rwLock.EnterWriteLock();
 
@@ -94,7 +98,7 @@ namespace SmartHomeApi.ItemUtils
                 if (existingItem == null)
                 {
                     Logger.Warning($"Config for Item with id = {itemId} has been deleted but Item already does not exist.");
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 var itemType = existingItem.ItemType;
@@ -120,6 +124,8 @@ namespace SmartHomeApi.ItemUtils
             {
                 _rwLock.ExitWriteLock();
             }
+
+            return Task.CompletedTask;
         }
 
         public async Task Initialize()

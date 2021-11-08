@@ -27,19 +27,22 @@ namespace SmartHomeApi.Core.ItemsLocatorsBridges
                 await initializable.Initialize();
         }
 
-        public override async Task ConfigAdded(IItemConfig config)
+        public override Task ConfigAdded(IItemConfig config)
         {
             //Old items locators are not able to process this event
+            return Task.CompletedTask;
         }
 
-        public override async Task ConfigUpdated(IItemConfig config)
+        public override Task ConfigUpdated(IItemConfig config)
         {
             //Old items locators are not able to process this event
+            return Task.CompletedTask;
         }
 
-        public override async Task ConfigDeleted(string itemId)
+        public override Task ConfigDeleted(string itemId)
         {
             //Old items locators are not able to process this event
+            return Task.CompletedTask;
         }
     }
 }

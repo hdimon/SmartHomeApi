@@ -146,14 +146,16 @@ namespace SmartHomeApi.Core.Services
             return isEqual;
         }
 
-        public async ValueTask DisposeAsync()
+        public ValueTask DisposeAsync()
         {
             if (_disposed)
-                return;
+                return ValueTask.CompletedTask;
 
             _logger.Info("NotificationsProcessor has been disposed.");
 
             _disposed = true;
+
+            return ValueTask.CompletedTask;
         }
     }
 }

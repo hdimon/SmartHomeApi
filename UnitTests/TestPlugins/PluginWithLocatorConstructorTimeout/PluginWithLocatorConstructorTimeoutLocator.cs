@@ -5,7 +5,7 @@ using SmartHomeApi.ItemUtils;
 
 namespace PluginWithLocatorConstructorTimeout
 {
-    class PluginWithLocatorConstructorTimeoutLocator : AutoRefreshItemsLocatorAbstract
+    class PluginWithLocatorConstructorTimeoutLocator : StandardItemsLocatorAbstract
     {
         public override string ItemType { get; } = "PluginWithLocatorConstructorTimeoutLocator";
         public override Type ConfigType { get; } = typeof(PluginWithLocatorConstructorTimeoutConfig);

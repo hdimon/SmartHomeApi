@@ -72,9 +72,9 @@ namespace SmartHomeApi.Core.Services
             IsInitialized = true;
         }
 
-        public async Task<IEnumerable<IStandardItemsLocatorBridge>> GetItemsLocators()
+        public Task<IEnumerable<IStandardItemsLocatorBridge>> GetItemsLocators()
         {
-            return _locators.Values;
+            return Task.FromResult<IEnumerable<IStandardItemsLocatorBridge>>(_locators.Values);
         }
 
         public void Dispose()
@@ -190,6 +190,8 @@ namespace SmartHomeApi.Core.Services
         [MethodImpl(MethodImplOptions.NoInlining)]
         private async Task LoadPlugin(PluginContainer plugin, List<DeletedItemsLocator> deletedItemsLocators)
         {
+            _logger.Info($"Start processing {plugin.PluginDirectoryName} plugin.");
+
             var tempPlugin = CopyPluginToTempDirectory(plugin);
             List<IItemsLocator> locators = new List<IItemsLocator>();
 
@@ -233,7 +235,7 @@ namespace SmartHomeApi.Core.Services
 
                     if (instance == null)
                     {
-                        _logger.Info($"ItemLocator of type {type} has not been created");
+                        _logger.Info($"ItemLocator of type {type} has not been created.");
                         continue;
                     }
 
@@ -249,7 +251,7 @@ namespace SmartHomeApi.Core.Services
                     _locators.TryAdd(instance.ItemType, bridge);
                     locators.Add(bridge);
 
-                    _logger.Info($"ItemLocator {instance.ItemType} has been created");
+                    _logger.Info($"ItemLocator {instance.ItemType} has been created.");
                 }
 
                 tempPlugin.Locators = locators;
@@ -275,7 +277,7 @@ namespace SmartHomeApi.Core.Services
 
             _pluginContainers.TryAdd(tempPlugin.PluginDirectoryName, tempPlugin);
 
-            _logger.Info($"Plugin {tempPlugin.PluginDirectoryName} has been processed");
+            _logger.Info($"Plugin {tempPlugin.PluginDirectoryName} has been processed.");
         }
 
         private IStandardItemsLocatorBridge GetItemsLocatorBridge(IItemsLocator locator)
@@ -552,10 +554,10 @@ namespace SmartHomeApi.Core.Services
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private async Task<DeletingPluginContainer> DeletePlugin(PluginContainer plugin)
+        private Task<DeletingPluginContainer> DeletePlugin(PluginContainer plugin)
         {
             if (!_pluginContainers.TryGetValue(plugin.PluginDirectoryName, out var deletedContainer))
-                return null;
+                return Task.FromResult<DeletingPluginContainer>(null);
 
             _logger.Info($"Plugin {plugin.PluginDirectoryName} has been deleted.");
 
@@ -579,7 +581,7 @@ namespace SmartHomeApi.Core.Services
 
             _pluginContainers.TryRemove(plugin.PluginDirectoryName, out var t);
 
-            return container;
+            return Task.FromResult(container);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

@@ -37,12 +37,14 @@ namespace SmartHomeApi.ItemUtils
             _onStatusChange?.Invoke(_currentStatus);
         }
 
-        private async Task RunWorker()
+        private Task RunWorker()
         {
             _ = Task.Factory.StartNew(WorkerWrapper).Unwrap().ContinueWith(task =>
             {
                 if (task.Exception != null) throw task.Exception;
             }, TaskContinuationOptions.OnlyOnFaulted);
+
+            return Task.CompletedTask;
         }
 
         private async Task WorkerWrapper()

@@ -104,50 +104,40 @@ namespace SmartHomeApi.Core.Services
             return result ?? new SetValueResult(not.ItemId, not.ItemType, false);
         }
 
-        public async Task<ISetValueResult> Increase(string itemId, string parameter)
-        {
-            return new SetValueResult(false);
-        }
-
-        public async Task<ISetValueResult> Decrease(string itemId, string parameter)
-        {
-            return new SetValueResult(false);
-        }
-
-        public async Task<IStatesContainer> GetState()
+        public Task<IStatesContainer> GetState()
         {
             var state = _statesProcessor.GetStatesContainer();
 
             state = _uncachedStatesProcessor.FilterOutUncachedStates(state);
 
-            return await Task.FromResult(state);
+            return Task.FromResult(state);
         }
 
-        public async Task<IItemState> GetState(string itemId)
+        public Task<IItemState> GetState(string itemId)
         {
             var state = _statesProcessor.GetStatesContainer();
 
             if (!state.States.ContainsKey(itemId))
-                return null;
+                return Task.FromResult<IItemState>(null);
 
             var itemState = state.States[itemId];
 
-            return await Task.FromResult(itemState);
+            return Task.FromResult(itemState);
         }
 
-        public async Task<object> GetState(string itemId, string parameter)
+        public Task<object> GetState(string itemId, string parameter)
         {
             var state = _statesProcessor.GetStatesContainer();
 
-            if (!state.States.ContainsKey(itemId)) 
-                return null;
+            if (!state.States.ContainsKey(itemId))
+                return Task.FromResult<object>(null);
 
             var itemState = state.States[itemId];
 
             if (itemState.States.ContainsKey(parameter))
-                return await Task.FromResult(itemState.States[parameter]);
+                return Task.FromResult(itemState.States[parameter]);
 
-            return null;
+            return Task.FromResult<object>(null);
         }
 
         public async Task<IList<IItem>> GetItems()

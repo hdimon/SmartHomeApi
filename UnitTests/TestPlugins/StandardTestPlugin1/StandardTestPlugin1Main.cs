@@ -8,6 +8,7 @@ namespace StandardTestPlugin1
         public StandardTestPlugin1Main(IApiManager manager, IItemHelpersFabric helpersFabric, IItemConfig config) : base(manager,
             helpersFabric, config)
         {
+            //int num = 5 + 4;
         }
     }
 }

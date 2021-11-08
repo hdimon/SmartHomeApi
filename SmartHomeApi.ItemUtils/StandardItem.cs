@@ -32,14 +32,14 @@ namespace SmartHomeApi.ItemUtils
             Config = newConfig;
         }
 
-        public virtual async Task<ISetValueResult> SetValue(string parameter, object value)
+        public virtual Task<ISetValueResult> SetValue(string parameter, object value)
         {
-            return new SetValueResult();
+            return Task.FromResult<ISetValueResult>(new SetValueResult());
         }
 
-        public virtual async Task<ExecuteCommandResultAbstract> Execute(ExecuteCommand command)
+        public virtual Task<ExecuteCommandResultAbstract> Execute(ExecuteCommand command)
         {
-            return new ExecuteCommandResultNotFound();
+            return Task.FromResult<ExecuteCommandResultAbstract>(new ExecuteCommandResultNotFound());
         }
 
         public virtual IItemState GetState()
@@ -52,13 +52,14 @@ namespace SmartHomeApi.ItemUtils
             await _initializeTask.Value;
         }
 
-        protected virtual async Task InitializeItem()
+        protected virtual Task InitializeItem()
         {
+            return Task.CompletedTask;
         }
 
-        protected override async Task ProcessNotification(StateChangedEvent args)
+        protected override Task ProcessNotification(StateChangedEvent args)
         {
-
+            return Task.CompletedTask;
         }
 
         protected void SubscribeOnNotifications()

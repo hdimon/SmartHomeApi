@@ -4,7 +4,7 @@ using SmartHomeApi.ItemUtils;
 
 namespace StandardTestPlugin1
 {
-    class StandardTestPlugin1Locator : AutoRefreshItemsLocatorAbstract
+    class StandardTestPlugin1Locator : StandardItemsLocatorAbstract
     {
         public override string ItemType { get; } = "StandardTestPlugin1";
         public override Type ConfigType { get; } = typeof(StandardTestPlugin1Config);

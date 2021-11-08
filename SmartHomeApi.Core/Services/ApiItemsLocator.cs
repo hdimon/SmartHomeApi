@@ -34,9 +34,9 @@ namespace SmartHomeApi.Core.Services
             _pluginsLocator = fabric.GetItemsPluginsLocator();
         }
 
-        public async Task<IEnumerable<IItem>> GetItems()
+        public Task<IEnumerable<IItem>> GetItems()
         {
-            return await Task.FromResult(_immutableItems);
+            return Task.FromResult<IEnumerable<IItem>>(_immutableItems);
         }
 
         public async Task Initialize()
@@ -107,10 +107,10 @@ namespace SmartHomeApi.Core.Services
             return sortedItems;
         }
 
-        public virtual async ValueTask DisposeAsync()
+        public virtual ValueTask DisposeAsync()
         {
             if (_disposed)
-                return;
+                return ValueTask.CompletedTask;
 
             _pluginsLocator.ItemLocatorAddedOrUpdated -= OnItemLocatorAddedOrUpdated;
             _pluginsLocator.BeforeItemLocatorDeleted -= OnBeforeItemLocatorDeleted;
@@ -119,7 +119,7 @@ namespace SmartHomeApi.Core.Services
 
             _disposed = true;
 
-            await ValueTask.CompletedTask;
+            return ValueTask.CompletedTask;
         }
 
         private async void OnItemLocatorAddedOrUpdated(object sender, ItemLocatorEventArgs e)

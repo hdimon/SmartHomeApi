@@ -1,5 +1,8 @@
-﻿namespace SmartHomeApi.ItemUtils
+﻿using System;
+
+namespace SmartHomeApi.ItemUtils
 {
+    [Obsolete("Replace with ItemConfigAbstract")]
     public class AutoRefreshItemConfigAbstract : ItemConfigAbstract
     {
         public int RequestDataIntervalMS { get; set; }
