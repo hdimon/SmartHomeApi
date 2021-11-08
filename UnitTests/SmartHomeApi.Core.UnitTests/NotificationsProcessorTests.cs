@@ -49,7 +49,7 @@ namespace SmartHomeApi.Core.UnitTests
                 item.OnProcessNotification = async args =>
                 {
                     await Task.Delay(10);
-                    tcs.SetResult(true);
+                    tcs.TrySetResult(true);
                 };
 
                 var ct = new CancellationTokenSource(5000);
@@ -129,32 +129,32 @@ namespace SmartHomeApi.Core.UnitTests
             {
                 if (counter == 0)
                 {
-                    tcs1.SetResult(true);
+                    tcs1.TrySetResult(true);
                     counter++;
                 }
                 else if (counter == 1)
                 {
-                    tcs2.SetResult(true);
+                    tcs2.TrySetResult(true);
                     counter++;
                 }
                 else if (counter == 2)
                 {
-                    tcs3.SetResult(true);
+                    tcs3.TrySetResult(true);
                     counter++;
                 }
                 else if (counter == 3)
                 {
-                    tcs4.SetResult(true);
+                    tcs4.TrySetResult(true);
                     counter++;
                 }
                 else if (counter == 4)
                 {
-                    tcs5.SetResult(true);
+                    tcs5.TrySetResult(true);
                     counter++;
                 }
                 else if (counter == 5)
                 {
-                    tcs6.SetResult(true);
+                    tcs6.TrySetResult(true);
                     counter++;
                 }
             };
@@ -241,12 +241,12 @@ namespace SmartHomeApi.Core.UnitTests
             {
                 if (counter == 0)
                 {
-                    tcs1.SetResult(true);
+                    tcs1.TrySetResult(true);
                     counter++;
                 }
                 else if (counter == 1)
                 {
-                    tcs2.SetResult(true);
+                    tcs2.TrySetResult(true);
                     counter++;
                 }
             };

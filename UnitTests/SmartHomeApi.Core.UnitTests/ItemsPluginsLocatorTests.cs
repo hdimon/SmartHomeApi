@@ -154,7 +154,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             pluginLocator.ItemLocatorAddedOrUpdated += (sender, args) =>
             {
-                tcs.SetResult(true);
+                tcs.TrySetResult(true);
             };
 
             await pluginLocator.Initialize();
@@ -192,7 +192,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             pluginLocator.ItemLocatorAddedOrUpdated += (sender, args) =>
             {
-                tcs.SetResult(true);
+                tcs.TrySetResult(true);
             };
 
             await pluginLocator.Initialize();
@@ -234,7 +234,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             pluginLocator.ItemLocatorAddedOrUpdated += (sender, args) =>
             {
-                tcs.SetResult(true);
+                tcs.TrySetResult(true);
             };
 
             await pluginLocator.Initialize();
@@ -279,15 +279,15 @@ namespace SmartHomeApi.Core.UnitTests
                 eventsCounter++;
 
                 if (eventsCounter == 1)
-                    tcs.SetResult(true);
+                    tcs.TrySetResult(true);
 
                 if (eventsCounter == 2)
-                    tcs1.SetResult(true);
+                    tcs1.TrySetResult(true);
             };
 
             pluginLocator.ItemLocatorDeleted += (sender, args) =>
             {
-                deletedTcs.SetResult(true);
+                deletedTcs.TrySetResult(true);
             };
 
             await pluginLocator.Initialize();
@@ -364,10 +364,10 @@ namespace SmartHomeApi.Core.UnitTests
                 eventsCounter++;
 
                 if (eventsCounter == 1)
-                    tcs.SetResult(true);
+                    tcs.TrySetResult(true);
 
                 if (eventsCounter == 2)
-                    tcs1.SetResult(true);
+                    tcs1.TrySetResult(true);
             }
 
             pluginLocator.ItemLocatorAddedOrUpdated += PluginLocatorOnItemLocatorAddedOrUpdated;
@@ -447,7 +447,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             pluginLocator.ItemLocatorAddedOrUpdated += (sender, args) =>
             {
-                tcs.SetResult(true);
+                tcs.TrySetResult(true);
                 Console.WriteLine("SetResult");
             };
 
@@ -492,7 +492,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             pluginLocator.ItemLocatorDeleted += (sender, args) =>
             {
-                tcs.SetResult(true);
+                tcs.TrySetResult(true);
             };
 
             var itemLocators = await pluginLocator.GetItemsLocators();
@@ -532,12 +532,12 @@ namespace SmartHomeApi.Core.UnitTests
 
             pluginLocator.ItemLocatorAddedOrUpdated += (sender, args) =>
             {
-                tcs.SetResult(true);
+                tcs.TrySetResult(true);
             };
 
             pluginLocator.ItemLocatorDeleted += (sender, args) =>
             {
-                deletedTcs.SetResult(true);
+                deletedTcs.TrySetResult(true);
             };
 
             await pluginLocator.Initialize();
@@ -594,7 +594,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             pluginLocator.ItemLocatorDeleted += (sender, args) =>
             {
-                tcs.SetResult(true);
+                tcs.TrySetResult(true);
             };
 
             var itemLocators = await pluginLocator.GetItemsLocators();
@@ -638,12 +638,12 @@ namespace SmartHomeApi.Core.UnitTests
 
             pluginLocator.ItemLocatorDeleted += (sender, args) =>
             {
-                tcs.SetResult(true);
+                tcs.TrySetResult(true);
             };
 
             pluginLocator.ItemLocatorAddedOrUpdated += (sender, args) =>
             {
-                addedTcs.SetResult(true);
+                addedTcs.TrySetResult(true);
             };
 
             var itemLocators = await pluginLocator.GetItemsLocators();
@@ -699,7 +699,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             pluginLocator.ItemLocatorDeleted += (sender, args) =>
             {
-                tcs.SetResult(true);
+                tcs.TrySetResult(true);
             };
 
             var itemLocators = await pluginLocator.GetItemsLocators();

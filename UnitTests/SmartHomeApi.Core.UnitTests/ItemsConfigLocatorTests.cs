@@ -131,7 +131,7 @@ namespace SmartHomeApi.Core.UnitTests
             await itemsLocator.Initialize();
 
             var tcs = new TaskCompletionSource<bool>();
-            itemsLocator.OnConfigAdded += async config => { tcs.SetResult(true); };
+            itemsLocator.OnConfigAdded += async config => { tcs.TrySetResult(true); };
 
             var itemsLocatorWrapper = GetStandardItemsLocatorBridge(itemsLocator);
 
@@ -177,7 +177,7 @@ namespace SmartHomeApi.Core.UnitTests
             itemsLocator.OnConfigAdded = async config =>
             {
                 counter++;
-                tcs.SetResult(true);
+                tcs.TrySetResult(true);
             };
 
             var itemsLocatorWrapper = GetStandardItemsLocatorBridge(itemsLocator);
@@ -218,7 +218,7 @@ namespace SmartHomeApi.Core.UnitTests
             await itemsLocator.Initialize();
 
             var tcs = new TaskCompletionSource<bool>();
-            itemsLocator.OnConfigAdded = async config => { tcs.SetResult(true); };
+            itemsLocator.OnConfigAdded = async config => { tcs.TrySetResult(true); };
 
             var itemsLocatorWrapper = GetStandardItemsLocatorBridge(itemsLocator);
 
@@ -258,7 +258,7 @@ namespace SmartHomeApi.Core.UnitTests
             var itemsLocator = new TestItem1ItemLocator(fabric);
 
             var tcs = new TaskCompletionSource<bool>();
-            itemsLocator.OnConfigAdded = async config => { tcs.SetResult(true); };
+            itemsLocator.OnConfigAdded = async config => { tcs.TrySetResult(true); };
 
             var itemsLocatorWrapper = GetStandardItemsLocatorBridge(itemsLocator);
 
@@ -313,7 +313,7 @@ namespace SmartHomeApi.Core.UnitTests
                 eventsCounter++;
 
                 if (eventsCounter == 1)
-                    tcs.SetResult(true);
+                    tcs.TrySetResult(true);
 
                 if (eventsCounter == 2)
                     Assert.Fail();
@@ -323,7 +323,7 @@ namespace SmartHomeApi.Core.UnitTests
                 eventsCounter++;
 
                 if (eventsCounter == 2)
-                    tcs1.SetResult(true);
+                    tcs1.TrySetResult(true);
             };
 
             var itemsLocatorWrapper = GetStandardItemsLocatorBridge(itemsLocator);
@@ -391,7 +391,7 @@ namespace SmartHomeApi.Core.UnitTests
                 eventsCounter++;
 
                 if (eventsCounter == 1)
-                    tcs.SetResult(true);
+                    tcs.TrySetResult(true);
 
                 if (eventsCounter == 2)
                     Assert.Fail();
@@ -461,7 +461,7 @@ namespace SmartHomeApi.Core.UnitTests
             var tcs = new TaskCompletionSource<bool>();
 
             itemsLocator.OnConfigAdded += async config => { };
-            itemsLocator.OnConfigDeleted += async config => { tcs.SetResult(true); };
+            itemsLocator.OnConfigDeleted += async config => { tcs.TrySetResult(true); };
 
             var itemsLocatorWrapper = GetStandardItemsLocatorBridge(itemsLocator);
 
@@ -507,8 +507,8 @@ namespace SmartHomeApi.Core.UnitTests
 
             var tcs = new TaskCompletionSource<bool>();
             var tcs1 = new TaskCompletionSource<bool>();
-            itemsLocator.OnConfigAdded = async config => { tcs.SetResult(true); };
-            itemsLocator.OnConfigDeleted += async config => { tcs1.SetResult(true); };
+            itemsLocator.OnConfigAdded = async config => { tcs.TrySetResult(true); };
+            itemsLocator.OnConfigDeleted += async config => { tcs1.TrySetResult(true); };
 
             var itemsLocatorWrapper = GetStandardItemsLocatorBridge(itemsLocator);
 
@@ -573,7 +573,7 @@ namespace SmartHomeApi.Core.UnitTests
             await itemsLocator.Initialize();
 
             var tcs = new TaskCompletionSource<bool>();
-            itemsLocator.OnConfigAdded += async config => { tcs.SetResult(true); };
+            itemsLocator.OnConfigAdded += async config => { tcs.TrySetResult(true); };
 
             var itemsLocatorWrapper = GetStandardItemsLocatorBridge(itemsLocator);
 
@@ -625,7 +625,7 @@ namespace SmartHomeApi.Core.UnitTests
                 eventsCounter++;
 
                 if (eventsCounter == 1)
-                    tcs.SetResult(true);
+                    tcs.TrySetResult(true);
 
                 if (eventsCounter == 2)
                     Assert.Fail();
@@ -635,7 +635,7 @@ namespace SmartHomeApi.Core.UnitTests
                 eventsCounter++;
 
                 if (eventsCounter == 2)
-                    tcs1.SetResult(true);
+                    tcs1.TrySetResult(true);
             };
 
             var itemsLocatorWrapper = GetStandardItemsLocatorBridge(itemsLocator);
@@ -709,7 +709,7 @@ namespace SmartHomeApi.Core.UnitTests
                 eventsCounter++;
 
                 if (eventsCounter == 1)
-                    tcs.SetResult(true);
+                    tcs.TrySetResult(true);
 
                 if (eventsCounter == 2)
                     Assert.Fail();
@@ -745,7 +745,7 @@ namespace SmartHomeApi.Core.UnitTests
                 true);
 
             ct = new CancellationTokenSource(2000);
-            ct.Token.Register(() => tcs1.SetResult(true));
+            ct.Token.Register(() => tcs1.TrySetResult(true));
 
             await tcs1.Task;
 
@@ -776,7 +776,7 @@ namespace SmartHomeApi.Core.UnitTests
             var itemsLocator = new TestItem1ItemLocator(fabric);
 
             var tcs = new TaskCompletionSource<bool>();
-            itemsLocator.OnConfigAdded += async config => { tcs.SetResult(true); };
+            itemsLocator.OnConfigAdded += async config => { tcs.TrySetResult(true); };
 
             var itemsLocatorWrapper = GetStandardItemsLocatorBridge(itemsLocator);
 
@@ -826,7 +826,7 @@ namespace SmartHomeApi.Core.UnitTests
                 eventsCounter++;
 
                 if (eventsCounter == 1)
-                    tcs.SetResult(true);
+                    tcs.TrySetResult(true);
                 else
                     Assert.Fail();
             };
@@ -885,7 +885,7 @@ namespace SmartHomeApi.Core.UnitTests
             var itemsLocator = new TestItem1ItemLocator(fabric);
 
             var tcs = new TaskCompletionSource<bool>();
-            itemsLocator.OnConfigAdded += async config => { tcs.SetResult(true); };
+            itemsLocator.OnConfigAdded += async config => { tcs.TrySetResult(true); };
 
             var itemsLocatorWrapper = GetStandardItemsLocatorBridge(itemsLocator);
 
@@ -928,7 +928,7 @@ namespace SmartHomeApi.Core.UnitTests
             var itemsLocator = new TestItem1ItemLocator(fabric);
 
             var tcs = new TaskCompletionSource<bool>();
-            itemsLocator.OnConfigAdded += async config => { tcs.SetResult(true); };
+            itemsLocator.OnConfigAdded += async config => { tcs.TrySetResult(true); };
 
             var itemsLocatorWrapper = GetStandardItemsLocatorBridge(itemsLocator);
 
@@ -981,7 +981,7 @@ namespace SmartHomeApi.Core.UnitTests
 
                 if (eventsCounter == 1)
                 {
-                    tcs.SetResult(true);
+                    tcs.TrySetResult(true);
                     return;
                 }
 
@@ -994,7 +994,7 @@ namespace SmartHomeApi.Core.UnitTests
 
                 if (eventsCounter == 2)
                 {
-                    tcs1.SetResult(true);
+                    tcs1.TrySetResult(true);
                     return;
                 }
 
@@ -1015,7 +1015,7 @@ namespace SmartHomeApi.Core.UnitTests
 
                 if (eventsCounter == 3)
                 {
-                    tcs2.SetResult(true);
+                    tcs2.TrySetResult(true);
                     return;
                 }
 
@@ -1106,13 +1106,13 @@ namespace SmartHomeApi.Core.UnitTests
 
                 if (eventsCounter == 1)
                 {
-                    tcs.SetResult(true);
+                    tcs.TrySetResult(true);
                     return;
                 }
 
                 if (eventsCounter == 2)
                 {
-                    tcs1.SetResult(true);
+                    tcs1.TrySetResult(true);
                     return;
                 }
 

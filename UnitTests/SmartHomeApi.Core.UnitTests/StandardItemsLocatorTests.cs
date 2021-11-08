@@ -27,11 +27,11 @@ namespace SmartHomeApi.Core.UnitTests
             var bridgeTcs = new TaskCompletionSource<bool>();
             locator.ItemAdded += (sender, args) =>
             {
-                tcs.SetResult(true);
+                tcs.TrySetResult(true);
             };
             locatorBridge.ItemAdded += (sender, args) =>
             {
-                bridgeTcs.SetResult(true);
+                bridgeTcs.TrySetResult(true);
             };
 
             await locator.ConfigAdded(new StandardItemsLocator1Config(ItemId, ItemType));
@@ -71,11 +71,11 @@ namespace SmartHomeApi.Core.UnitTests
             var bridgeTcs = new TaskCompletionSource<bool>();
             locator.ItemAdded += (sender, args) =>
             {
-                tcs.SetResult(true);
+                tcs.TrySetResult(true);
             };
             locatorBridge.ItemAdded += (sender, args) =>
             {
-                bridgeTcs.SetResult(true);
+                bridgeTcs.TrySetResult(true);
             };
 
             await locator.ConfigAdded(new StandardItemsLocator1Config(ItemId, ItemType));
@@ -116,11 +116,11 @@ namespace SmartHomeApi.Core.UnitTests
             var bridgeTcs = new TaskCompletionSource<bool>();
             locator.ItemAdded += (sender, args) =>
             {
-                tcs.SetResult(true);
+                tcs.TrySetResult(true);
             };
             locatorBridge.ItemAdded += (sender, args) =>
             {
-                bridgeTcs.SetResult(true);
+                bridgeTcs.TrySetResult(true);
             };
 
             await locator.Initialize();
@@ -169,7 +169,7 @@ namespace SmartHomeApi.Core.UnitTests
                 counter++;
 
                 if (counter == 1)
-                    tcs.SetResult(true);
+                    tcs.TrySetResult(true);
                 else
                 {
                     Assert.Fail();
@@ -180,7 +180,7 @@ namespace SmartHomeApi.Core.UnitTests
                 bridgeCounter++;
 
                 if (bridgeCounter == 1)
-                    bridgeTcs.SetResult(true);
+                    bridgeTcs.TrySetResult(true);
                 else
                 {
                     Assert.Fail();
@@ -248,7 +248,7 @@ namespace SmartHomeApi.Core.UnitTests
                 counter++;
 
                 if (counter == 1)
-                    tcs.SetResult(true);
+                    tcs.TrySetResult(true);
                 else
                 {
                     Assert.Fail();
@@ -259,7 +259,7 @@ namespace SmartHomeApi.Core.UnitTests
                 bridgeCounter++;
 
                 if (bridgeCounter == 1)
-                    bridgeTcs.SetResult(true);
+                    bridgeTcs.TrySetResult(true);
                 else
                 {
                     Assert.Fail();
@@ -327,7 +327,7 @@ namespace SmartHomeApi.Core.UnitTests
                 counter++;
 
                 if (counter == 1)
-                    tcs.SetResult(true);
+                    tcs.TrySetResult(true);
                 else
                 {
                     Assert.Fail();
@@ -338,7 +338,7 @@ namespace SmartHomeApi.Core.UnitTests
                 bridgeCounter++;
 
                 if (bridgeCounter == 1)
-                    bridgeTcs.SetResult(true);
+                    bridgeTcs.TrySetResult(true);
                 else
                 {
                     Assert.Fail();
@@ -349,7 +349,7 @@ namespace SmartHomeApi.Core.UnitTests
                 counter++;
 
                 if (counter == 2)
-                    tcs1.SetResult(true);
+                    tcs1.TrySetResult(true);
                 else
                 {
                     Assert.Fail();
@@ -360,7 +360,7 @@ namespace SmartHomeApi.Core.UnitTests
                 bridgeCounter++;
 
                 if (bridgeCounter == 2)
-                    bridgeTcs1.SetResult(true);
+                    bridgeTcs1.TrySetResult(true);
                 else
                 {
                     Assert.Fail();

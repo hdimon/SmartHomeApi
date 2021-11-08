@@ -40,7 +40,7 @@ namespace SmartHomeApi.Core.UnitTests
             var tcs = new TaskCompletionSource<bool>();
             apiItemsLocator.ItemAdded += (sender, args) =>
             {
-                tcs.SetResult(true);
+                tcs.TrySetResult(true);
             };
 
             await apiItemsLocator.Initialize();
@@ -89,10 +89,10 @@ namespace SmartHomeApi.Core.UnitTests
             apiItemsLocator.ItemAdded += (sender, args) =>
             {
                 if (args.ItemId == itemId1)
-                    tcs1.SetResult(true);
+                    tcs1.TrySetResult(true);
 
                 if (args.ItemId == itemId2)
-                    tcs2.SetResult(true);
+                    tcs2.TrySetResult(true);
             };
 
             await apiItemsLocator.Initialize();
@@ -135,7 +135,7 @@ namespace SmartHomeApi.Core.UnitTests
             var tcs = new TaskCompletionSource<bool>();
             apiItemsLocator.ItemAdded += (sender, args) =>
             {
-                tcs.SetResult(true);
+                tcs.TrySetResult(true);
             };
 
             await apiItemsLocator.Initialize();
@@ -173,11 +173,11 @@ namespace SmartHomeApi.Core.UnitTests
             var dtcs = new TaskCompletionSource<bool>();
             apiItemsLocator.ItemAdded += (sender, args) =>
             {
-                tcs.SetResult(true);
+                tcs.TrySetResult(true);
             };
             apiItemsLocator.ItemDeleted += (sender, args) =>
             {
-                dtcs.SetResult(true);
+                dtcs.TrySetResult(true);
             };
 
             await apiItemsLocator.Initialize();
@@ -222,7 +222,7 @@ namespace SmartHomeApi.Core.UnitTests
             apiItemsLocator.ItemAdded += (sender, args) =>
             {
                 //Thread.Sleep(5000);
-                tcs.SetResult(true);
+                tcs.TrySetResult(true);
             };
 
             await apiItemsLocator.Initialize();
@@ -261,9 +261,9 @@ namespace SmartHomeApi.Core.UnitTests
             apiItemsLocator.ItemAdded += (sender, args) =>
             {
                 if (counter == 0)
-                    tcs.SetResult(true);
+                    tcs.TrySetResult(true);
                 else if (counter == 1)
-                    itemTcs.SetResult(true);
+                    itemTcs.TrySetResult(true);
             };
 
             await apiItemsLocator.Initialize();
@@ -324,11 +324,11 @@ namespace SmartHomeApi.Core.UnitTests
             var dtcs = new TaskCompletionSource<bool>();
             apiItemsLocator.ItemAdded += (sender, args) =>
             {
-                tcs.SetResult(true);
+                tcs.TrySetResult(true);
             };
             apiItemsLocator.ItemDeleted += (sender, args) =>
             {
-                dtcs.SetResult(true);
+                dtcs.TrySetResult(true);
             };
 
             await apiItemsLocator.Initialize();
@@ -386,12 +386,12 @@ namespace SmartHomeApi.Core.UnitTests
                 {
                     Console.WriteLine($"ItemAdded: {counter}");
                     counter++;
-                    tcs.SetResult(true);
+                    tcs.TrySetResult(true);
                 }
                 else if (counter == 2)
                 {
                     Console.WriteLine($"ItemAdded: {counter}");
-                    utcs.SetResult(true);
+                    utcs.TrySetResult(true);
                 }
                 else
                 {
@@ -405,7 +405,7 @@ namespace SmartHomeApi.Core.UnitTests
                 {
                     Console.WriteLine($"ItemDeleted: {counter}");
                     counter++;
-                    dtcs.SetResult(true);
+                    dtcs.TrySetResult(true);
                 }
                 else
                     Assert.Fail();
