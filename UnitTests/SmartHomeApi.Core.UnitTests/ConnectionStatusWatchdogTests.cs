@@ -123,7 +123,7 @@ namespace SmartHomeApi.Core.UnitTests
         {
             string status;
             int counter = 0;
-            var watchdog = new ConnectionStatusWatchdog(50, 100, s =>
+            var watchdog = new ConnectionStatusWatchdog(100, 200, s =>
             {
                 status = s;
 
@@ -166,32 +166,32 @@ namespace SmartHomeApi.Core.UnitTests
 
             await watchdog.Initialize();
 
-            await Task.Delay(20);
-            watchdog.Reset(); //50 ms left till Unstable
-            await Task.Delay(20);
+            await Task.Delay(40);
+            watchdog.Reset(); //100 ms left till Unstable
+            await Task.Delay(40);
             Assert.AreEqual(ConnectionStatus.Stable, watchdog.GetStatus());
-            //30 ms left till Unstable
+            //60 ms left till Unstable
+
+            await Task.Delay(80); //80 ms left till Lost
+            Assert.AreEqual(ConnectionStatus.Unstable, watchdog.GetStatus());
 
             await Task.Delay(40); //40 ms left till Lost
             Assert.AreEqual(ConnectionStatus.Unstable, watchdog.GetStatus());
 
-            await Task.Delay(20); //20 ms left till Lost
-            Assert.AreEqual(ConnectionStatus.Unstable, watchdog.GetStatus());
-
-            await Task.Delay(30); //90 ms left till Lost
+            await Task.Delay(60); //180 ms left till Lost
             Assert.AreEqual(ConnectionStatus.Lost, watchdog.GetStatus());
 
-            await Task.Delay(100); //90 ms left till Lost
+            await Task.Delay(200); //180 ms left till Lost
             Assert.AreEqual(ConnectionStatus.Lost, watchdog.GetStatus());
 
-            await Task.Delay(100); //90 ms left till Lost
+            await Task.Delay(200); //180 ms left till Lost
             Assert.AreEqual(ConnectionStatus.Lost, watchdog.GetStatus());
 
-            watchdog.Reset(); //50 ms left till Unstable
-            await Task.Delay(20); //30 ms left till Unstable
+            watchdog.Reset(); //100 ms left till Unstable
+            await Task.Delay(40); //60 ms left till Unstable
             Assert.AreEqual(ConnectionStatus.Stable, watchdog.GetStatus());
 
-            await Task.Delay(150);
+            await Task.Delay(300);
             Assert.AreEqual(ConnectionStatus.Lost, watchdog.GetStatus());
 
             watchdog.Dispose();

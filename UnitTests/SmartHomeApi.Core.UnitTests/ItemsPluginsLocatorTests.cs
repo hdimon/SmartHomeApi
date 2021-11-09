@@ -407,12 +407,7 @@ namespace SmartHomeApi.Core.UnitTests
                 Path.Join(pluginsPath, StandardTestPlugin1Folder, StandardTestPlugin1DllName), true);
 
             ct = new CancellationTokenSource(10000);
-            ct.Token.Register(() =>
-                {
-                    Console.WriteLine("TrySetCanceled " + DateTime.Now);
-                    tcs1.TrySetCanceled();
-                }
-            );
+            ct.Token.Register(() => { tcs1.TrySetCanceled(); });
 
             await tcs1.Task;
 
@@ -447,11 +442,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             var tcs = new TaskCompletionSource<bool>();
 
-            pluginLocator.ItemLocatorAddedOrUpdated += (sender, args) =>
-            {
-                tcs.TrySetResult(true);
-                Console.WriteLine("SetResult");
-            };
+            pluginLocator.ItemLocatorAddedOrUpdated += (sender, args) => { tcs.TrySetResult(true); };
 
             pluginLocator.ItemLocatorDeleted += (sender, args) =>
             {

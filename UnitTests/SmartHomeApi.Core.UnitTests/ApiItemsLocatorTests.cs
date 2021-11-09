@@ -384,18 +384,15 @@ namespace SmartHomeApi.Core.UnitTests
             {
                 if (counter == 0)
                 {
-                    Console.WriteLine($"ItemAdded: {counter}");
                     counter++;
                     tcs.TrySetResult(true);
                 }
                 else if (counter == 2)
                 {
-                    Console.WriteLine($"ItemAdded: {counter}");
                     utcs.TrySetResult(true);
                 }
                 else
                 {
-                    Console.WriteLine("Wrong sequence");
                     Assert.Fail();
                 }
             };
@@ -403,7 +400,6 @@ namespace SmartHomeApi.Core.UnitTests
             {
                 if (counter == 1)
                 {
-                    Console.WriteLine($"ItemDeleted: {counter}");
                     counter++;
                     dtcs.TrySetResult(true);
                 }

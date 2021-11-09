@@ -1024,7 +1024,11 @@ namespace SmartHomeApi.Core.UnitTests
         [Test]
         public async Task UpdateOneConfigWithConfigForAnotherItemTypeTest()
         {
-            int eventsCounter = 0;
+            //Ideally listeners should get events in order
+            //itemsLocator1.OnConfigAdded -> itemsLocator1.OnConfigDeleted -> itemsLocator2.OnConfigAdded
+            //but it's ok for now if it will be itemsLocator1.OnConfigAdded -> itemsLocator2.OnConfigAdded -> itemsLocator1.OnConfigDeleted
+            int itemsLocator1EventsCounter = 0;
+            int itemsLocator2EventsCounter = 0;
 
             var fabric = new SmartHomeApiStubFabric(_appSettings);
 
@@ -1042,9 +1046,9 @@ namespace SmartHomeApi.Core.UnitTests
 
             itemsLocator1.OnConfigAdded += config =>
             {
-                eventsCounter++;
+                itemsLocator1EventsCounter++;
 
-                if (eventsCounter == 1)
+                if (itemsLocator1EventsCounter == 1)
                 {
                     tcs.TrySetResult(true);
                     return Task.CompletedTask;
@@ -1060,9 +1064,9 @@ namespace SmartHomeApi.Core.UnitTests
             };
             itemsLocator1.OnConfigDeleted += config =>
             {
-                eventsCounter++;
+                itemsLocator1EventsCounter++;
 
-                if (eventsCounter == 2)
+                if (itemsLocator1EventsCounter == 2)
                 {
                     tcs1.TrySetResult(true);
                     return Task.CompletedTask;
@@ -1082,9 +1086,9 @@ namespace SmartHomeApi.Core.UnitTests
 
             itemsLocator2.OnConfigAdded += config =>
             {
-                eventsCounter++;
+                itemsLocator2EventsCounter++;
 
-                if (eventsCounter == 3)
+                if (itemsLocator2EventsCounter == 1)
                 {
                     tcs2.TrySetResult(true);
                     return Task.CompletedTask;
