@@ -22,7 +22,6 @@ namespace SmartHomeApi.ItemUtils
 
         public abstract string ItemType { get; }
         public abstract Type ConfigType { get; }
-        public virtual bool ImmediateInitialization => false;
         public bool IsInitialized { get; private set; }
 
         public event EventHandler<ItemEventArgs> ItemAdded;

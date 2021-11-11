@@ -8,7 +8,6 @@ namespace SmartHomeApi.Core.Interfaces
     {
         string ItemType { get; }
         Type ConfigType { get; }
-        bool ImmediateInitialization { get; }
         Task<IEnumerable<IItem>> GetItems();
     }
 }

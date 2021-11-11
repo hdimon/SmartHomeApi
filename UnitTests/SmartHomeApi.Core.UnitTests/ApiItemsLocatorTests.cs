@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using SmartHomeApi.Core.Interfaces.Configuration;
 using SmartHomeApi.Core.Interfaces.ItemsLocatorsBridges;
 using SmartHomeApi.Core.ItemsLocatorsBridges;
 using SmartHomeApi.Core.Services;
@@ -64,7 +62,11 @@ namespace SmartHomeApi.Core.UnitTests
             string itemType1 = nameof(ItemsLocatorStub1);
             string itemType2 = nameof(ItemsLocatorStub2);
 
-            var fabric = new SmartHomeApiStubFabric();
+            var appSettings = new AppSettings();
+            appSettings.ItemsInitPriority.Add(new AppSettingInitPriorityItem { ItemId = itemId2 });
+            appSettings.ItemsInitPriority.Add(new AppSettingInitPriorityItem { ItemId = itemId1 });
+
+            var fabric = new SmartHomeApiStubFabric(appSettings);
             var pluginsLocator = new ItemsPluginsLocatorForConfigTests();
             fabric.ItemsPluginsLocator = pluginsLocator;
             var apiItemsLocator = new ApiItemsLocator(fabric);

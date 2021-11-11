@@ -18,7 +18,6 @@ namespace SmartHomeApi.Core.UnitTests.Stubs.ApiItemsLocatorTestStubs
 
         public string ItemType => nameof(ItemsLocatorStub1);
         public Type ConfigType { get; }
-        public bool ImmediateInitialization => false;
 
         public ItemsLocatorStub1(ISmartHomeApiFabric fabric)
         {

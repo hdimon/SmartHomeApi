@@ -14,6 +14,7 @@ namespace SmartHomeApi.Core.Interfaces.Configuration
         public int? ItemsLocatorIntervalMs { get; set; }
         public List<AppSettingItemInfo> UntrackedItems { get; set; } = new List<AppSettingItemInfo>();
         public List<AppSettingItemInfo> UncachedItems { get; set; } = new List<AppSettingItemInfo>();
+        public List<AppSettingInitPriorityItem> ItemsInitPriority { get; set; } = new List<AppSettingInitPriorityItem>();
 
         public object Clone()
         {
@@ -26,6 +27,7 @@ namespace SmartHomeApi.Core.Interfaces.Configuration
             clone.ItemsLocatorIntervalMs = ItemsLocatorIntervalMs;
             clone.UntrackedItems = UntrackedItems.Select(i => (AppSettingItemInfo)i.Clone()).ToList();
             clone.UncachedItems = UncachedItems.Select(i => (AppSettingItemInfo)i.Clone()).ToList();
+            clone.ItemsInitPriority = ItemsInitPriority.Select(i => (AppSettingInitPriorityItem)i.Clone()).ToList();
 
             return clone;
         }

@@ -18,7 +18,6 @@ namespace SmartHomeApi.ItemUtils
 
         public abstract string ItemType { get; }
         public Type ConfigType => null; //NonConfigItemsLocator does not have config
-        public bool ImmediateInitialization => true;
         public bool IsInitialized { get; private set; }
 
         public event EventHandler<ItemEventArgs> ItemAdded;

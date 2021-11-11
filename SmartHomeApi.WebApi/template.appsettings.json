@@ -25,6 +25,13 @@
                 "ApplyOnlyEnumeratedStates": true, //Only fields enumerated in "States" array will not be cached in global state
                 "States": [ "StateField1" ] //Pay attention that these fields are still accessible when getting state by ItemId or Parameter
             }
+        ],
+        "ItemsInitPriority": [
+            { "ItemId": "FirstTestItem" },
+            { "ItemId": "SecondTestItem" },
+            { "ItemId": "..." }, //All other items which initialization order does not matter
+            { "ItemId": "LastButOneTestItem" },
+            { "ItemId": "LastTestTestItem" }
         ]
     },
     "Kestrel": {

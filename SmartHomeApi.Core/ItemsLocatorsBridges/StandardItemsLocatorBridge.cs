@@ -17,7 +17,6 @@ namespace SmartHomeApi.Core.ItemsLocatorsBridges
 
         public virtual string ItemType => _locator.ItemType;
         public virtual Type ConfigType => _locator.ConfigType;
-        public virtual bool ImmediateInitialization => _locator.ImmediateInitialization;
         public virtual bool IsInitialized => _standardItemsLocator.IsInitialized;
 
         public event EventHandler<ItemEventArgs> ItemAdded;

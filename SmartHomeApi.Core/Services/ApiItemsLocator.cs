@@ -11,7 +11,10 @@ namespace SmartHomeApi.Core.Services
 {
     public class ApiItemsLocator : IApiItemsLocator
     {
+        private const string NoItemsPriorityMarker = "...";
+
         private bool _disposed;
+        private readonly ISmartHomeApiFabric _fabric;
         private readonly IApiLogger _logger;
         private readonly IItemsPluginsLocator _pluginsLocator;
         /// <summary>
@@ -30,6 +33,7 @@ namespace SmartHomeApi.Core.Services
 
         public ApiItemsLocator(ISmartHomeApiFabric fabric)
         {
+            _fabric = fabric;
             _logger = fabric.GetApiLogger();
             _pluginsLocator = fabric.GetItemsPluginsLocator();
         }
@@ -50,10 +54,6 @@ namespace SmartHomeApi.Core.Services
 
                 _pluginsLocator.ItemLocatorAddedOrUpdated += OnItemLocatorAddedOrUpdated;
                 _pluginsLocator.BeforeItemLocatorDeleted += OnBeforeItemLocatorDeleted;
-
-                //TODO sorting will be in GetItemsSortedByPriority method after introducing InitialLoadPriority config property
-                //TODO Instead of ImmediateInitialization introduce InitialLoadPriority setting in Item config, group items by this and initialize them in groups
-                itemsLocators = itemsLocators.OrderByDescending(p => p.ImmediateInitialization).ToList();
 
                 _logger.Info("Start items locators initialization...");
 
@@ -101,10 +101,79 @@ namespace SmartHomeApi.Core.Services
 
         private List<IItem> GetItemsSortedByPriority(List<IItem> items)
         {
+            var appSettings = _fabric.GetConfiguration();
+            var itemsInitPriorityList = appSettings.ItemsInitPriority;
+
             var sortedItems = new List<IItem>();
-            sortedItems.AddRange(items);
+            var begin = new List<IItem>();
+            var end = new List<IItem>();
+
+            if (itemsInitPriorityList.Count(i => i.ItemId == NoItemsPriorityMarker) > 1)
+            {
+                _logger.Error(
+                    $"ItemsInitPriority list can't contain more than one item with ItemId = \"{NoItemsPriorityMarker}\". " +
+                    "Default init priority will be applied.");
+
+                sortedItems.AddRange(items);
+            }
+            else
+            {
+                bool noItemsPriorityMarkerFound = false;
+
+                foreach (var appSettingItem in itemsInitPriorityList)
+                {
+                    if (appSettingItem.ItemId == NoItemsPriorityMarker)
+                    {
+                        noItemsPriorityMarkerFound = true;
+                        continue;
+                    }
+
+                    var item = items.FirstOrDefault(i => i.ItemId == appSettingItem.ItemId);
+
+                    if (item == null)
+                    {
+                        _logger.Error(
+                            $"Item from ItemsInitPriority list with ItemId = {appSettingItem.ItemId} is not found in items list.");
+
+                        continue;
+                    }
+
+                    AddItemToCorrespondingList(item, noItemsPriorityMarkerFound, begin, end);
+                }
+
+                var noPriorityItems = items.Where(i => begin.All(b => b.ItemId != i.ItemId) && end.All(e => e.ItemId != i.ItemId))
+                                           .ToList();
+
+                sortedItems.AddRange(begin);
+                sortedItems.AddRange(noPriorityItems);
+                sortedItems.AddRange(end);
+            }
 
             return sortedItems;
+        }
+
+        private void AddItemToCorrespondingList(IItem item, bool noItemsPriorityMarkerFound, List<IItem> begin, List<IItem> end)
+        {
+            if (!noItemsPriorityMarkerFound)
+            {
+                if (begin.Any(i => i.ItemId == item.ItemId))
+                {
+                    _logger.Warning($"Item with ItemId = {item.ItemId} has been already processed in priority list.");
+                    return;
+                }
+
+                begin.Add(item);
+            }
+            else
+            {
+                if (begin.Any(i => i.ItemId == item.ItemId) || end.Any(i => i.ItemId == item.ItemId))
+                {
+                    _logger.Warning($"Item with ItemId = {item.ItemId} has been already processed in priority list.");
+                    return;
+                }
+
+                end.Add(item);
+            }
         }
 
         public virtual ValueTask DisposeAsync()
