@@ -10,9 +10,6 @@ namespace SmartHomeApi.Core.Interfaces
         IApiItemsLocator GetApiItemsLocator();
         IItemsConfigLocator GetItemsConfigsLocator();
         IApiManager GetApiManager();
-
-        [Obsolete]
-        IItemHelpersFabric GetItemHelpersFabric(string itemId);
         IItemHelpersFabric GetItemHelpersFabric(string itemId, string itemType);
         IApiLogger GetApiLogger();
         IDateTimeOffsetProvider GetDateTimeOffsetProvider();

@@ -52,11 +52,6 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
             return new ApiManagerStub();
         }
 
-        public IItemHelpersFabric GetItemHelpersFabric(string itemId)
-        {
-            throw new NotImplementedException();
-        }
-
         public IItemHelpersFabric GetItemHelpersFabric(string itemId, string itemType)
         {
             return new ItemHelpersStubFabric(itemId, itemType, this);
