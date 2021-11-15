@@ -2,6 +2,5 @@
 {
     public interface IStateGettable : IItem
     {
-        IItemState GetState();
     }
 }

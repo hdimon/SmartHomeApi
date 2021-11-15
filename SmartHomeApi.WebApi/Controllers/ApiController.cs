@@ -36,7 +36,7 @@ namespace SmartHomeApi.WebApi.Controllers
 
         [HttpGet]
         [Route("[action]/{itemId}")]
-        public async Task<IItemState> GetState(string itemId)
+        public async Task<IItemStateModel> GetState(string itemId)
         {
             var manager = _fabric.GetApiManager();
 

@@ -113,31 +113,18 @@ namespace SmartHomeApi.Core.Services
             return Task.FromResult(state);
         }
 
-        public Task<IItemState> GetState(string itemId)
+        public Task<IItemStateModel> GetState(string itemId)
         {
-            var state = _statesProcessor.GetStatesContainer();
+            var state = _statesProcessor.GetItemState(itemId);
 
-            if (!state.States.ContainsKey(itemId))
-                return Task.FromResult<IItemState>(null);
-
-            var itemState = state.States[itemId];
-
-            return Task.FromResult(itemState);
+            return Task.FromResult(state);
         }
 
         public Task<object> GetState(string itemId, string parameter)
         {
-            var state = _statesProcessor.GetStatesContainer();
+            var state = _statesProcessor.GetItemState(itemId, parameter);
 
-            if (!state.States.ContainsKey(itemId))
-                return Task.FromResult<object>(null);
-
-            var itemState = state.States[itemId];
-
-            if (itemState.States.ContainsKey(parameter))
-                return Task.FromResult(itemState.States[parameter]);
-
-            return Task.FromResult<object>(null);
+            return Task.FromResult(state);
         }
 
         public async Task<IList<IItem>> GetItems()

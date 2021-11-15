@@ -11,6 +11,8 @@ namespace SmartHomeApi.ItemUtils
     {
         private readonly AsyncLazy _initializeTask;
 
+        protected IItemState State;
+
         public override string ItemId { get; }
         public override string ItemType { get; }
 
@@ -42,11 +44,6 @@ namespace SmartHomeApi.ItemUtils
             return Task.FromResult<ExecuteCommandResultAbstract>(new ExecuteCommandResultNotFound());
         }
 
-        public virtual IItemState GetState()
-        {
-            return null;
-        }
-
         public async Task Initialize()
         {
             await _initializeTask.Value;
@@ -66,6 +63,12 @@ namespace SmartHomeApi.ItemUtils
         {
             Manager.RegisterSubscriber(this);
             Logger.Info("Subscribed on notifications.");
+        }
+
+        protected void CreateItemState()
+        {
+            State = (IItemState)HelpersFabric.GetOrCreateItemState();
+            Logger.Info("Got or created item state.");
         }
 
         private async Task InitializeSafely()

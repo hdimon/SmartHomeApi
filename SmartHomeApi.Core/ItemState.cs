@@ -4,13 +4,13 @@ using SmartHomeApi.Core.Interfaces;
 
 namespace SmartHomeApi.Core
 {
-    public class ItemStateNew : IItemStateNew
+    public class ItemState : IItemState
     {
         private readonly ItemStateProxy _proxy;
         public string ItemId { get; }
         public string ItemType { get; }
 
-        public ItemStateNew(string itemId, string itemType, ItemStateProxy proxy)
+        public ItemState(string itemId, string itemType, ItemStateProxy proxy)
         {
             ItemId = itemId;
             ItemType = itemType;

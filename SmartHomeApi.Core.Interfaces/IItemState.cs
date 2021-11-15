@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace SmartHomeApi.Core.Interfaces
+﻿namespace SmartHomeApi.Core.Interfaces
 {
-    public interface IItemState : ICloneable
+    public interface IItemState : IItemStateNew
     {
-        string ItemId { get; }
-        string ItemType { get; }
-
-        Dictionary<string, object> States { get; set; }
     }
 }

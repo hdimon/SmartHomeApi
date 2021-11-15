@@ -57,7 +57,7 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
             throw new NotImplementedException();
         }
 
-        public Task<IItemState> GetState(string itemId)
+        public Task<IItemStateModel> GetState(string itemId)
         {
             throw new NotImplementedException();
         }
