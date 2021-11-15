@@ -7,6 +7,6 @@
         IApiLogger GetApiLogger();
 
         IDateTimeOffsetProvider GetDateTimeOffsetProvider();
-        IItemStateNew GetOrCreateItemState();
+        IItemState GetOrCreateItemState();
     }
 }

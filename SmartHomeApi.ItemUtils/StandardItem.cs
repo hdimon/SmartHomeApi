@@ -67,7 +67,7 @@ namespace SmartHomeApi.ItemUtils
 
         protected void CreateItemState()
         {
-            State = (IItemState)HelpersFabric.GetOrCreateItemState();
+            State = HelpersFabric.GetOrCreateItemState();
             Logger.Info("Got or created item state.");
         }
 

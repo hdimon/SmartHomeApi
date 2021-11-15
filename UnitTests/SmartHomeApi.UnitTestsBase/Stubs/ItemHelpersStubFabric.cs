@@ -39,7 +39,7 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
             return new FakeDateTimeOffsetProvider();
         }
 
-        public IItemStateNew GetOrCreateItemState()
+        public IItemState GetOrCreateItemState()
         {
             return _statesProcessor.GetOrCreateItemState(_itemId, _itemType);
         }

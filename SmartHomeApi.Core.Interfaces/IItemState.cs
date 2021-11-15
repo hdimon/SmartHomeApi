@@ -1,6 +1,15 @@
-﻿namespace SmartHomeApi.Core.Interfaces
+﻿using System.Collections.Generic;
+
+namespace SmartHomeApi.Core.Interfaces
 {
-    public interface IItemState : IItemStateNew
+    public interface IItemState
     {
+        string ItemId { get; }
+        string ItemType { get; }
+
+        void SetState(string key, object value);
+        object GetState(string key);
+        void RemoveState(string key);
+        IDictionary<string, object> GetStates();
     }
 }

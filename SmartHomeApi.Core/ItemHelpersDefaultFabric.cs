@@ -46,7 +46,7 @@ namespace SmartHomeApi.Core
             return _provider.GetService<IDateTimeOffsetProvider>();
         }
 
-        public IItemStateNew GetOrCreateItemState()
+        public IItemState GetOrCreateItemState()
         {
             var statesProcessor = _provider.GetService<IItemStatesProcessor>();
 
