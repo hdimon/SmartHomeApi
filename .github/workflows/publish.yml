@@ -111,11 +111,9 @@ jobs:
         run: dotnet restore
       
       - name: Test build
-        if: false
         run: dotnet build -p:Version=${{steps.parse-solution-version.outputs.group1}}.${{steps.parse-solution-version.outputs.group2}}.${{steps.parse-solution-version.outputs.group3}}.${{github.run_number}} ./SmartHomeApi.WebApi/SmartHomeApi.WebApi.csproj --configuration Release --no-restore
       
       - name: Tests
-        if: false
         continue-on-error: ${{ github.event.inputs.force-publish == 'true' || steps.set-mode.outputs.mode == 'alpha' || steps.set-mode.outputs.mode == 'beta' }}
         run: dotnet test --configuration Release --verbosity normal --no-restore
       
@@ -181,7 +179,6 @@ jobs:
           dotnet-version: 5.0.x
                          
       - name: Restore dependencies
-        #if: false
         env:
           RID: ${{ matrix.RIDs }}
         run: dotnet restore -r ${{env.RID}}
@@ -220,37 +217,30 @@ jobs:
         run: cat SharedAssemblyInfo.cs
       
       - name: Build in Release mode
-        #if: false
         env:
           RID: ${{ matrix.RIDs }}
         run: dotnet publish ./SmartHomeApi.WebApi/SmartHomeApi.WebApi.csproj -c Release -r ${{env.RID}} /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true --self-contained true --no-restore
       
       - name: Build in Debug mode
-        #if: false
         env:
           RID: ${{ matrix.RIDs }}
         run: dotnet publish ./SmartHomeApi.WebApi/SmartHomeApi.WebApi.csproj -c Debug -r ${{env.RID}} /p:PublishSingleFile=true --self-contained true --no-restore
       
       - name: Restore dependencies
-        if: false
         run: dotnet restore
       
       - name: Build nuget dlls
-        if: false
         run: dotnet build -p:Version=${{needs.check_data.outputs.solution-major-version}}.${{needs.check_data.outputs.solution-minor-version}}.${{needs.check_data.outputs.solution-patch-version}}.${{github.run_number}} ./SmartHomeApi.WebApi/SmartHomeApi.WebApi.csproj --configuration Release
       
       - name: Pack nuget package
-        if: false
         run: dotnet pack SmartHomeApi.ItemUtils/SmartHomeApi.ItemUtils.csproj --no-build --no-dependencies -p:NuspecProperties="version=${{needs.check_data.outputs.release-tag}}" -p:NuspecFile=./NugetPackage/SmartHomeApi.ItemUtils.nuspec /p:OutputPath=./NugetPackage/ --verbosity normal
             
       - name: Publish the package to nuget
-        if: false
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.NUGET_TOKEN }}
         run: dotnet nuget push SmartHomeApi.ItemUtils/NugetPackage/SmartHomeApi.ItemUtils.${{needs.check_data.outputs.release-tag}}.nupkg -k ${{env.NUGET_AUTH_TOKEN}} -s https://api.nuget.org/v3/index.json
       
       - name: Create Release
-        #if: false
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
