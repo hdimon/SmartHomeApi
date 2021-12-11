@@ -79,14 +79,25 @@ namespace SmartHomeApi.WebApi.Controllers
             if (!Enum.TryParse<ValueDataType>(type, true, out var valueType))
             {
                 var validTypes = Enum.GetNames(typeof(ValueDataType));
-                logger.Error($"DataType [{type}] is not valid. Valid types are: {string.Join(", ", validTypes)}.");
-                return new SetValueResult(false);
+                var errorMessage = $"DataType [{type}] is not valid. Valid types are: {string.Join(", ", validTypes)}.";
+
+                logger.Error(errorMessage);
+
+                var result = new SetValueResult(false);
+                result.Errors.Add(errorMessage);
+
+                return result;
             }
 
             CultureInfo culture = GetCultureInfo(locale);
 
             if (culture == null)
-                return new SetValueResult(false);
+            {
+                var result = new SetValueResult(false);
+                result.Errors.Add($"Culture [{locale}] is not valid.");
+
+                return result;
+            }
 
             object objValue;
 
@@ -96,9 +107,14 @@ namespace SmartHomeApi.WebApi.Controllers
             }
             catch (Exception)
             {
-                logger.Error($"Can't cast [{value}] of type [{type}] to Object.");
+                var errorMessage = $"Can't cast [{value}] to [{type}] type.";
 
-                return new SetValueResult(false);
+                logger.Error(errorMessage);
+
+                var result = new SetValueResult(false);
+                result.Errors.Add(errorMessage);
+
+                return result;
             }
 
             return await manager.SetValue(itemId, parameter, objValue);
