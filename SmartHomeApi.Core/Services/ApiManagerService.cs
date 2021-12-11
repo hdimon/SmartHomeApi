@@ -20,17 +20,6 @@ namespace SmartHomeApi.Core.Services
                 var assembly = Assembly.GetEntryAssembly();
                 var versionAttribute = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
                 assemblyVersion = versionAttribute.InformationalVersion;
-
-                /*string[] names = assembly.GetManifestResourceNames();
-                string file = null;
-
-                using (var stream = assembly.GetManifestResourceStream(names[0]))
-                {
-                    using (var reader = new StreamReader(stream))
-                    {
-                        file = reader.ReadToEnd();
-                    }
-                }*/
             }
             catch (Exception e)
             {

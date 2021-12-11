@@ -168,7 +168,7 @@ jobs:
     strategy:
         matrix:
           #RIDs: [win-x64, win-x86, linux-x64, linux-arm, linux-arm64]
-          RIDs: [win-x64]
+          RIDs: [win-x64, win-x86, linux-x64]
     
     steps:
       - uses: actions/checkout@v2

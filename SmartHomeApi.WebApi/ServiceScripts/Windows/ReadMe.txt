@@ -1,0 +1,1 @@
+﻿Execute InstallWindowsService.bat/UninstallWindowsService.bat with Administrator privileges.

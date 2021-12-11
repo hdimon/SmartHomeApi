@@ -1,0 +1,11 @@
+[Unit]
+Description=SmartHomeApi
+
+[Service]
+ExecStart=/bin/SmartHomeApi/SmartHomeApi.WebApi
+WorkingDirectory=/bin/SmartHomeApi
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

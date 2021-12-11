@@ -7,11 +7,13 @@ namespace Common.Utils
 {
     public static class CultureInfoHelper
     {
-        private static readonly HashSet<string> CultureNames = CreateCultureNames();
+        private static readonly HashSet<string> _cultureNames = CreateCultureNames();
+
+        public static HashSet<string> CultureNames => _cultureNames;
 
         public static bool Exists(string name)
         {
-            return CultureNames.Contains(name);
+            return _cultureNames.Contains(name);
         }
 
         private static HashSet<string> CreateCultureNames()
