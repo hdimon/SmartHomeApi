@@ -5,7 +5,6 @@
         "ItemsPluginsLocator": {
             "SoftPluginsLoading": true
         },
-        "ItemsLocatorIntervalMs": 5000,
         "UntrackedItems": [
             {
                 "ItemId": "TestItem1" //Whole item will not be tracked
