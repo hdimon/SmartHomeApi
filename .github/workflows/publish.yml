@@ -238,7 +238,7 @@ jobs:
       - name: Publish the package to nuget
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.NUGET_TOKEN }}
-        run: dotnet nuget push SmartHomeApi.ItemUtils/NugetPackage/SmartHomeApi.ItemUtils.${{needs.check_data.outputs.release-tag}}.nupkg -k ${{env.NUGET_AUTH_TOKEN}} -s https://api.nuget.org/v3/index.json
+        run: dotnet nuget push SmartHomeApi.ItemUtils/NugetPackage/SmartHomeApi.ItemUtils.${{needs.check_data.outputs.release-tag}}.nupkg -k ${{env.NUGET_AUTH_TOKEN}} -s https://api.nuget.org/v3/index.json --skip-duplicate
       
       - name: Create Release
         id: create_release
