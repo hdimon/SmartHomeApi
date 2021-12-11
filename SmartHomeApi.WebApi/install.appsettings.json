@@ -1,0 +1,50 @@
+{
+    "AppSettings": {
+        "ApiCulture": "API_CULTURE",
+        "DataDirectoryPath": "DATA_DIRECTORY_PATH",
+        "ItemsPluginsLocator": {
+            "SoftPluginsLoading": true
+        },
+        "ItemsLocatorIntervalMs": 5000,
+        "UntrackedItems": [],
+        "UncachedItems": [],
+        "ItemsInitPriority": []
+    },
+    "Kestrel": {
+        "EndPoints": {
+            "Http": {
+                "Url": "http://0.0.0.0:API_PORT"
+            }
+        }
+    },
+    "Logging": {
+        "LogLevel": {
+            "Default": "Information",
+            "Microsoft": "Warning",
+            "Microsoft.Hosting.Lifetime": "Information"
+        }
+    },
+    "AllowedHosts": "*",
+    "Serilog": {
+        "Using": [
+            "Serilog",
+            "Serilog.Settings.Configuration",
+            "Serilog.Sinks.Console",
+            "Serilog.Sinks.File"
+        ],
+        "WriteTo": [
+            {
+                "MinimumLevel": "Debug",
+                "Name": "File",
+                "Args": {
+                    "path": "DATA_DIRECTORY_LOGS_PATH",
+                    "rollingInterval": "Day",
+                    "rollOnFileSizeLimit": true,
+                    "fileSizeLimitBytes": 5242880,
+                    "restrictedToMinimumLevel": "Debug",
+                    "outputTemplate": "{Timestamp:dd-MM-yyyy HH:mm:ss.fff} [{Level:u4}] [{User}] {Message:lj}{NewLine}{Exception}"
+                }
+            }
+        ]
+    }
+}
