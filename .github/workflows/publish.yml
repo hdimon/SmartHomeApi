@@ -105,7 +105,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 5.0.x
+          dotnet-version: 6.0.x
           
       - name: Restore dependencies
         run: dotnet restore
@@ -176,7 +176,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 5.0.x
+          dotnet-version: 6.0.x
                          
       - name: Restore dependencies
         env:
@@ -252,12 +252,12 @@ jobs:
       - name: Zip release builds
         env:
           RID: ${{ matrix.RIDs }}
-        run: 7z a ${{needs.check_data.outputs.release-tag}}_${{env.RID}}.zip ./SmartHomeApi.WebApi/bin/Release/net5.0/${{env.RID}}/publish/*
+        run: 7z a ${{needs.check_data.outputs.release-tag}}_${{env.RID}}.zip ./SmartHomeApi.WebApi/bin/Release/net6.0/${{env.RID}}/publish/*
         
       - name: Zip debug builds
         env:
           RID: ${{ matrix.RIDs }}
-        run: 7z a ${{needs.check_data.outputs.release-tag}}_${{env.RID}}-debug.zip ./SmartHomeApi.WebApi/bin/Debug/net5.0/${{env.RID}}/publish/*
+        run: 7z a ${{needs.check_data.outputs.release-tag}}_${{env.RID}}-debug.zip ./SmartHomeApi.WebApi/bin/Debug/net6.0/${{env.RID}}/publish/*
 
       - name: Upload Release Build Artifacts
         uses: actions/upload-artifact@v2
@@ -266,7 +266,7 @@ jobs:
         with:
           if-no-files-found: error
           name: ${{needs.check_data.outputs.release-tag}}_${{env.RID}}
-          path: ./SmartHomeApi.WebApi/bin/Release/net5.0/${{env.RID}}/publish/
+          path: ./SmartHomeApi.WebApi/bin/Release/net6.0/${{env.RID}}/publish/
           
       - name: Upload Debug Build Artifacts
         uses: actions/upload-artifact@v2
@@ -275,7 +275,7 @@ jobs:
         with:
           if-no-files-found: error
           name: ${{needs.check_data.outputs.release-tag}}_${{env.RID}}-debug
-          path: ./SmartHomeApi.WebApi/bin/Debug/net5.0/${{env.RID}}/publish/
+          path: ./SmartHomeApi.WebApi/bin/Debug/net6.0/${{env.RID}}/publish/
           
       - name: Upload Release Assets
         id: upload-release-assets

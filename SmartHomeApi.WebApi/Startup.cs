@@ -72,8 +72,7 @@ namespace SmartHomeApi.WebApi
                         options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                         options.SerializerSettings.Converters.Add(new StringEnumConverter());
                         options.SerializerSettings.Formatting = Formatting.Indented;
-                    })
-                    .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+                    });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

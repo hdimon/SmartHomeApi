@@ -12,13 +12,13 @@
 	<summary>SDK for creating own SmartHomeApi plugins.</summary>
     <tags>SmartHomeApi, Plugin</tags>
 	<dependencies>
-      <group targetFramework="net5.0">
+      <group targetFramework="net6.0">
       </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="..\bin\Release\net5.0\Common.Utils.dll" target="lib\net5.0" />
-	<file src="..\bin\Release\net5.0\SmartHomeApi.Core.Interfaces.dll" target="lib\net5.0" />
-	<file src="..\bin\Release\net5.0\SmartHomeApi.ItemUtils.dll" target="lib\net5.0" />
+    <file src="..\bin\Release\net6.0\Common.Utils.dll" target="lib\net6.0" />
+	<file src="..\bin\Release\net6.0\SmartHomeApi.Core.Interfaces.dll" target="lib\net6.0" />
+	<file src="..\bin\Release\net6.0\SmartHomeApi.ItemUtils.dll" target="lib\net6.0" />
   </files>
 </package>

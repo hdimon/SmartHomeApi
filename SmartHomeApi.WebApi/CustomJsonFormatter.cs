@@ -17,7 +17,7 @@ namespace SmartHomeApi.WebApi
 
         public override void OnActionExecuted(ActionExecutedContext context)
         {
-            if (context?.Result == null || context.HttpContext?.Request == null ||
+            if (context?.Result == null ||
                 !context.HttpContext.Request.Query.ContainsKey(_escapeNonAsciiParameter) ||
                 !context.HttpContext.Request.Query.TryGetValue(_escapeNonAsciiParameter, out var value))
             {
@@ -36,7 +36,7 @@ namespace SmartHomeApi.WebApi
             if (escapeNonAscii)
                 settings.StringEscapeHandling = StringEscapeHandling.EscapeNonAscii;
 
-            var formatter = new NewtonsoftJsonOutputFormatter(settings, ArrayPool<char>.Shared, new MvcOptions());
+            var formatter = new NewtonsoftJsonOutputFormatter(settings, ArrayPool<char>.Shared, new MvcOptions(), null);
 
             (context.Result as ObjectResult)?.Formatters.Add(formatter);
         }
