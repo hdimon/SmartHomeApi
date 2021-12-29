@@ -558,6 +558,10 @@ namespace SmartHomeApi.Core.Services
             try
             {
                 var deletedPlugin = await DeletePlugin(pluginContainer);
+
+                if (deletedPlugin != null)
+                    EmitOnBeforeItemLocatorDeletedEvent(deletedPlugin.Plugin.Locators);
+
                 var deletedItemsLocators = await UnloadPlugins(new List<DeletingPluginContainer> { deletedPlugin });
 
                 foreach (var deletedItemsLocator in deletedItemsLocators)
@@ -643,6 +647,9 @@ namespace SmartHomeApi.Core.Services
                 {
                     await AsyncHelpers.RetryOnFault(async () =>
                         {
+                            //Normally is should not happen but it's possible when debugging with breakpoints due to long delays.
+                            if (deleteContainer == null) return;
+
                             var removingFailed = false;
 
                             //Remove locator from existing dictionary in order to get rid of references to being deleted objects

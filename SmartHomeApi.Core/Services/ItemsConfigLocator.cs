@@ -87,7 +87,7 @@ namespace SmartHomeApi.Core.Services
             {
                 _watcher?.Dispose();
                 _fabric.GetItemsPluginsLocator().ItemLocatorAddedOrUpdated -= OnItemLocatorAddedOrUpdated;
-                _fabric.GetItemsPluginsLocator().ItemLocatorDeleted -= OnBeforeItemLocatorDeleted;
+                _fabric.GetItemsPluginsLocator().BeforeItemLocatorDeleted -= OnBeforeItemLocatorDeleted;
 
                 _disposed = true;
             }

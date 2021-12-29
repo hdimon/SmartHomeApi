@@ -140,7 +140,12 @@ namespace SmartHomeApi.Core
         {
             try
             {
-                var pluginDirectoryPath = IsDirectory(e.FullPath) ? e.FullPath : Path.GetDirectoryName(e.FullPath);
+                string pluginDirectoryPath;
+
+                if (IsDirectory(e.FullPath) || Path.GetDirectoryName(e.FullPath) == _pluginsPath)
+                    pluginDirectoryPath = e.FullPath;
+                else
+                    pluginDirectoryPath = Path.GetDirectoryName(e.FullPath);
 
                 if (pluginDirectoryPath == null)
                     return;
