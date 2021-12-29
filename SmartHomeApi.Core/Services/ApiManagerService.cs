@@ -27,6 +27,8 @@ namespace SmartHomeApi.Core.Services
             }
 
             logger.Info($"SmartHomeApi service [{assemblyVersion}] is running...");
+            logger.Info($"Minimal supported version of SmartHomeApi.Utils is {PluginsRuntimeSettings.MinimalSupportedVersion}.");
+
             _apiManager = itemManager;
         }
 

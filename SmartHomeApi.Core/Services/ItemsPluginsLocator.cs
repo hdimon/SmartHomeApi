@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
 using Common.Utils;
@@ -427,6 +428,8 @@ namespace SmartHomeApi.Core.Services
             /*Assembly assembly =
                 context.LoadFromAssemblyName(new AssemblyName(Path.GetFileNameWithoutExtension(dllPath)));*/
 
+            context.Resolving += ContextOnResolving;
+
             var locatorType = typeof(IItemsLocator);
 
             var locatorTypes = assembly.GetTypes().Where(p => locatorType.IsAssignableFrom(p)).ToList();
@@ -440,11 +443,52 @@ namespace SmartHomeApi.Core.Services
                     LocatorTypes = locatorTypes
                 };
 
+            context.Resolving -= ContextOnResolving;
             context.Unload();
 
             var weakReference = new WeakReference(context);
 
             return new LoadingPluginResult { Success = false, Reference = weakReference };
+        }
+
+        private Assembly ContextOnResolving(AssemblyLoadContext loadContext, AssemblyName requestedAssemblyName)
+        {
+            //Check only SmartHomeApi assemblies
+            if (requestedAssemblyName?.Name == null || !requestedAssemblyName.Name.StartsWith(nameof(SmartHomeApi)) &&
+                !requestedAssemblyName.Name.StartsWith($"{nameof(Common)}.{nameof(Common.Utils)}"))
+                return null;
+
+            //SmartHomeApi assemblies always have version
+            if (requestedAssemblyName.Version == null) return null;
+
+            var minimalSupportedVersion = PluginsRuntimeSettings.MinimalSupportedVersion;
+
+            //Check that current version of SmartHomeApi supports version requested by plugin
+            if (requestedAssemblyName.Version < minimalSupportedVersion)
+            {
+                _logger.Error($"Plugin requires {requestedAssemblyName.Name} of {requestedAssemblyName.Version} version " +
+                              $"but minimal supported version is {minimalSupportedVersion}.");
+                return null;
+            }
+
+            var currentAssembly = AssemblyLoadContext.Default.Assemblies.FirstOrDefault(a => a.GetName().Name == requestedAssemblyName.Name);
+            
+            if (currentAssembly == null) return null;
+
+            var currentAssemblyVersion = currentAssembly.GetName().Version;
+
+            if (currentAssemblyVersion == null) return null;
+
+            //Don't support future major versions
+            if (currentAssemblyVersion.Major < requestedAssemblyName.Version.Major)
+            {
+                _logger.Error($"Plugin requires {requestedAssemblyName.Name} of {requestedAssemblyName.Version} version " +
+                              $"(major version is {requestedAssemblyName.Version.Major}) " +
+                              $"but maximum supported major version is {currentAssemblyVersion.Major}.");
+                return null;
+            }
+
+            return currentAssembly;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -570,6 +614,7 @@ namespace SmartHomeApi.Core.Services
                 }
             }
 
+            deletedContainer.AssemblyContext.Resolving -= ContextOnResolving;
             deletedContainer.AssemblyContext.Unload();
 
             var weakReference = new WeakReference(deletedContainer.AssemblyContext);
@@ -579,7 +624,7 @@ namespace SmartHomeApi.Core.Services
 
             _logger.Info($"Assemblies from {plugin.PluginDirectoryInfo.FullName} are being unloaded.");
 
-            _pluginContainers.TryRemove(plugin.PluginDirectoryName, out var t);
+            _pluginContainers.TryRemove(plugin.PluginDirectoryName, out _);
 
             return Task.FromResult(container);
         }
