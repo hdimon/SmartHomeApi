@@ -221,10 +221,11 @@ jobs:
           RID: ${{ matrix.RIDs }}
         run: dotnet publish ./SmartHomeApi.WebApi/SmartHomeApi.WebApi.csproj -c Release -r ${{env.RID}} /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true --self-contained true --no-restore
       
+      #Without PublishSingleFile=true because currently it's not possible to debug single file application (https://github.com/dotnet/runtime/issues/45382)
       - name: Build in Debug mode
         env:
           RID: ${{ matrix.RIDs }}
-        run: dotnet publish ./SmartHomeApi.WebApi/SmartHomeApi.WebApi.csproj -c Debug -r ${{env.RID}} /p:PublishSingleFile=true --self-contained true --no-restore
+        run: dotnet publish ./SmartHomeApi.WebApi/SmartHomeApi.WebApi.csproj -c Debug -r ${{env.RID}} --self-contained true --no-restore
       
       - name: Restore dependencies
         run: dotnet restore
