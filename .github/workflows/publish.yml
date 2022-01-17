@@ -118,7 +118,7 @@ jobs:
         run: dotnet test --configuration Release --verbosity normal --no-restore
       
       #If we are at this point it means all checks passed and everything can be published
-      - uses: ./.github/actions/prerelease-number
+      - uses: hdimon/prerelease-number@v1
         if: ${{ steps.set-mode.outputs.mode != 'release' }}
         name: Generate prerelease number
         id: generate-prerelease-number
