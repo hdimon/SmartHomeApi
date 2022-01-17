@@ -10,7 +10,7 @@
 	<title>SDK for creating own SmartHomeApi plugins.</title>
     <description>SDK for creating own SmartHomeApi plugins.</description>
 	<summary>SDK for creating own SmartHomeApi plugins.</summary>
-    <tags>SmartHomeApi, Plugin</tags>
+    <tags>SmartHomeApi, SmartHome, Plugin, IoT, InternetOfThings, Home-Automation, HomeAutomation</tags>
 	<dependencies>
       <group targetFramework="net6.0">
       </group>
