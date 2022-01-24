@@ -415,6 +415,9 @@ namespace SmartHomeApi.Core.Services
             if (locator == null)
                 return null;
 
+            if (locator.ConfigType == null)
+                return null;
+
             var config = (IItemConfig)Activator.CreateInstance(locator.ConfigType, itemId, itemType);
 
             return config;
