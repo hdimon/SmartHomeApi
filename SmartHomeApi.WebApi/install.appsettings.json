@@ -1,5 +1,6 @@
 {
     "AppSettings": {
+        "Version": "APP_VERSION", //Change it only if you are sure you know what you do!
         "ApiCulture": "API_CULTURE",
         "DataDirectoryPath": "DATA_DIRECTORY_PATH",
         "ItemsPluginsLocator": {

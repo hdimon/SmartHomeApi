@@ -6,6 +6,7 @@ namespace SmartHomeApi.Core.Interfaces.Configuration
 {
     public class AppSettings : ICloneable
     {
+        public string Version { get; set; }
         public string ApiCulture { get; set; }
         public string DataDirectoryPath { get; set; }
         public ItemsPluginsLocatorSettings ItemsPluginsLocator { get; set; } = new ItemsPluginsLocatorSettings();
@@ -19,6 +20,7 @@ namespace SmartHomeApi.Core.Interfaces.Configuration
         {
             var clone = new AppSettings();
 
+            clone.Version = Version;
             clone.ApiCulture = ApiCulture;
             clone.ItemsPluginsLocator = (ItemsPluginsLocatorSettings)ItemsPluginsLocator.Clone();
             clone.ItemsConfigsLocator = (ItemsConfigsLocatorSettings)ItemsConfigsLocator.Clone();

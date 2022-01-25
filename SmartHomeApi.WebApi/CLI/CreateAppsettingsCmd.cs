@@ -305,7 +305,9 @@ namespace SmartHomeApi.WebApi.CLI
             }
 
             var logsPath = Path.Combine(parameters.DataDirectoryPath, "Logs", "SmartHomeApi-.log");
+            var appVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
 
+            file = file.Replace("APP_VERSION", appVersion);
             file = file.Replace("API_CULTURE", parameters.Locale);
             file = file.Replace("\"DATA_DIRECTORY_PATH\"", JsonConvert.SerializeObject(parameters.DataDirectoryPath));
             file = file.Replace("\"DATA_DIRECTORY_LOGS_PATH\"", JsonConvert.SerializeObject(logsPath));

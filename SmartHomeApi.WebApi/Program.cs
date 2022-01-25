@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SmartHomeApi.Core.Interfaces;
 using SmartHomeApi.Core.Interfaces.Configuration;
 using SmartHomeApi.Core.Services;
 using SmartHomeApi.WebApi.CLI;
@@ -35,7 +36,7 @@ namespace SmartHomeApi.WebApi
 
                         if (code == 2)
                         {
-                            StartApp(args, config);
+                            await StartApp(args, config);
                             return 0;
                         }
 
@@ -46,7 +47,7 @@ namespace SmartHomeApi.WebApi
                     return 1;
                 }
 
-                StartApp(args, config);
+                await StartApp(args, config);
 
                 return 0;
             }
@@ -60,7 +61,7 @@ namespace SmartHomeApi.WebApi
                 if (code == 2)
                 {
                     var config = builder.AddJsonFile("appsettings.json", optional: false).Build();
-                    StartApp(args, config);
+                    await StartApp(args, config);
 
                     return 0;
                 }
@@ -74,7 +75,7 @@ namespace SmartHomeApi.WebApi
             }
         }
 
-        private static void StartApp(string[] args, IConfigurationRoot config)
+        private static async Task StartApp(string[] args, IConfigurationRoot config)
         {
             Console.WriteLine("Press Ctrl+C or Ctrl+Break to shut down");
 
@@ -88,7 +89,22 @@ namespace SmartHomeApi.WebApi
                 CultureInfo.DefaultThreadCurrentUICulture = culture;
             }
 
-            CreateHostBuilder(args).Build().Run();
+            var host = CreateHostBuilder(args).Build();
+
+            var logger = host.Services.GetService<IApiLogger>();
+
+            var migrationResult = await AppMigrator.Migrate(logger, settings);
+
+            if (migrationResult == 1) return;
+
+            if (migrationResult == 2)
+            {
+                //Version has been updated so need to actualize AppSettings
+                config.Reload();
+                config.GetSection("AppSettings").Bind(settings);
+            }
+
+            await host.RunAsync();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

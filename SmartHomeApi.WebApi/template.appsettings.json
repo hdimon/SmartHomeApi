@@ -1,5 +1,6 @@
 {
     "AppSettings": {
+        "Version": "1.4.0", //Change it only if you are sure you know what you do!
         "ApiCulture": "en-US",
         "DataDirectoryPath": "C:\\SmartHomeApiData",
         "ItemsPluginsLocator": {
