@@ -62,15 +62,15 @@ namespace SmartHomeApi.ItemUtils
             return Task.CompletedTask;
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
             try
             {
                 foreach (var item in _items)
                 {
-                    if (item is IDisposable disposable)
+                    if (item is IAsyncDisposable disposable)
                     {
-                        disposable.Dispose();
+                        await disposable.DisposeAsync();
                         Fabric.GetApiLogger().Info($"Item {item.ItemId} has been disposed.");
                     }
                 }

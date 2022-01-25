@@ -18,8 +18,9 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
             return Task.CompletedTask;
         }
 
-        public void Dispose()
+        public ValueTask DisposeAsync()
         {
+            return ValueTask.CompletedTask;
         }
 
         public Task<List<IItemConfig>> GetItemsConfigs(string itemType)

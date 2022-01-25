@@ -62,8 +62,8 @@ namespace SmartHomeApi.Core.Services
 
             await _apiItemsLocator.DisposeAsync();
             await notificationsProcessor.DisposeAsync();
-            pluginsLocator.Dispose();
-            configLocator.Dispose();
+            await pluginsLocator.DisposeAsync();
+            await configLocator.DisposeAsync();
 
             _logger.Info("ApiManager has been disposed.");
 

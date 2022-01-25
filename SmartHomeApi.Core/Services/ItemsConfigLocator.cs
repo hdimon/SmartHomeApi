@@ -78,10 +78,10 @@ namespace SmartHomeApi.Core.Services
             _taskCompletionSource.SetResult(true);
         }
 
-        public void Dispose()
+        public ValueTask DisposeAsync()
         {
             if (_disposed)
-                return;
+                return ValueTask.CompletedTask;
 
             try
             {
@@ -95,6 +95,8 @@ namespace SmartHomeApi.Core.Services
             {
                 // ignored
             }
+
+            return ValueTask.CompletedTask;
         }
 
         public async Task<List<IItemConfig>> GetItemsConfigs(string itemType)

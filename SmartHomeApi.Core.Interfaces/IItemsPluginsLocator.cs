@@ -5,7 +5,7 @@ using SmartHomeApi.Core.Interfaces.ItemsLocatorsBridges;
 
 namespace SmartHomeApi.Core.Interfaces
 {
-    public interface IItemsPluginsLocator : IDisposable, IInitializable
+    public interface IItemsPluginsLocator : IAsyncDisposable, IInitializable
     {
         event EventHandler<ItemLocatorEventArgs> ItemLocatorAddedOrUpdated;
         event EventHandler<ItemLocatorEventArgs> BeforeItemLocatorDeleted;

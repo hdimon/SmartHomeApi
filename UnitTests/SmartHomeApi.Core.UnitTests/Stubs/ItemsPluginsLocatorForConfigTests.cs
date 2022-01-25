@@ -28,9 +28,9 @@ namespace SmartHomeApi.Core.UnitTests.Stubs
             return Task.FromResult<IEnumerable<IStandardItemsLocatorBridge>>(ItemsLocators);
         }
 
-        public void Dispose()
+        public ValueTask DisposeAsync()
         {
-
+            return ValueTask.CompletedTask;
         }
 
         public void AddLocator(IStandardItemsLocatorBridge locator)

@@ -81,7 +81,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(0, itemLocators.Count());
 
-            pluginLocator.Dispose();
+            await pluginLocator.DisposeAsync();
         }
 
         [Test]
@@ -97,7 +97,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(0, itemLocators.Count());
 
-            pluginLocator.Dispose();
+            await pluginLocator.DisposeAsync();
         }
 
         [Test]
@@ -117,7 +117,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(1, itemLocators.Count());
 
-            pluginLocator.Dispose();
+            await pluginLocator.DisposeAsync();
         }
 
         [Test]
@@ -139,7 +139,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(1, itemLocators.Count());
 
-            pluginLocator.Dispose();
+            await pluginLocator.DisposeAsync();
         }
 
         [Test]
@@ -177,7 +177,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(1, itemLocators.Count());
 
-            pluginLocator.Dispose();
+            await pluginLocator.DisposeAsync();
         }
 
         [Test]
@@ -219,7 +219,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(0, itemLocators.Count());
 
-            pluginLocator.Dispose();
+            await pluginLocator.DisposeAsync();
         }
 
         [Test]
@@ -257,7 +257,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(1, itemLocators.Count());
 
-            pluginLocator.Dispose();
+            await pluginLocator.DisposeAsync();
         }
 
         [Test]
@@ -343,7 +343,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual("StandardTestPluginWithDependency1", locator.ItemType);
 
-            pluginLocator.Dispose();
+            await pluginLocator.DisposeAsync();
         }
 
         [Test]
@@ -419,7 +419,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(1, itemLocators.Count());
 
-            pluginLocator.Dispose();
+            await pluginLocator.DisposeAsync();
         }
 
         [Test]
@@ -463,7 +463,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.IsFalse(result);
 
-            pluginLocator.Dispose();
+            await pluginLocator.DisposeAsync();
         }
 
         [Test]
@@ -505,7 +505,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(0, itemLocators.Count());
 
-            pluginLocator.Dispose();
+            await pluginLocator.DisposeAsync();
         }
 
         [Test]
@@ -564,7 +564,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(0, itemLocators.Count());
 
-            pluginLocator.Dispose();
+            await pluginLocator.DisposeAsync();
         }
 
         [Test]
@@ -607,7 +607,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(0, itemLocators.Count());
 
-            pluginLocator.Dispose();
+            await pluginLocator.DisposeAsync();
         }
 
         [Test]
@@ -670,7 +670,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(1, itemLocators.Count());
 
-            pluginLocator.Dispose();
+            await pluginLocator.DisposeAsync();
         }
 
         [Test]
@@ -712,7 +712,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(0, itemLocators.Count());
 
-            pluginLocator.Dispose();
+            await pluginLocator.DisposeAsync();
         }
 
         [Test]
@@ -733,7 +733,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(0, itemLocators.Count());
 
-            pluginLocator.Dispose();
+            await pluginLocator.DisposeAsync();
         }
     }
 }

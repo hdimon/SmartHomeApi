@@ -60,7 +60,7 @@ namespace SmartHomeApi.Core.ItemsLocatorsBridges
             await _standardItemsLocator.ConfigDeleted(itemId);
         }
 
-        public virtual void Dispose()
+        public async ValueTask DisposeAsync()
         {
             if (_standardItemsLocator != null)
             {
@@ -68,7 +68,7 @@ namespace SmartHomeApi.Core.ItemsLocatorsBridges
                 _standardItemsLocator.ItemDeleted -= StandardItemsLocatorOnItemDeleted;
             }
 
-            _locator.Dispose();
+            await _locator.DisposeAsync();
         }
 
         private void StandardItemsLocatorOnItemAdded(object sender, ItemEventArgs e)

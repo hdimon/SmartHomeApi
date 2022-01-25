@@ -95,7 +95,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(0, configs.Count);
 
-            configLocator.Dispose();
+            await configLocator.DisposeAsync();
         }
 
         [Test]
@@ -115,7 +115,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(0, configs.Count);
 
-            configLocator.Dispose();
+            await configLocator.DisposeAsync();
         }
 
         [Test]
@@ -160,7 +160,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(1, itemConfigs.Count);
 
-            configLocator.Dispose();
+            await configLocator.DisposeAsync();
         }
 
         [Test]
@@ -209,7 +209,7 @@ namespace SmartHomeApi.Core.UnitTests
             Assert.AreEqual(1, itemConfigs.Count);
             Assert.AreEqual(1, counter);
 
-            configLocator.Dispose();
+            await configLocator.DisposeAsync();
         }
 
         [Test]
@@ -254,7 +254,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(1, itemConfigs.Count);
 
-            configLocator.Dispose();
+            await configLocator.DisposeAsync();
         }
 
         [Test]
@@ -304,7 +304,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(0, itemConfigs.Count);
 
-            configLocator.Dispose();
+            await configLocator.DisposeAsync();
         }
 
         [Test]
@@ -519,7 +519,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(0, itemConfigs.Count);
 
-            configLocator.Dispose();
+            await configLocator.DisposeAsync();
         }
 
         [Test]
@@ -584,7 +584,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(0, itemConfigs.Count);
 
-            configLocator.Dispose();
+            await configLocator.DisposeAsync();
         }
 
         [Test]
@@ -632,7 +632,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(1, itemConfigs.Count);
 
-            configLocator.Dispose();
+            await configLocator.DisposeAsync();
         }
 
         [Test]
@@ -720,7 +720,7 @@ namespace SmartHomeApi.Core.UnitTests
             itemConfig = (TestItem1Config)itemConfigs.First();
             Assert.AreEqual("Test", itemConfig.TestString);
 
-            configLocator.Dispose();
+            await configLocator.DisposeAsync();
         }
 
         [Test]
@@ -808,7 +808,7 @@ namespace SmartHomeApi.Core.UnitTests
             itemConfig = (TestItem1Config)itemConfigs.First();
             Assert.IsNull(itemConfig.TestString);
 
-            configLocator.Dispose();
+            await configLocator.DisposeAsync();
         }
 
         [Test]
@@ -854,7 +854,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(0, itemConfigs.Count);
 
-            configLocator.Dispose();
+            await configLocator.DisposeAsync();
         }
 
         [Test]
@@ -924,7 +924,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(1, itemConfigs.Count);
 
-            configLocator.Dispose();
+            await configLocator.DisposeAsync();
         }
 
         [Test]
@@ -971,7 +971,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(0, itemConfigs.Count);
 
-            configLocator.Dispose();
+            await configLocator.DisposeAsync();
         }
 
         [Test]
@@ -1018,7 +1018,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(0, itemConfigs.Count);
 
-            configLocator.Dispose();
+            await configLocator.DisposeAsync();
         }
 
         [Test]
@@ -1250,7 +1250,7 @@ namespace SmartHomeApi.Core.UnitTests
 
             Assert.AreEqual(1, itemConfigs.Count);
 
-            configLocator.Dispose();
+            await configLocator.DisposeAsync();
         }
 
         private async Task CopyFile(string sourcePath, string destinationPath, bool overwrite = false)

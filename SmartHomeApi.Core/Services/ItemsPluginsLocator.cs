@@ -78,7 +78,7 @@ namespace SmartHomeApi.Core.Services
             return Task.FromResult<IEnumerable<IStandardItemsLocatorBridge>>(_locators.Values);
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
             if (_disposed)
                 return;
@@ -89,7 +89,7 @@ namespace SmartHomeApi.Core.Services
 
             _logger.Info("Disposing ItemsPluginsLocator...");
 
-            DeletePlugins(_pluginContainers.Values.ToList()).Wait();
+            await DeletePlugins(_pluginContainers.Values.ToList());
 
             _logger.Info("ItemsPluginsLocator has been disposed.");
 
@@ -602,18 +602,18 @@ namespace SmartHomeApi.Core.Services
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private Task<DeletingPluginContainer> DeletePlugin(PluginContainer plugin)
+        private async Task<DeletingPluginContainer> DeletePlugin(PluginContainer plugin)
         {
             if (!_pluginContainers.TryGetValue(plugin.PluginDirectoryName, out var deletedContainer))
-                return Task.FromResult<DeletingPluginContainer>(null);
+                return null;
 
             _logger.Info($"Plugin {plugin.PluginDirectoryName} has been deleted.");
 
             foreach (var itemsLocator in deletedContainer.Locators)
             {
-                if (itemsLocator is IDisposable disposable)
+                if (itemsLocator is IAsyncDisposable disposable)
                 {
-                    disposable.Dispose();
+                    await disposable.DisposeAsync();
                     _logger.Info($"ItemsLocator {itemsLocator.ItemType} has been disposed.");
                 }
             }
@@ -630,7 +630,7 @@ namespace SmartHomeApi.Core.Services
 
             _pluginContainers.TryRemove(plugin.PluginDirectoryName, out _);
 
-            return Task.FromResult(container);
+            return container;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

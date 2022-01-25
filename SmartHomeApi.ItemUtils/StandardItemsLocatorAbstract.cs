@@ -49,13 +49,13 @@ namespace SmartHomeApi.ItemUtils
             }
         }
 
-        public virtual void Dispose()
+        public async ValueTask DisposeAsync()
         {
             foreach (var item in _items)
             {
-                if (item is IDisposable disposable)
+                if (item is IAsyncDisposable disposable)
                 {
-                    disposable.Dispose();
+                    await disposable.DisposeAsync();
                     Logger.Info($"Item {item.ItemId} has been disposed.");
                 }
             }
@@ -83,10 +83,10 @@ namespace SmartHomeApi.ItemUtils
             return Task.CompletedTask;
         }
 
-        public virtual Task ConfigDeleted(string itemId)
+        public virtual async Task ConfigDeleted(string itemId)
         {
             if (!IsInitialized)
-                return Task.CompletedTask;
+                return;
 
             _rwLock.EnterWriteLock();
 
@@ -97,14 +97,14 @@ namespace SmartHomeApi.ItemUtils
                 if (existingItem == null)
                 {
                     Logger.Warning($"Config for Item with id = {itemId} has been deleted but Item already does not exist.");
-                    return Task.CompletedTask;
+                    return;
                 }
 
                 var itemType = existingItem.ItemType;
 
-                if (existingItem is IDisposable disposable)
+                if (existingItem is IAsyncDisposable disposable)
                 {
-                    disposable.Dispose();
+                    await disposable.DisposeAsync();
                     Logger.Info($"Item {itemId} has been disposed.");
                 }
 
@@ -123,8 +123,6 @@ namespace SmartHomeApi.ItemUtils
             {
                 _rwLock.ExitWriteLock();
             }
-
-            return Task.CompletedTask;
         }
 
         public async Task Initialize()
