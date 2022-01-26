@@ -29,13 +29,6 @@ namespace SmartHomeApi.ItemUtils
 
         protected abstract Task ProcessNotification(StateChangedEvent args);
 
-        [Obsolete("Please override DisposeItem() method and move code from your Dispose() implementation " +
-                  "into DisposeItem(). Don't move base.Dispose() line if it's called in your Dispose() method.")]
-        public virtual void Dispose()
-        {
-            //Make it now empty but leave it here because plugins overrides it
-        }
-
         public async ValueTask DisposeAsync()
         {
             try
@@ -44,7 +37,6 @@ namespace SmartHomeApi.ItemUtils
                 DisposingCancellationTokenSource.Cancel();
 
                 await DisposeItem();
-                Dispose(); //Call it here for backward compatibility
             }
             catch (Exception e)
             {
