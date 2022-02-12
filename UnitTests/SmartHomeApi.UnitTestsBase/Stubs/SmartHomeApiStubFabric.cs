@@ -76,5 +76,15 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
         {
             throw new NotImplementedException();
         }
+
+        public IDynamicToObjectMapper GetDynamicToObjectMapper()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IObjectToDynamicConverter GetObjectToDynamicConverter()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

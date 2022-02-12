@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Dynamic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartHomeApi.Core.Interfaces;
@@ -17,6 +20,8 @@ namespace SmartHomeApi.Core.Services
         private readonly IApiItemsLocator _apiItemsLocator;
         private readonly INotificationsProcessor _notificationsProcessor;
         private readonly IUncachedStatesProcessor _uncachedStatesProcessor;
+        private readonly IDynamicToObjectMapper _dynamicToObjectMapper;
+        private readonly IObjectToDynamicConverter _objectToDynamicConverter;
         private readonly CancellationTokenSource _disposingCancellationTokenSource = new CancellationTokenSource();
 
         public string ItemType => null;
@@ -31,6 +36,8 @@ namespace SmartHomeApi.Core.Services
             _apiItemsLocator = _fabric.GetApiItemsLocator();
             _notificationsProcessor = _fabric.GetNotificationsProcessor();
             _uncachedStatesProcessor = _fabric.GetUncachedStatesProcessor();
+            _dynamicToObjectMapper = _fabric.GetDynamicToObjectMapper();
+            _objectToDynamicConverter = _fabric.GetObjectToDynamicConverter();
         }
 
         public async Task Initialize()
@@ -134,29 +141,70 @@ namespace SmartHomeApi.Core.Services
             return items.ToList();
         }
 
-        public async Task<ExecuteCommandResultAbstract> Execute(ExecuteCommand command)
+        public async Task<object> Execute(string itemId, string command, object data, Type resultType = null)
         {
             var items = await _apiItemsLocator.GetItems();
 
-            var item = items.FirstOrDefault(i => i is IExecutable it && it.ItemId == command.ItemId);
+            var item = items.FirstOrDefault(i => i is IExecutable it && it.ItemId == itemId);
 
             if (item == null)
-                return new ExecuteCommandResultNotFound();
+                throw new ArgumentException($"Item {itemId} not found.");
 
             var eItem = (IExecutable)item;
 
-            ExecuteCommandResultAbstract result = null;
+            var methods = item.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy)
+                              .Where(m => m.GetCustomAttributes(typeof(ExecutableAttribute), true).Length > 0).ToArray();
+
+            var methodsByCommandName =
+                methods.Where(m => string.Equals(m.Name, command, StringComparison.CurrentCultureIgnoreCase)).ToList();
+
+            if (methodsByCommandName.Count == 0)
+                throw new ArgumentException($"Command {command} not found.");
+
+            if (methodsByCommandName.Count > 1)
+                throw new ValidationException($"More than one Command {command} found.");
+
+            var method = methodsByCommandName.First();
+
+            var inputParameters = method.GetParameters();
+
+            if (inputParameters.Length > 1)
+                throw new ValidationException(
+                    $"Command {command} has {inputParameters.Length} input parameters. Only one input parameter is supported.");
+
+            var parameters = CollectParameterForExecuteMethod(inputParameters, data);
 
             try
             {
-                result = await eItem.Execute(command);
+                var task = (Task)method.Invoke(eItem, parameters);
+
+                if (task == null)
+                    throw new ValidationException($"Command {command} method should return Task<T>.");
+
+                await task.ConfigureAwait(false);
+
+                var resultProperty = task.GetType().GetProperty("Result");
+                var result = resultProperty!.GetValue(task);
+
+                if (!method.ReturnType.IsGenericType) return new ExecuteCommandResultVoid(); //Method returns Task, not Task<T>
+                if (result is ExecuteCommandResultAbstract) return result;
+
+                //Make copy of result in order not to block original type from plugin
+                dynamic dynamicResult = _objectToDynamicConverter.Convert(result);
+
+                if (resultType == null) return dynamicResult;
+
+                var typedResult = _dynamicToObjectMapper.Map(dynamicResult, resultType);
+                return typedResult;
             }
             catch (Exception e)
             {
                 _logger.Error(e);
-            }
 
-            return result ?? new ExecuteCommandResultInternalError();
+                var message = e is TargetInvocationException && e.InnerException != null ? e.InnerException.Message : e.Message;
+
+                throw new ApplicationException(message);
+            }
         }
 
         public void RegisterSubscriber(IStateChangedSubscriber subscriber)
@@ -172,6 +220,21 @@ namespace SmartHomeApi.Core.Services
         public void NotifySubscribers(StateChangedEvent args)
         {
             _notificationsProcessor.NotifySubscribers(args);
+        }
+
+        private object[] CollectParameterForExecuteMethod(ParameterInfo[] inputParameters, object data)
+        {
+            if (inputParameters.Length != 1) return null;
+
+            var parameters = new object[1];
+
+            var dynamicData = data is ExpandoObject expandoObject ? expandoObject : _objectToDynamicConverter.Convert(data);
+
+            var param = _dynamicToObjectMapper.Map(dynamicData, inputParameters[0].ParameterType);
+
+            parameters[0] = param;
+
+            return parameters;
         }
     }
 }

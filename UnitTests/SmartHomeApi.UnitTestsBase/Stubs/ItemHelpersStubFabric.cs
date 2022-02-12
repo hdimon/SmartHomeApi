@@ -1,4 +1,5 @@
-﻿using SmartHomeApi.Core.Interfaces;
+﻿using SmartHomeApi.Core;
+using SmartHomeApi.Core.Interfaces;
 using SmartHomeApi.Core.ItemHelpers;
 using SmartHomeApi.Core.Services;
 
@@ -42,6 +43,16 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
         public IItemState GetOrCreateItemState()
         {
             return _statesProcessor.GetOrCreateItemState(_itemId, _itemType);
+        }
+
+        public IDynamicToObjectMapper GetDynamicToObjectMapper()
+        {
+            return new DynamicToObjectMapper();
+        }
+
+        public IObjectToDynamicConverter GetObjectToDynamicConverter()
+        {
+            return new ObjectToDynamicConverter();
         }
     }
 }

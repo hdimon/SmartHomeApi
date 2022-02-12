@@ -8,5 +8,8 @@
 
         IDateTimeOffsetProvider GetDateTimeOffsetProvider();
         IItemState GetOrCreateItemState();
+
+        IDynamicToObjectMapper GetDynamicToObjectMapper();
+        IObjectToDynamicConverter GetObjectToDynamicConverter();
     }
 }

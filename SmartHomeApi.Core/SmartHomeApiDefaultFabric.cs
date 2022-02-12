@@ -69,5 +69,15 @@ namespace SmartHomeApi.Core
         {
             return _provider.GetService<IUncachedStatesProcessor>();
         }
+
+        public IDynamicToObjectMapper GetDynamicToObjectMapper()
+        {
+            return _provider.GetService<IDynamicToObjectMapper>();
+        }
+
+        public IObjectToDynamicConverter GetObjectToDynamicConverter()
+        {
+            return _provider.GetService<IObjectToDynamicConverter>();
+        }
     }
 }

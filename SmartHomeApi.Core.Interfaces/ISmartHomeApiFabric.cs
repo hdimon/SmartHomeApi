@@ -1,5 +1,4 @@
-﻿using System;
-using SmartHomeApi.Core.Interfaces.Configuration;
+﻿using SmartHomeApi.Core.Interfaces.Configuration;
 
 namespace SmartHomeApi.Core.Interfaces
 {
@@ -15,5 +14,7 @@ namespace SmartHomeApi.Core.Interfaces
         IDateTimeOffsetProvider GetDateTimeOffsetProvider();
         INotificationsProcessor GetNotificationsProcessor();
         IUncachedStatesProcessor GetUncachedStatesProcessor();
+        IDynamicToObjectMapper GetDynamicToObjectMapper();
+        IObjectToDynamicConverter GetObjectToDynamicConverter();
     }
 }

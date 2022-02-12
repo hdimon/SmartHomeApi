@@ -52,5 +52,15 @@ namespace SmartHomeApi.Core
 
             return statesProcessor.GetOrCreateItemState(_itemId, _itemType);
         }
+
+        public IDynamicToObjectMapper GetDynamicToObjectMapper()
+        {
+            return new DynamicToObjectMapper();
+        }
+
+        public IObjectToDynamicConverter GetObjectToDynamicConverter()
+        {
+            return new ObjectToDynamicConverter();
+        }
     }
 }

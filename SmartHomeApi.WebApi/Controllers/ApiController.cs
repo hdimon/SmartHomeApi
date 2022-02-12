@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Common.Utils;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Newtonsoft.Json.Linq;
 using SmartHomeApi.Core.Interfaces;
 using SmartHomeApi.Core.Interfaces.ExecuteCommandResults;
@@ -122,18 +124,20 @@ namespace SmartHomeApi.WebApi.Controllers
 
         [HttpGet]
         [Route("{execute}/{itemId}/{command}")]
-        public async Task<IActionResult> ExecuteGet(string itemId, string command,
-            [FromQuery] Dictionary<string, string> query)
+        public async Task<IActionResult> ExecuteGet(string itemId, string command)
         {
-            var executeCommand = new ExecuteCommand();
-            executeCommand.ItemId = itemId;
-            executeCommand.Command = command;
-            executeCommand.HttpMethod = ExecuteCommandHttpMethod.Get;
-            executeCommand.QueryParams = query;
+            var data = new ExpandoObject() as IDictionary<string, object>;
+            foreach (var key in Request.Query.Keys)
+            {
+                if (Request.Query[key].Count == 1)
+                    data.Add(key, Request.Query[key].First());
+                else if (Request.Query[key].Count > 1) 
+                    data.Add(key, Request.Query[key].Select(v => v).ToList());
+            }
 
             var manager = _fabric.GetApiManager();
 
-            var result = await manager.Execute(executeCommand);
+            var result = await manager.Execute(itemId, command, data);
 
             return GetExecutingResult(result);
         }
@@ -141,46 +145,32 @@ namespace SmartHomeApi.WebApi.Controllers
         [HttpPost]
         [Route("{execute}/{itemId}/{command}")]
         public async Task<IActionResult> ExecutePost(string itemId, string command,
-            [FromQuery] Dictionary<string, string> query, [FromBody] JObject body)
+            [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] JToken body)
         {
-            var bodyDict = body?.ToDictionary();
-
-            var executeCommand = new ExecuteCommand();
-            executeCommand.ItemId = itemId;
-            executeCommand.Command = command;
-            executeCommand.HttpMethod = ExecuteCommandHttpMethod.Post;
-            executeCommand.QueryParams = query;
-            executeCommand.BodyParams = bodyDict;
+            var data = NewtonsoftHelper.ParseJTokenAsExpando(body);
 
             var manager = _fabric.GetApiManager();
 
-            var result = await manager.Execute(executeCommand);
+            var result = await manager.Execute(itemId, command, data);
 
             return GetExecutingResult(result);
         }
 
-        private IActionResult GetExecutingResult(ExecuteCommandResultAbstract result)
+        private IActionResult GetExecutingResult(object result)
         {
+            if (result == null)
+                return Ok();
+
             switch (result)
             {
-                case ExecuteCommandResultNotFound _:
-                    return NotFound(/*result*/);
-                case ExecuteCommandResultInternalError _:
-                    return StatusCode(StatusCodes.Status500InternalServerError, result);
+                case ExecuteCommandResultVoid _:
+                    return Ok();
                 case ExecuteCommandResultFileContent content:
                 {
                     return File(content.FileContents, content.ContentType);
                 }
                 default:
                 {
-                    if (_fabric.GetConfiguration().ItemsPluginsLocator.SoftPluginsLoading)
-                    {
-                        //Since plugin type is cached in Newtonsoft and it can't be fully disabled (see explanation in ApiDefaultContractResolver)
-                        //then convert type to dynamic object. It allows to unload plugin.
-                        var dyn = TypeHelper.ObjToDynamic(result);
-                        return Ok(dyn);
-                    }
-
                     return Ok(result);
                 }
             }

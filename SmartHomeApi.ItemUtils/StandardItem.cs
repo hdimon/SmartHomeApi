@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Common.Utils;
 using SmartHomeApi.Core.Interfaces;
-using SmartHomeApi.Core.Interfaces.ExecuteCommandResults;
 
 namespace SmartHomeApi.ItemUtils
 {
@@ -37,11 +36,6 @@ namespace SmartHomeApi.ItemUtils
         public virtual Task<ISetValueResult> SetValue(string parameter, object value)
         {
             return Task.FromResult<ISetValueResult>(new SetValueResult());
-        }
-
-        public virtual Task<ExecuteCommandResultAbstract> Execute(ExecuteCommand command)
-        {
-            return Task.FromResult<ExecuteCommandResultAbstract>(new ExecuteCommandResultNotFound());
         }
 
         public async Task Initialize()

@@ -72,7 +72,7 @@ namespace SmartHomeApi.UnitTestsBase.Stubs
             throw new NotImplementedException();
         }
 
-        public Task<ExecuteCommandResultAbstract> Execute(ExecuteCommand command)
+        public Task<object> Execute(string itemId, string command, dynamic data, Type resultType)
         {
             throw new NotImplementedException();
         }

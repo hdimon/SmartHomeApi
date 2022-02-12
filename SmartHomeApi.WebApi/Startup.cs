@@ -42,6 +42,8 @@ namespace SmartHomeApi.WebApi
             services.AddSingleton<IApiLogger, ApiLogger>();
             services.AddSingleton<INotificationsProcessor, NotificationsProcessor>();
             services.AddSingleton<IItemStatesProcessor, ItemStatesProcessor>();
+            services.AddSingleton<IDynamicToObjectMapper, DynamicToObjectMapper>();
+            services.AddSingleton<IObjectToDynamicConverter, ObjectToDynamicConverter>();
 
             services.AddTransient<IItemStateStorageHelper, ItemStateStorageHelper>();
             services.AddTransient<IJsonSerializer, NewtonsoftJsonSerializer>();
