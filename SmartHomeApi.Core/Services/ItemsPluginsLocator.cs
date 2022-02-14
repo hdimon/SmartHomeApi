@@ -618,13 +618,19 @@ namespace SmartHomeApi.Core.Services
                 }
             }
 
-            deletedContainer.AssemblyContext.Resolving -= ContextOnResolving;
-            deletedContainer.AssemblyContext.Unload();
+            var container = new DeletingPluginContainer { Plugin = deletedContainer };
 
-            var weakReference = new WeakReference(deletedContainer.AssemblyContext);
+            //deletedContainer.AssemblyContext is null when there is plugin folder but no dll inside
+            if (deletedContainer.AssemblyContext != null)
+            {
+                deletedContainer.AssemblyContext.Resolving -= ContextOnResolving;
+                deletedContainer.AssemblyContext.Unload();
 
-            var container = new DeletingPluginContainer { Reference = weakReference, Plugin = deletedContainer };
-            container.Plugin.AssemblyContext = null; //Delete reference to allow GC to make its work
+                var weakReference = new WeakReference(deletedContainer.AssemblyContext);
+
+                container.Reference = weakReference;
+                container.Plugin.AssemblyContext = null; //Delete reference to allow GC to make its work
+            }
 
             _logger.Info($"Assemblies from {plugin.PluginDirectoryInfo.FullName} are being unloaded.");
 
@@ -666,8 +672,11 @@ namespace SmartHomeApi.Core.Services
 
                             await Task.Delay(GetPluginsUnloadingAttemptsIntervalMs(), _disposingCancellationTokenSource.Token);
 
-                            if (!CollectGarbage(deleteContainer.Reference, deleteContainer.Plugin.PluginDirectoryName))
-                                throw new Exception("Could not unload dll. It's recommended to restart service.");
+                            if (deleteContainer.Reference != null)
+                            {
+                                if (!CollectGarbage(deleteContainer.Reference, deleteContainer.Plugin.PluginDirectoryName))
+                                    throw new Exception("Could not unload dll. It's recommended to restart service.");
+                            }
 
                             try
                             {
