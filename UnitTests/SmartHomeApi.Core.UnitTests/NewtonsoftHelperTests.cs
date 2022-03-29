@@ -14,7 +14,7 @@ internal class NewtonsoftHelperTests
     [Test]
     public void PrimitivesTest()
     {
-        //Only long, double and boolean primitives are supported as valid json.
+        //Only int, long, double and boolean primitives are supported as valid json.
         var json = "17";
         var token = JToken.Parse(json);
         var result = NewtonsoftHelper.ParseJTokenAsExpando(token);
