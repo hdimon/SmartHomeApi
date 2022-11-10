@@ -84,7 +84,10 @@ namespace SmartHomeApi.Core.Services
             var item = items.FirstOrDefault(i => i is IStateSettable it && it.ItemId == itemId);
 
             if (item == null)
+            {
+                _logger.Warning($"Item with Id = {itemId} is not found.");
                 return new SetValueResult(itemId, null, false);
+            }
 
             var not = (IStateSettable)item;
 
